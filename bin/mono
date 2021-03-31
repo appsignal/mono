@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+$LOAD_PATH << File.expand_path(File.join(__dir__, "..", "lib"))
+
+require "mono"
+require "mono/cli"
+
+command, *options = ARGV
+
+case command
+when "init"
+  Mono::Cli::Init.new(options).execute
+when "bootstrap"
+  Mono::Cli::Bootstrap.new(options).execute
+when "clean"
+  Mono::Cli::Clean.new(options).execute
+when "build"
+  Mono::Cli::Build.new(options).execute
+when "test"
+  Mono::Cli::Test.new(options).execute
+when "publish"
+  Mono::Cli::Publish.new(options).execute
+when "changeset"
+  Mono::Cli::Changeset.new(options).execute
+when "run"
+  Mono::Cli::Custom.new(options).execute
+else
+  puts "Unknown command: #{command}"
+  exit 1
+end

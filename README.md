@@ -1,0 +1,111 @@
+# Mono
+
+Multi language tool for managing single and mono repository packages.
+
+## Installation
+
+```
+bin/setup
+```
+
+## Usage
+
+After installation the `mono` executable should be available in any directory.
+
+```
+mono <command> [options]
+```
+
+### Dry run
+
+Note: Dry run is not fully implemented yet. While it won't publish your packages to a package manager, it will update version files in packages, delete changeset files and update their changelogs.
+
+Don't want to run the command for real, but want to see what commands it will perform? Use the dry run feature. Set the `DRY_RUN=true` environment variable to use dry run mode.
+
+```
+DRY_RUN=true mono publish
+```
+
+## Configuration
+
+Create a `mono.yml` file in the root of the repository you want to manage.
+
+```
+# mono.yml example
+---
+language: nodejs
+repo: "https://github.com/appsignal/appsignal-javascript"
+npm_client: "yarn"
+tag_prefix: "@appsignal/"
+packages_dir: "packages"
+clean:
+  command: "npm run clean"
+test:
+  command: "npm run test"
+```
+
+### Configuration options
+
+- `language`
+    - Required.
+    - Supported values:
+        - `elixir`
+        - `nodejs`
+        - `ruby`
+- `repo`
+    - Repository used to link back to from the `CHANGELOG` file.
+    - Must be a valid URL.
+- `tag_prefix`
+    - Git tag prefix used to namespace tags.
+    - Example value `@appsignal/` creates the tag `@appsignal/<package>@1.2.3`
+- `tag_prefix`
+    - Git tag prefix used to namespace tags.
+    - Example value `@appsignal/` creates the tag `@appsignal/<package>@1.2.3`
+- `packages_dir`
+    - Specify the directory in which the mono repo's packages can be found. If specified mono will consider this repository a mono repo.
+    - Wildcards are not supported.
+- `npm_client`
+    - Node.js only.
+    - Supported values:
+        - `npm` - default
+        - `yarn`
+- `publish`
+    - Sub options:
+        - `gem_files`
+            - Ruby only.
+            - Specify where the `.gem` files to publish can be found.
+            - Currently required for `ruby` packages, shouldn't be in the future, but default to `.gem` in the root of the repository.
+
+## Commands
+
+### Init
+
+TODO
+
+### Bootstrap
+
+TODO
+
+### Build
+
+TODO
+
+### Test
+
+TODO
+
+### Changeset
+
+TODO
+
+### Publish
+
+TODO
+
+### Clean
+
+TODO
+
+### Run
+
+TODO

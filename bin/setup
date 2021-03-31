@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -eu
+
+if [[ -f $HOME/.zshrc ]]; then
+  echo "export PATH=\"$PWD/bin:\$PATH\"" >> $HOME/.zshrc
+  echo "Configured mono path in $HOME/.zshrc"
+  exit 0
+fi
+
+if [[ -f $HOME/.bashrc ]]; then
+  echo "export PATH=\"$PWD/bin:\$PATH\"" >> $HOME/.bashrc
+  echo "Configured mono path in $HOME/.bashrc"
+  exit 0
+fi
+
+echo "Error: No shell detected. Please add the following line to your Shell setup."
+echo 'export PATH="$PWD/bin:$PATH"'
+exit 1
