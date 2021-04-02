@@ -6,6 +6,7 @@ AllCops:
   Exclude:
     - "tmp/**/*"
     - "vendor/**/*"
+    - "spec/support/examples/**/*" # Couldn't get it configured in spec/.rubocop.yml
   DisplayCopNames: true
   UseCache: true
   CacheRootDirectory: ./tmp
@@ -69,4 +70,7 @@ Metrics/ClassLength:
   Max: 200
 
 Metrics/AbcSize:
+  Enabled: false
+
+Bundler/OrderedGems:
   Enabled: false

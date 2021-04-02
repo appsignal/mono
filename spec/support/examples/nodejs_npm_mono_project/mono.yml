@@ -1,0 +1,3 @@
+---
+language: "nodejs"
+packages_dir: "packages"
