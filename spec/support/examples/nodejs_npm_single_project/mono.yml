@@ -1,2 +1,3 @@
 ---
 language: "nodejs"
+repo: "https://github.com/appsignal/nodejs_npm_single_project"

@@ -32,8 +32,7 @@ module Mono
             gem_files = Dir.glob(pkg_path)
             if gem_files.any?
               gem_files.each do |gem_file|
-                # TODO: Remove --help option when ready for use
-                run_command "gem push #{gem_file} --help"
+                run_command "gem push #{gem_file}"
               end
             else
               raise "No gemfiles found for `#{pkg_path}`"
@@ -45,7 +44,7 @@ module Mono
         end
 
         def build_package
-          puts "SKIPPED: Ruby has no build step"
+          run_command "gem build"
         end
 
         def test_package

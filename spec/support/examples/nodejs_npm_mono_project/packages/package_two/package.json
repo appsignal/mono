@@ -1,0 +1,8 @@
+{
+  "name": "package_two",
+  "version": "1.2.3",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 123"
+  }
+}

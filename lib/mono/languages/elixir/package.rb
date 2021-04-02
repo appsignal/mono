@@ -27,8 +27,7 @@ module Mono
         end
 
         def publish_package
-          # TODO: Remove --dry-run option when ready for use
-          run_command "mix hex.publish --yes --dry-run"
+          run_command "mix hex.publish --yes"
         end
 
         def build_package

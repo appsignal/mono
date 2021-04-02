@@ -12,30 +12,26 @@ module Mono
         end
 
         if local_changes?
-          puts "Error: There are local changes before building. " \
+          exit_cli "Error: There are local changes before building. " \
             "Commit or discard them and try again. Exiting."
-          # exit 1
         end
 
         print_summary(selected_packages)
         puts
-
-        build(selected_packages)
-        puts
-
-        if local_changes?
-          puts "Error: There are local changes after building. " \
-            "There should be no uncommitted changes after building. Exiting."
-          # exit 1
-        end
         update_package_versions(selected_packages)
         puts
         update_changelog(selected_packages)
+        puts
+        build(selected_packages)
+        puts
+        commit_changes(selected_packages)
         puts
         publish_package_manager(selected_packages)
         puts
         publish_git(selected_packages)
       end
+
+      private
 
       def build(packages)
         puts "# Building packages"
@@ -88,23 +84,28 @@ module Mono
         run_hooks("publish", "post")
       end
 
-      def publish_git(packages)
-        run_hooks("git-publish", "pre")
+      def commit_changes(packages)
+        run_hooks("git-commit", "pre")
         puts "# Publishing to git"
-        puts "# Creating release commit"
+        puts "## Creating release commit"
         packages_list =
           packages.map do |package|
             "- #{package.next_tag}"
           end.join("\n")
         run_command \
-          "git commit -am 'Publishing packages [ci skip]' -m '#{packages_list}'"
+          "git commit -am 'Publish packages [ci skip]' -m '#{packages_list}'"
 
         packages.each do |package|
-          puts "# Tag package #{package.next_tag}"
+          puts "## Tag package #{package.next_tag}"
           run_command "git tag #{package.next_tag}"
         end
+        run_hooks("git-commit", "post")
+      end
 
-        puts "# Pushing to git remote origin"
+      def publish_git(packages)
+        run_hooks("git-publish", "pre")
+        puts "# Publishing to git"
+        puts "## Pushing to git remote origin"
         package_versions = packages.map(&:next_tag).join(" ")
         run_command "git push origin #{current_branch} #{package_versions}"
         run_hooks("git-publish", "post")

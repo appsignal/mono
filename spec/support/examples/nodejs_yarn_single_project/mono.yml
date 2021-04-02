@@ -1,3 +1,4 @@
 ---
 language: "nodejs"
 npm_client: "yarn"
+repo: "https://github.com/appsignal/nodejs_yarn_single_project"

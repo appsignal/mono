@@ -1,3 +1,6 @@
 ---
 language: "elixir"
 packages_dir: "packages"
+repo: "https://github.com/appsignal/elixir_mono_project"
+publish:
+  command: "mix hex.publish package --yes"

@@ -26,8 +26,18 @@ RSpec.configure do |config|
   config.include CommandHelper
   config.include StdStreamsHelper
   config.include PathHelper
+  config.include GitHelper
+
+  config.before :suite do
+    Testing.clear!
+  end
+
+  config.before :all do
+    Testing.clear!
+  end
 
   config.before :each do
     Testing.clear!
+    clear_selected_project!
   end
 end

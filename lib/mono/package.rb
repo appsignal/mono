@@ -121,9 +121,7 @@ module Mono
         if config.command?("publish")
           # Custom command configured
           command = config.command("publish")
-          # TODO: This makes it actually work
-          puts command
-          # run_command command
+          run_command command
         else
           publish_package
         end

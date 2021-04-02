@@ -47,7 +47,7 @@ module Mono
         if config.monorepo?
           packages_dir = config.packages_dir
           @packages =
-            Dir.glob("*", :base => packages_dir).map do |package|
+            Dir.glob("*", :base => packages_dir).sort.map do |package|
               path = File.join(packages_dir, package)
               next unless File.directory?(path)
 

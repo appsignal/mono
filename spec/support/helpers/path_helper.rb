@@ -1,27 +1,55 @@
 # frozen_string_literal: true
 
 module PathHelper
-  def in_elixir_single_project(&block)
-    Dir.chdir("spec/support/examples/elixir_single_project", &block)
+  EXAMPLES_DIR = "spec/support/examples/"
+  EXAMPLES_TMP_DIR = "spec/tmp/examples/"
+
+  def selected_project
+    unless defined?(@project_example)
+      raise "No project selected. Please call `#{prepare_project}(:language, :type)` first."
+    end
+
+    "#{@project_example}_project"
   end
 
-  def in_elixir_mono_project(&block)
-    Dir.chdir("spec/support/examples/elixir_mono_project", &block)
+  def clear_selected_project!
+    @project_example = nil
   end
 
-  def in_nodejs_single_project(client = :npm, &block)
-    Dir.chdir("spec/support/examples/nodejs_#{client}_single_project", &block)
+  def prepare_project(project)
+    @project_example = project
+
+    prepare_project_example selected_project
   end
 
-  def in_nodejs_mono_project(client = :npm, &block)
-    Dir.chdir("spec/support/examples/nodejs_#{client}_mono_project", &block)
+  def in_project(&block)
+    in_project_example selected_project, &block
   end
 
-  def in_ruby_single_project(&block)
-    Dir.chdir("spec/support/examples/ruby_single_project", &block)
+  # @api private
+  def prepare_project_example(project)
+    tmp_path = File.join(EXAMPLES_TMP_DIR, project)
+    FileUtils.mkdir_p(EXAMPLES_TMP_DIR)
+    # Remove existing test dir
+    FileUtils.rm_r(tmp_path) if Dir.exist?(tmp_path)
+    # Copy example to test dir
+    FileUtils.cp_r(File.join(EXAMPLES_DIR, project), tmp_path)
+
+    in_project_example project do
+      `git init . && git add . && git commit -m "Initial commit"`
+    end
   end
 
-  def in_ruby_mono_project(&block)
-    Dir.chdir("spec/support/examples/ruby_mono_project", &block)
+  # @api private
+  def in_project_example(project, &block)
+    tmp_path = File.join(EXAMPLES_TMP_DIR, project)
+    # Execute block in test dir
+    Dir.chdir(tmp_path, &block)
+  rescue SystemExit => error
+    Testing.exit_status = error.status
+  end
+
+  def in_package(package, &block)
+    Dir.chdir(File.join("packages", package), &block)
   end
 end

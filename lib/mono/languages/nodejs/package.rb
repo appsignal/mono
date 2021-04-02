@@ -27,9 +27,8 @@ module Mono
         end
 
         def publish_package
-          options = "--tag beta" if next_version.prerelease?
-          # TODO: Remove --dry-run option when ready for use
-          run_command "#{npm_client} publish --dry-run #{options}"
+          options = " --tag beta" if next_version.prerelease?
+          run_command "#{npm_client} publish#{options}"
         end
 
         def build_package

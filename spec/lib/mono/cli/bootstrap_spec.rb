@@ -4,31 +4,35 @@ RSpec.describe Mono::Cli::Bootstrap do
   context "with Elixir project" do
     context "with single repo" do
       it "bootstraps the project" do
+        prepare_project :elixir_single
         output =
           capture_stdout do
-            in_elixir_single_project { described_class.new([]).execute }
+            in_project { described_class.new([]).execute }
           end
 
+        expect(output).to include("Bootstrapping package: elixir_single_project (.)")
         expect(performed_commands).to eql([
           ["/elixir_single_project", "mix deps.get"]
         ])
-        expect(output).to include("Bootstrapping package: elixir_single_project (.)")
+        expect(exit_status).to eql(0), output
       end
     end
 
     context "with mono repo" do
       it "bootstraps the packages" do
+        prepare_project :elixir_mono
         output =
           capture_stdout do
-            in_elixir_mono_project { described_class.new([]).execute }
+            in_project { described_class.new([]).execute }
           end
 
-        expect(performed_commands).to eql([
-          ["/elixir_mono_project/packages/package_two", "mix deps.get"],
-          ["/elixir_mono_project/packages/package_one", "mix deps.get"]
-        ])
-        expect(output).to include("Bootstrapping package: package_two (packages/package_two)")
         expect(output).to include("Bootstrapping package: package_one (packages/package_one)")
+        expect(output).to include("Bootstrapping package: package_two (packages/package_two)")
+        expect(performed_commands).to eql([
+          ["/elixir_mono_project/packages/package_one", "mix deps.get"],
+          ["/elixir_mono_project/packages/package_two", "mix deps.get"]
+        ])
+        expect(exit_status).to eql(0), output
       end
     end
   end
@@ -36,31 +40,35 @@ RSpec.describe Mono::Cli::Bootstrap do
   context "with Ruby project" do
     context "with single repo" do
       it "bootstraps the project" do
+        prepare_project :ruby_single
         output =
           capture_stdout do
-            in_ruby_single_project { described_class.new([]).execute }
+            in_project { described_class.new([]).execute }
           end
 
+        expect(output).to include("Bootstrapping package: ruby_single_project (.)")
         expect(performed_commands).to eql([
           ["/ruby_single_project", "bundle install"]
         ])
-        expect(output).to include("Bootstrapping package: ruby_single_project (.)")
+        expect(exit_status).to eql(0), output
       end
     end
 
     context "with mono repo" do
       it "bootstraps the packages" do
+        prepare_project :ruby_mono
         output =
           capture_stdout do
-            in_ruby_mono_project { described_class.new([]).execute }
+            in_project { described_class.new([]).execute }
           end
 
-        expect(performed_commands).to eql([
-          ["/ruby_mono_project/packages/package_two", "bundle install"],
-          ["/ruby_mono_project/packages/package_one", "bundle install"]
-        ])
-        expect(output).to include("Bootstrapping package: package_two (packages/package_two)")
         expect(output).to include("Bootstrapping package: package_one (packages/package_one)")
+        expect(output).to include("Bootstrapping package: package_two (packages/package_two)")
+        expect(performed_commands).to eql([
+          ["/ruby_mono_project/packages/package_one", "bundle install"],
+          ["/ruby_mono_project/packages/package_two", "bundle install"]
+        ])
+        expect(exit_status).to eql(0), output
       end
     end
   end
@@ -74,29 +82,33 @@ RSpec.describe Mono::Cli::Bootstrap do
       context "with npm >= 7" do
         context "with single repo" do
           it "bootstraps the project" do
+            prepare_project :nodejs_npm_single
             output =
               capture_stdout do
-                in_nodejs_single_project { described_class.new([]).execute }
+                in_project { described_class.new([]).execute }
               end
 
+            expect(output).to include("Bootstrapping project")
             expect(performed_commands).to eql([
               ["/nodejs_npm_single_project", "npm install"]
             ])
-            expect(output).to include("Bootstrapping project")
+            expect(exit_status).to eql(0), output
           end
         end
 
         context "with mono repo" do
           it "bootstraps the project workspace" do
+            prepare_project :nodejs_npm_mono
             output =
               capture_stdout do
-                in_nodejs_mono_project { described_class.new([]).execute }
+                in_project { described_class.new([]).execute }
               end
 
+            expect(output).to include("Bootstrapping project")
             expect(performed_commands).to eql([
               ["/nodejs_npm_mono_project", "npm install"]
             ])
-            expect(output).to include("Bootstrapping project")
+            expect(exit_status).to eql(0), output
           end
         end
       end
@@ -110,29 +122,33 @@ RSpec.describe Mono::Cli::Bootstrap do
       context "with yarn >= 1" do
         context "with single repo" do
           it "bootstraps the project" do
+            prepare_project :nodejs_yarn_single
             output =
               capture_stdout do
-                in_nodejs_single_project(:yarn) { described_class.new([]).execute }
+                in_project { described_class.new([]).execute }
               end
 
+            expect(output).to include("Bootstrapping project")
             expect(performed_commands).to eql([
               ["/nodejs_yarn_single_project", "yarn install"]
             ])
-            expect(output).to include("Bootstrapping project")
+            expect(exit_status).to eql(0), output
           end
         end
 
         context "with mono repo" do
           it "bootstraps the project workspace" do
+            prepare_project :nodejs_yarn_mono
             output =
               capture_stdout do
-                in_nodejs_mono_project(:yarn) { described_class.new([]).execute }
+                in_project { described_class.new([]).execute }
               end
 
+            expect(output).to include("Bootstrapping project")
             expect(performed_commands).to eql([
               ["/nodejs_yarn_mono_project", "yarn install"]
             ])
-            expect(output).to include("Bootstrapping project")
+            expect(exit_status).to eql(0), output
           end
         end
       end

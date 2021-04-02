@@ -1,3 +1,4 @@
 ---
 language: "ruby"
 packages_dir: "packages"
+repo: "https://github.com/appsignal/ruby_mono_project"

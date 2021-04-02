@@ -2,3 +2,4 @@
 language: "nodejs"
 npm_client: "yarn"
 packages_dir: "packages"
+repo: "https://github.com/appsignal/nodejs_yarn_mono_project"
