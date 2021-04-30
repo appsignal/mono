@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+module Mono
+  class Error < StandardError; end
+end
+
 require "mono/config"
 require "mono/command"
 require "mono/changeset"

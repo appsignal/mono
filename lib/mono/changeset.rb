@@ -6,14 +6,32 @@ module Mono
   class Changeset
     attr_reader :path, :message
 
+    SUPPORTED_BUMPS = %w[major minor patch].freeze
     YAML_FRONT_MATTER_REGEXP =
       /\A(---\s*\n.*?\n?)^((---|\.\.\.)\s*$\n?)/m.freeze
+
+    class MetadataError < Mono::Error; end
+
+    class EmptyMessageError < Mono::Error; end
+
+    class UnknownBumpTypeError < Mono::Error; end
 
     def self.parse(file)
       contents = File.read(file)
       frontmatter_matches = YAML_FRONT_MATTER_REGEXP.match(contents)
-      metadata = YAML.safe_load(frontmatter_matches[1])
+      metadata =
+        if frontmatter_matches
+          YAML.safe_load(frontmatter_matches[1])
+        else
+          raise MetadataError, "No metadata found for changeset: `#{file}`. " \
+            "Please specify either a major, minor or patch version bump."
+        end
       message = contents.sub(frontmatter_matches[0], "").strip
+      if message.strip.empty?
+        raise EmptyMessageError,
+          "No changeset message found for changeset: `#{file}`. " \
+          "Please add a description of the change."
+      end
       new(file, metadata, message)
     end
 
@@ -25,9 +43,10 @@ module Mono
     end
 
     def validate
-      unless @metadata["bump"]
-        raise "No bump specified for changeset: `#{path}`. " \
-          "Please specify either major, minor or patch"
+      unless SUPPORTED_BUMPS.include?(@metadata["bump"])
+        raise UnknownBumpTypeError,
+          "Unknown bump type specified for changeset: `#{path}`. " \
+          "Please specify either major, minor or patch."
       end
     end
 

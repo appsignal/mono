@@ -1,20 +1,25 @@
 # frozen_string_literal: true
 
 module ChangesetHelper
-  def add_changeset(bump)
+  def add_changeset(bump, message = nil)
     @changeset_count ||= 0
     @changeset_count += 1
     FileUtils.mkdir_p(".changesets")
-    File.open(".changesets/#{@changeset_count}_#{bump}.md", "w+") do |file|
-      file.write(<<~CHANGESET)
+    path = ".changesets/#{@changeset_count}_#{bump}.md"
+    unless bump == :none
+      metadata = <<~METADATA
         ---
         bump: #{bump}
         ---
 
-        This is a #{bump} changeset bump.
-      CHANGESET
+      METADATA
+    end
+    message ||= "This is a #{bump} changeset bump."
+    File.open(path, "w+") do |file|
+      file.write("#{metadata}#{message}")
     end
     commit_changeset("Changeset #{@changeset_count} #{bump}")
+    path
   end
 
   def commit_changeset(message = "No message")

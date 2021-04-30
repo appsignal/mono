@@ -63,6 +63,9 @@ Layout/HashAlignment:
 Layout/FirstArrayElementIndentation:
   EnforcedStyle: consistent
 
+Layout/ArgumentAlignment:
+  EnforcedStyle: with_fixed_indentation
+
 Layout/LineLength:
   Max: 80
 
