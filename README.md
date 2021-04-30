@@ -109,3 +109,16 @@ TODO
 ### Run
 
 TODO
+
+## Development
+
+### Testing
+
+```
+# Install dependencies
+bundle install
+# Run RSpec test suite
+bundle exec rspec
+# Run RSpec test suite and generate a test coverage report
+COV=1 bundle exec rspec
+```

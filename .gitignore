@@ -2,4 +2,5 @@
 tmp
 vendor
 *.lock
+coverage/
 spec/examples.txt

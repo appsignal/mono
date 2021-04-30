@@ -4,6 +4,7 @@ source "https://rubygems.org"
 
 group :development do
   gem "rubocop"
+  gem "simplecov"
 end
 
 group :development, :test do

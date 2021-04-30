@@ -1,5 +1,15 @@
 # frozen_string_literal: true
 
+if ENV["COV"]
+  # Track test coverage with simplecov by using the `COV` env variable.
+  # Example: `COV=1 bundle exec rspec`
+  require "simplecov"
+  SimpleCov.start do
+    add_filter "spec/"
+    add_group "Library", ["lib/"]
+  end
+end
+
 require "mono"
 require "mono/cli"
 require "testing"
