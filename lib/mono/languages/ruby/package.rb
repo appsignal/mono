@@ -9,7 +9,7 @@ module Mono
             begin
               contents = read_version
               matches = VERSION_REGEX.match(contents)
-              Gem::Version.new(matches[1])
+              Version.parse_ruby(matches[1])
             end
         end
 
