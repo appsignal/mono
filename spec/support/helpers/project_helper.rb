@@ -58,4 +58,8 @@ module ProjectHelper
       YAML.safe_load(File.read(File.join(ROOT_DIR, EXAMPLES_DIR, "#{project}_project", "mono.yml")))
     )
   end
+
+  def package_for(package, config)
+    Mono::Languages::Nodejs::Package.new(package, File.join("packages", package), config)
+  end
 end

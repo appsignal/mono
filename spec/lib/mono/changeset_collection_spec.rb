@@ -4,14 +4,10 @@ RSpec.describe Mono::ChangesetCollection do
   describe "#changesets" do
     let(:test_project) { :nodejs_npm_mono }
     let(:config) { config_for(test_project) }
-    let(:package) do
-      Mono::Languages::Nodejs::Package.new("package_one", "packages/package_one", config)
-    end
+    let(:package) { package_for("package_one", config) }
     let(:collection) { described_class.new(config, package) }
     let(:changesets) { collection.changesets }
-    before do
-      prepare_project test_project
-    end
+    before { prepare_project test_project }
 
     context "without changesets" do
       it "returns an empty array" do
@@ -56,6 +52,53 @@ RSpec.describe Mono::ChangesetCollection do
     end
   end
 
-  pending "Test different version bumps"
+  describe "#next_bump" do
+    let(:test_project) { :nodejs_npm_mono }
+    let(:config) { config_for(test_project) }
+    let(:package) { package_for("package_one", config) }
+    let(:collection) { described_class.new(config, package) }
+    before { prepare_project test_project }
+    subject { collection.next_bump }
+
+    context "with major version" do
+      it "returns the major version bump" do
+        in_project do
+          in_package :package_one do
+            add_changeset :patch
+            add_changeset :minor
+            add_changeset :major
+          end
+
+          is_expected.to eql("major")
+        end
+      end
+    end
+
+    context "with minor version" do
+      it "returns the major version bump" do
+        in_project do
+          in_package :package_one do
+            add_changeset :patch
+            add_changeset :minor
+          end
+
+          is_expected.to eql("minor")
+        end
+      end
+    end
+
+    context "with patch version" do
+      it "returns the major version bump" do
+        in_project do
+          in_package :package_one do
+            add_changeset :patch
+          end
+
+          is_expected.to eql("patch")
+        end
+      end
+    end
+  end
+
   pending "Test different version bumps as written to changelog file"
 end
