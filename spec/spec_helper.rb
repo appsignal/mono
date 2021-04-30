@@ -7,6 +7,8 @@ if ENV["COV"]
   SimpleCov.start do
     add_filter "spec/"
     add_group "Library", ["lib/"]
+    add_group "CLI", ["lib/mono/cli"]
+    add_group "Languages", ["lib/mono/languages"]
   end
 end
 
