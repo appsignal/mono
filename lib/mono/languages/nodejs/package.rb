@@ -4,6 +4,8 @@ module Mono
   module Languages
     module Nodejs
       class Package < PackageBase
+        include ClientHelper
+
         def current_version
           @current_version ||=
             begin
@@ -23,20 +25,20 @@ module Mono
         end
 
         def bootstrap_package
-          # Should be done on root level
+          run_client_command "link"
         end
 
         def publish_package
           options = " --tag beta" if next_version.prerelease?
-          run_command "#{npm_client} publish#{options}"
+          run_client_command "publish#{options}"
         end
 
         def build_package
-          run_command "#{npm_client} run build"
+          run_client_command "run build"
         end
 
         def test_package
-          run_command "#{npm_client} run test"
+          run_client_command "run test"
         end
 
         def clean_package
@@ -56,12 +58,8 @@ module Mono
           File.join(path, "package.json")
         end
 
-        def npm_client
-          if config.config?("npm_client")
-            config.config("npm_client")
-          else
-            "npm"
-          end
+        def run_client_command(command)
+          run_command "#{npm_client} #{command}"
         end
       end
     end

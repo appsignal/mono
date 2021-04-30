@@ -44,6 +44,7 @@ module Mono
       def initialize(options = [])
         @options = options
         @config = Config.new(YAML.safe_load(File.read("mono.yml")))
+        @language = Language.for(config.language).new(config)
         package_class = PackageBase.for(config.language)
         if config.monorepo?
           packages_dir = config.packages_dir
@@ -64,7 +65,7 @@ module Mono
 
       private
 
-      attr_reader :options, :config, :packages
+      attr_reader :options, :config, :language, :packages
 
       def packages_to_publish
         packages.select(&:will_update?)
