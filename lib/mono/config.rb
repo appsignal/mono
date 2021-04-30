@@ -1,11 +1,9 @@
 # frozen_string_literal: true
 
-require "yaml"
-
 module Mono
   class Config
-    def initialize
-      @config = YAML.safe_load(File.read("mono.yml"))
+    def initialize(config)
+      @config = config
     end
 
     def language

@@ -4,6 +4,7 @@ require "mono"
 require "mono/cli"
 require "testing"
 
+ROOT_DIR = File.expand_path("..", __dir__)
 SPEC_DIR = File.expand_path(__dir__)
 Dir.glob("support/**/*.rb", :base => SPEC_DIR).sort.each do |file|
   require file
@@ -27,6 +28,7 @@ RSpec.configure do |config|
   config.include StdStreamsHelper
   config.include PathHelper
   config.include GitHelper
+  config.include ChangesetHelper
 
   config.before :suite do
     Testing.clear!
