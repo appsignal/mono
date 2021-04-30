@@ -41,7 +41,7 @@ RSpec.describe Mono::Cli::Publish do
           capture_stdout do
             in_project do
               add_changeset(:patch)
-              expect(changesets.length).to eql(1)
+              expect(current_package_changeset_files.length).to eql(1)
 
               perform_commands do
                 stub_commands [/^gem push/, /^git push/] do
@@ -101,7 +101,7 @@ RSpec.describe Mono::Cli::Publish do
           capture_stdout do
             in_project do
               add_changeset(:patch)
-              expect(changesets.length).to eql(1)
+              expect(current_package_changeset_files.length).to eql(1)
 
               perform_commands do
                 stub_commands [/^mix hex.publish package --yes/, /^git push/] do
@@ -164,7 +164,7 @@ RSpec.describe Mono::Cli::Publish do
             in_project do
               in_package "package_one" do
                 add_changeset(:patch)
-                expect(changesets.length).to eql(1)
+                expect(current_package_changeset_files.length).to eql(1)
               end
 
               perform_commands do
@@ -234,7 +234,7 @@ RSpec.describe Mono::Cli::Publish do
             in_project do
               in_package "package_one" do
                 add_changeset(:patch)
-                expect(changesets.length).to eql(1)
+                expect(current_package_changeset_files.length).to eql(1)
               end
 
               perform_commands do
@@ -267,7 +267,7 @@ RSpec.describe Mono::Cli::Publish do
         in_project do
           in_package "package_one" do
             expect(File.read("package.json")).to include(%("version": "#{next_version}"))
-            expect(changesets.length).to eql(0)
+            expect(current_package_changeset_files.length).to eql(0)
 
             changelog = File.read("CHANGELOG.md")
             expect_changelog_to_include_version_header(changelog, next_version)
@@ -298,32 +298,6 @@ RSpec.describe Mono::Cli::Publish do
     pending "Ruby mono project (optional: for non Appsignal projects)"
     pending "Elixir mono project (for the future mono repo setup for Elixir)"
     pending "Node.js single project (optional: for non Appsignal projects)"
-  end
-
-  def commit_changes(message = "No message")
-    @commit_count ||= 0
-    @commit_count += 1
-    `git add . && git commit -m "Commit #{@commit_count}: #{message}"`
-  end
-
-  def add_changeset(bump)
-    @changeset_count ||= 0
-    @changeset_count += 1
-    FileUtils.mkdir_p(".changesets")
-    File.open(".changesets/#{@changeset_count}_#{bump}.md", "w+") do |file|
-      file.write(<<~CHANGESET)
-        ---
-        bump: #{bump}
-        ---
-
-        This is a #{bump} changeset bump.
-      CHANGESET
-    end
-    commit_changes("Changeset #{@changeset_count} #{bump}")
-  end
-
-  def changesets
-    Dir.glob(".changesets/*.md")
   end
 
   def expect_changelog_to_include_version_header(changelog, version)

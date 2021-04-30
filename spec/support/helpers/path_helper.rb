@@ -50,6 +50,12 @@ module PathHelper
   end
 
   def in_package(package, &block)
-    Dir.chdir(File.join("packages", package), &block)
+    Dir.chdir(File.join("packages", package.to_s), &block)
+  end
+
+  def config_for(project)
+    Mono::Config.new(
+      YAML.safe_load(File.read(File.join(ROOT_DIR, EXAMPLES_DIR, "#{project}_project", "mono.yml")))
+    )
   end
 end

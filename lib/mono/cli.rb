@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "yaml"
 require "pathname"
 
 module Mono
@@ -42,7 +43,7 @@ module Mono
 
       def initialize(options = [])
         @options = options
-        @config = Config.new
+        @config = Config.new(YAML.safe_load(File.read("mono.yml")))
         package_class = PackageBase.for(config.language)
         if config.monorepo?
           packages_dir = config.packages_dir
