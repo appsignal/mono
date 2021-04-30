@@ -26,7 +26,7 @@ RSpec.configure do |config|
 
   config.include CommandHelper
   config.include StdStreamsHelper
-  config.include PathHelper
+  config.include ProjectHelper
   config.include GitHelper
   config.include ChangesetHelper
 

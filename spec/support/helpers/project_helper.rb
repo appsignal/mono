@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module PathHelper
+module ProjectHelper
   EXAMPLES_DIR = "spec/support/examples/"
   EXAMPLES_TMP_DIR = "spec/tmp/examples/"
 
