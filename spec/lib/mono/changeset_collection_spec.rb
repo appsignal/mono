@@ -17,6 +17,7 @@ RSpec.describe Mono::ChangesetCollection do
           end
 
           expect(changesets).to eql([])
+          expect(collection.any?).to be_falsy
         end
       end
     end
@@ -31,6 +32,7 @@ RSpec.describe Mono::ChangesetCollection do
           end
 
           expect(changesets.map(&:bump)).to contain_exactly("patch")
+          expect(collection.any?).to be_truthy
         end
       end
     end
@@ -47,6 +49,7 @@ RSpec.describe Mono::ChangesetCollection do
           end
 
           expect(changesets.map(&:bump)).to contain_exactly("patch", "minor", "major")
+          expect(collection.any?).to be_truthy
         end
       end
     end
