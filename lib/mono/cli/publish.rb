@@ -16,7 +16,7 @@ module Mono
             "Commit or discard them and try again. Exiting."
         end
 
-        print_summary(selected_packages)
+        print_summary(packages)
         puts
         update_package_versions(selected_packages)
         puts

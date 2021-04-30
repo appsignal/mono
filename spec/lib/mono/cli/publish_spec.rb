@@ -187,6 +187,7 @@ RSpec.describe Mono::Cli::Publish do
           - package_one:
             Current version: package_one@1.2.3
             Next version:    package_one@1.2.4 (patch)
+          - package_two: (Will not publish)
         OUTPUT
         expect(output).to include(<<~OUTPUT), output
           # Updating package versions
@@ -257,6 +258,7 @@ RSpec.describe Mono::Cli::Publish do
           - package_one:
             Current version: package_one@1.2.3
             Next version:    package_one@1.2.4 (patch)
+          - package_two: (Will not publish)
         OUTPUT
         expect(output).to include(<<~OUTPUT), output
           # Updating package versions
