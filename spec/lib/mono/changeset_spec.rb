@@ -89,4 +89,25 @@ RSpec.describe Mono::Changeset do
       end
     end
   end
+
+  describe "#commit" do
+    it "returns a hash with commit metadat" do
+      prepare_project :nodejs_npm_single
+      in_project do
+        path = add_changeset :patch
+
+        changeset = described_class.parse(path)
+        commit = changeset.commit
+        expect(commit).to match(
+          :date => kind_of(Time),
+          :long => kind_of(String),
+          :short => kind_of(String)
+        )
+        expect(commit[:long].length).to be >= 40
+        expect(commit[:short].length).to be >= 7
+        expect(commit[:short].length).to be < 40
+      end
+    end
+  end
 end
+
