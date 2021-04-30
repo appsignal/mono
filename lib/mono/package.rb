@@ -154,6 +154,11 @@ module Mono
 
     attr_reader :config
 
+    # :nocov:
+    def bootstrap_package
+      raise NotImplementedError
+    end
+
     def publish_package
       raise NotImplementedError
     end
@@ -165,6 +170,7 @@ module Mono
     def clean_package
       raise NotImplementedError
     end
+    # :nocov:
 
     def chdir(&block)
       Dir.chdir(path, &block)
