@@ -90,7 +90,8 @@ RSpec.describe Mono::Cli::Bootstrap do
 
             expect(output).to include("Bootstrapping project")
             expect(performed_commands).to eql([
-              ["/nodejs_npm_single_project", "npm install"]
+              ["/nodejs_npm_single_project", "npm install"],
+              ["/nodejs_npm_single_project", "npm link"]
             ])
             expect(exit_status).to eql(0), output
           end
@@ -106,7 +107,9 @@ RSpec.describe Mono::Cli::Bootstrap do
 
             expect(output).to include("Bootstrapping project")
             expect(performed_commands).to eql([
-              ["/nodejs_npm_mono_project", "npm install"]
+              ["/nodejs_npm_mono_project", "npm install"],
+              ["/nodejs_npm_mono_project/packages/package_one", "npm link"],
+              ["/nodejs_npm_mono_project/packages/package_two", "npm link"]
             ])
             expect(exit_status).to eql(0), output
           end
@@ -130,7 +133,8 @@ RSpec.describe Mono::Cli::Bootstrap do
 
             expect(output).to include("Bootstrapping project")
             expect(performed_commands).to eql([
-              ["/nodejs_yarn_single_project", "yarn install"]
+              ["/nodejs_yarn_single_project", "yarn install"],
+              ["/nodejs_yarn_single_project", "yarn link"]
             ])
             expect(exit_status).to eql(0), output
           end
@@ -146,7 +150,9 @@ RSpec.describe Mono::Cli::Bootstrap do
 
             expect(output).to include("Bootstrapping project")
             expect(performed_commands).to eql([
-              ["/nodejs_yarn_mono_project", "yarn install"]
+              ["/nodejs_yarn_mono_project", "yarn install"],
+              ["/nodejs_yarn_mono_project/packages/package_one", "yarn link"],
+              ["/nodejs_yarn_mono_project/packages/package_two", "yarn link"]
             ])
             expect(exit_status).to eql(0), output
           end

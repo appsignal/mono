@@ -247,7 +247,8 @@ RSpec.describe Mono::Cli::Publish do
           end
 
         project_dir = "/nodejs_npm_mono_project"
-        package_dir = "#{project_dir}/packages/package_one"
+        package_one_dir = "#{project_dir}/packages/package_one"
+        package_two_dir = "#{project_dir}/packages/package_two"
         next_version = "1.2.4"
         tag = "package_one@#{next_version}"
 
@@ -285,10 +286,12 @@ RSpec.describe Mono::Cli::Publish do
 
         expect(performed_commands).to eql([
           [project_dir, "npm install"],
-          [package_dir, "npm run build"],
+          [package_one_dir, "npm link"],
+          [package_two_dir, "npm link"],
+          [package_one_dir, "npm run build"],
           [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- #{tag}'"],
           [project_dir, "git tag #{tag}"],
-          [package_dir, "npm publish"],
+          [package_one_dir, "npm publish"],
           [project_dir, "git push origin main #{tag}"]
         ])
         expect(exit_status).to eql(0), output
