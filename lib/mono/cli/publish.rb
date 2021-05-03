@@ -63,9 +63,7 @@ module Mono
         puts "The following packages will be published (or not):"
         packages.each do |package|
           if package.will_update?
-            puts "- #{package.name}:"
-            puts "  Current version: #{package.current_tag}"
-            puts "  Next version:    #{package.next_tag} (#{package.next_bump})"
+            print_package_summary(package)
           else
             puts "- #{package.name}: (Will not publish)"
           end
@@ -75,11 +73,15 @@ module Mono
       def update_package_versions(packages)
         puts "# Updating package versions"
         packages.each do |package|
-          puts "# Updating package version: #{package.name}"
-          puts "Current version: #{package.current_tag}"
-          puts "Next version:    #{package.next_tag} (#{package.next_bump})"
+          print_package_summary(package)
           package.write_new_version
         end
+      end
+
+      def print_package_summary(package)
+        puts "- #{package.name}:"
+        puts "  Current version: #{package.current_tag}"
+        puts "  Next version:    #{package.next_tag} (#{package.next_bump})"
       end
 
       def update_changelog(packages)

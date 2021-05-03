@@ -62,9 +62,9 @@ RSpec.describe Mono::Cli::Publish do
         OUTPUT
         expect(output).to include(<<~OUTPUT), output
           # Updating package versions
-          # Updating package version: ruby_single_project
-          Current version: v1.2.3
-          Next version:    v1.2.4 (patch)
+          - ruby_single_project:
+            Current version: v1.2.3
+            Next version:    v1.2.4 (patch)
         OUTPUT
 
         in_project do
@@ -121,9 +121,9 @@ RSpec.describe Mono::Cli::Publish do
           OUTPUT
           expect(output).to include(<<~OUTPUT), output
             # Updating package versions
-            # Updating package version: ruby_single_project
-            Current version: v1.2.3
-            Next version:    v1.2.4.alpha.1 (patch)
+            - ruby_single_project:
+              Current version: v1.2.3
+              Next version:    v1.2.4.alpha.1 (patch)
           OUTPUT
 
           in_project do
@@ -183,9 +183,9 @@ RSpec.describe Mono::Cli::Publish do
         OUTPUT
         expect(output).to include(<<~OUTPUT), output
           # Updating package versions
-          # Updating package version: elixir_single_project
-          Current version: v1.2.3
-          Next version:    v1.2.4 (patch)
+          - elixir_single_project:
+            Current version: v1.2.3
+            Next version:    v1.2.4 (patch)
         OUTPUT
 
         in_project do
@@ -251,9 +251,9 @@ RSpec.describe Mono::Cli::Publish do
         OUTPUT
         expect(output).to include(<<~OUTPUT), output
           # Updating package versions
-          # Updating package version: package_one
-          Current version: package_one@1.2.3
-          Next version:    package_one@1.2.4 (patch)
+          - package_one:
+            Current version: package_one@1.2.3
+            Next version:    package_one@1.2.4 (patch)
         OUTPUT
 
         in_project do
@@ -322,9 +322,9 @@ RSpec.describe Mono::Cli::Publish do
         OUTPUT
         expect(output).to include(<<~OUTPUT), output
           # Updating package versions
-          # Updating package version: package_one
-          Current version: package_one@1.2.3
-          Next version:    package_one@1.2.4 (patch)
+          - package_one:
+            Current version: package_one@1.2.3
+            Next version:    package_one@1.2.4 (patch)
         OUTPUT
 
         in_project do
