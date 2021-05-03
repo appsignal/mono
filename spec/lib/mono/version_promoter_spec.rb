@@ -736,6 +736,22 @@ RSpec.describe Mono::VersionPromoter do
     end
   end
 
+  describe Mono::VersionPromoter::UnsupportedDowngradeError do
+    describe "#message" do
+      it "lists the different prerelease types" do
+        current = "beta"
+        new = "alpha"
+        expect(described_class.new(current, new).message).to eql(<<~MESSAGE)
+          Unexpected downgrade for prelease. Can't downgrade from a
+          `#{current}` to a `#{new}`.
+
+          - Current prerelease type: #{current}
+          - New prerelease type:     #{new}
+        MESSAGE
+      end
+    end
+  end
+
   def expect_downgrade_error(&block)
     expect(&block).to raise_error(Mono::VersionPromoter::UnsupportedDowngradeError)
   end
