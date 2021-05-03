@@ -6,7 +6,7 @@ RSpec.describe Mono::Cli::Publish do
       prepare_project :ruby_single
       output =
         capture_stdout do
-          in_project { described_class.new([]).execute }
+          in_project { run_publish }
         end
 
       expect(output).to include("No packages found to publish! No changes detected.")
@@ -24,7 +24,7 @@ RSpec.describe Mono::Cli::Publish do
             in_project do
               add_changeset(:patch)
               `touch uncommited_file`
-              described_class.new([]).execute
+              run_publish
             end
           end
 
@@ -45,7 +45,7 @@ RSpec.describe Mono::Cli::Publish do
 
               perform_commands do
                 stub_commands [/^gem push/, /^git push/] do
-                  described_class.new([]).execute
+                  run_publish
                 end
               end
             end
@@ -92,6 +92,66 @@ RSpec.describe Mono::Cli::Publish do
         ])
         expect(exit_status).to eql(0), output
       end
+
+      context "with --alpha option" do
+        it "publishes an alpha prerelease" do
+          prepare_project :ruby_single
+          output =
+            capture_stdout do
+              in_project do
+                add_changeset(:patch)
+                expect(current_package_changeset_files.length).to eql(1)
+
+                perform_commands do
+                  stub_commands [/^gem push/, /^git push/] do
+                    run_publish(:prerelease => :alpha)
+                  end
+                end
+              end
+            end
+
+          project_dir = "/ruby_single_project"
+          next_version = "1.2.4.alpha.1"
+
+          expect(output).to include(<<~OUTPUT), output
+            The following packages will be published (or not):
+            - ruby_single_project:
+              Current version: v1.2.3
+              Next version:    v1.2.4.alpha.1 (patch)
+          OUTPUT
+          expect(output).to include(<<~OUTPUT), output
+            # Updating package versions
+            # Updating package version: ruby_single_project
+            Current version: v1.2.3
+            Next version:    v1.2.4.alpha.1 (patch)
+          OUTPUT
+
+          in_project do
+            expect(File.read("lib/appsignal/version.rb")).to include(%(VERSION = "#{next_version}"))
+            expect(Dir.glob(".changesets/*.md").length).to eql(0)
+
+            changelog = File.read("CHANGELOG.md")
+            expect_changelog_to_include_version_header(changelog, next_version)
+            expect_changelog_to_include_release_notes(changelog, :patch)
+
+            expect(local_changes?).to be_falsy, local_changes.inspect
+            expect(commited_files).to eql([
+              ".changesets/1_patch.md",
+              "CHANGELOG.md",
+              "lib/appsignal/version.rb"
+            ])
+          end
+
+          expect(performed_commands).to eql([
+            [project_dir, "gem build"],
+            [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- v#{next_version}'"],
+            [project_dir, "git tag v#{next_version}"],
+            [project_dir, "gem push ruby_single_project-#{next_version}.gem"],
+            [project_dir, "git push origin main v#{next_version}"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
+      end
     end
 
     context "with single Elixir package" do
@@ -105,8 +165,8 @@ RSpec.describe Mono::Cli::Publish do
 
               perform_commands do
                 stub_commands [/^mix hex.publish package --yes/, /^git push/] do
-                  Mono::Cli::Bootstrap.new([]).execute
-                  described_class.new([]).execute
+                  run_bootstrap
+                  run_publish
                 end
               end
             end
@@ -169,8 +229,8 @@ RSpec.describe Mono::Cli::Publish do
 
               perform_commands do
                 stub_commands [/^mix hex.publish package --yes/, /^git push/] do
-                  Mono::Cli::Bootstrap.new([]).execute
-                  described_class.new([]).execute
+                  run_bootstrap
+                  run_publish
                 end
               end
             end
@@ -240,8 +300,8 @@ RSpec.describe Mono::Cli::Publish do
 
               perform_commands do
                 stub_commands [/^npm publish/, /^git push/] do
-                  Mono::Cli::Bootstrap.new([]).execute
-                  described_class.new([]).execute
+                  run_bootstrap
+                  run_publish
                 end
               end
             end
@@ -314,5 +374,13 @@ RSpec.describe Mono::Cli::Publish do
     message = "This is a #{bump} changeset bump."
     expect(changelog)
       .to match(%r{- \[[a-z0-9]{7}\]\(#{url}/commit/[a-z0-9]{40}\) #{bump} - #{message}})
+  end
+
+  def run_publish(args = {})
+    described_class.new(args).execute
+  end
+
+  def run_bootstrap(args = {})
+    Mono::Cli::Bootstrap.new(args).execute
   end
 end

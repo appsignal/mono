@@ -18,6 +18,7 @@ module Mono
     include Command::Helper
 
     attr_reader :path, :name
+    attr_accessor :prerelease
 
     def initialize(name, path, config)
       @path = path
@@ -26,30 +27,11 @@ module Mono
     end
 
     def next_version
-      @next_version ||=
-        begin
-          bump = changesets.next_bump
-          major = current_version.major
-          minor = current_version.minor
-          patch = current_version.patch
-          version_segments =
-            case bump
-            when "major"
-              [major + 1, 0, 0]
-            when "minor"
-              [major, minor + 1, 0]
-            when "patch"
-              [major, minor, patch + 1]
-            else
-              # TODO: support alpha, beta and rc releases (prereleases).
-              # Allow the user to specify the type via the command line
-              # options, e.g. --prerelease beta
-              # Auto increment the prerelease version number if it's already a
-              # prerelease
-              raise "Unknown package bump type: #{bump}"
-            end
-          Version.new(*version_segments)
-        end
+      VersionPromoter.promote(
+        current_version,
+        changesets.next_bump,
+        prerelease
+      )
     end
 
     def next_bump

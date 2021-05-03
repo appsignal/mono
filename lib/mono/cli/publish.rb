@@ -3,12 +3,28 @@
 module Mono
   module Cli
     class Publish < Base
+      attr_reader :prerelease
+      alias prerelease? prerelease
+
+      def initialize(prerelease: nil)
+        @prerelease = prerelease
+        super()
+      end
+
       def execute
-        exit_cli "No packages found!" unless packages.any?
+        exit_cli "No packages found in this directory!" unless packages.any?
 
         selected_packages = packages_to_publish
         unless selected_packages.any?
           exit_cli "No packages found to publish! No changes detected."
+        end
+
+        if prerelease?
+          # Tell to-be-published packages that they should update to a
+          # prerelease
+          selected_packages.each do |package|
+            package.prerelease = prerelease
+          end
         end
 
         if local_changes?
