@@ -123,31 +123,29 @@ RSpec.describe Mono::Version do
     end
   end
 
-  describe "#prerelease_bump" do
-    context "with major prerelease" do
-      it "returns major" do
-        expect(parse("1.0.0-alpha.2").prerelease_bump).to eql(:major)
-        expect(parse_ruby("3.0.0.alpha.4").prerelease_bump).to eql(:major)
+  describe "#segments" do
+    context "with plain release" do
+      it "returns version string" do
+        expect(parse("1.0.0").segments).to eql([1, 0, 0])
+        expect(parse("1.2.3").segments).to eql([1, 2, 3])
       end
     end
 
-    context "with minor prerelease" do
-      it "returns minor" do
-        expect(parse("1.2.0-alpha.3").prerelease_bump).to eql(:minor)
-        expect(parse_ruby("3.4.0.alpha.5").prerelease_bump).to eql(:minor)
+    context "with prerelease using a dash (-)" do
+      it "returns version string" do
+        expect(parse("1.0.0-alpha.1").segments).to eql([1, 0, 0, "alpha", 1])
+        expect(parse("1.2.3-alpha.10").segments).to eql([1, 2, 3, "alpha", 10])
+        expect(parse("11.12.13-beta.20").segments).to eql([11, 12, 13, "beta", 20])
+        expect(parse("201.202.203-rc.999").segments).to eql([201, 202, 203, "rc", 999])
       end
     end
 
-    context "with patch prerelease" do
-      it "returns patch" do
-        expect(parse("1.2.3-alpha.4").prerelease_bump).to eql(:patch)
-        expect(parse_ruby("5.6.7.alpha.8").prerelease_bump).to eql(:patch)
-      end
-    end
-
-    context "without prerelease" do
-      it "returns nil" do
-        expect(parse("1.2.3").prerelease_bump).to be_nil
+    context "with prerelease using a dot (.)" do
+      it "returns Version string" do
+        expect(parse_ruby("1.0.0.alpha.1").segments).to eql([1, 0, 0, "alpha", 1])
+        expect(parse_ruby("1.2.3.alpha.10").segments).to eql([1, 2, 3, "alpha", 10])
+        expect(parse_ruby("11.12.13.beta.20").segments).to eql([11, 12, 13, "beta", 20])
+        expect(parse_ruby("201.202.203.rc.999").segments).to eql([201, 202, 203, "rc", 999])
       end
     end
   end

@@ -72,5 +72,26 @@ module Mono
         base
       end
     end
+
+    # Returns segments of the version object
+    #
+    # When a version has no prerelease information (alpha/beta/rc) the last two
+    # elements are omitted.
+    #
+    # - <Index>: Type of segment
+    # - 0: major
+    # - 1: minor
+    # - 2: patch
+    # - 3: prerelease type (alpha, beta, rc) (Optional)
+    # - 4: prerelease version number (Optional)
+    def segments
+      [
+        major,
+        minor,
+        patch,
+        prerelease_type,
+        prerelease_version
+      ].compact
+    end
   end
 end
