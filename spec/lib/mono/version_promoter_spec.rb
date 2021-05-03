@@ -35,6 +35,16 @@ RSpec.describe Mono::VersionPromoter do
     context "when promoting to prerelease" do
       describe "bump to major version" do
         context "with existing major release" do
+          context "with existing base release" do
+            context "bumps to major version with prerelease" do
+              it "bumps version and sets prerelease" do
+                expect(promote("2.0.0", "major", "alpha")).to eql("3.0.0-alpha.1")
+                expect(promote("2.0.0", "major", "beta")).to eql("3.0.0-beta.1")
+                expect(promote("2.0.0", "major", "rc")).to eql("3.0.0-rc.1")
+              end
+            end
+          end
+
           context "with existing alpha prerelease" do
             context "bump to alpha" do
               it "only bumps the prerelease" do
@@ -97,6 +107,16 @@ RSpec.describe Mono::VersionPromoter do
         end
 
         context "with existing minor release" do
+          context "with existing base release" do
+            context "bumps to major version with prerelease" do
+              it "bumps version and sets prerelease" do
+                expect(promote("2.1.0", "major", "alpha")).to eql("3.0.0-alpha.1")
+                expect(promote("2.1.0", "major", "beta")).to eql("3.0.0-beta.1")
+                expect(promote("2.1.0", "major", "rc")).to eql("3.0.0-rc.1")
+              end
+            end
+          end
+
           context "with existing alpha prerelease" do
             context "bump to alpha" do
               it "bumps to major version and resets prerelease" do
@@ -168,6 +188,16 @@ RSpec.describe Mono::VersionPromoter do
         end
 
         context "with existing patch release" do
+          context "with existing base release" do
+            context "bumps to major version with prerelease" do
+              it "bumps version and sets prerelease" do
+                expect(promote("2.1.3", "major", "alpha")).to eql("3.0.0-alpha.1")
+                expect(promote("2.1.3", "major", "beta")).to eql("3.0.0-beta.1")
+                expect(promote("2.1.3", "major", "rc")).to eql("3.0.0-rc.1")
+              end
+            end
+          end
+
           context "with existing alpha prerelease" do
             context "bump to alpha" do
               it "bumps to major version and resets prerelease" do
@@ -242,6 +272,16 @@ RSpec.describe Mono::VersionPromoter do
 
       describe "bump to minor version" do
         context "with existing major release" do
+          context "with existing base release" do
+            context "bumps to minor version with prerelease" do
+              it "bumps version and sets prerelease" do
+                expect(promote("2.0.0", "minor", "alpha")).to eql("2.1.0-alpha.1")
+                expect(promote("2.0.0", "minor", "beta")).to eql("2.1.0-beta.1")
+                expect(promote("2.0.0", "minor", "rc")).to eql("2.1.0-rc.1")
+              end
+            end
+          end
+
           context "with existing alpha prerelease" do
             context "bump to alpha" do
               it "only bumps the prerelease" do
@@ -304,6 +344,16 @@ RSpec.describe Mono::VersionPromoter do
         end
 
         context "with existing minor release" do
+          context "with existing base release" do
+            context "bumps to minor version with prerelease" do
+              it "bumps version and sets prerelease" do
+                expect(promote("2.1.0", "minor", "alpha")).to eql("2.2.0-alpha.1")
+                expect(promote("2.1.0", "minor", "beta")).to eql("2.2.0-beta.1")
+                expect(promote("2.1.0", "minor", "rc")).to eql("2.2.0-rc.1")
+              end
+            end
+          end
+
           context "with existing alpha prerelease" do
             context "bump to alpha" do
               it "bumps to minor version and resets prerelease" do
@@ -372,6 +422,16 @@ RSpec.describe Mono::VersionPromoter do
         end
 
         context "with existing patch release" do
+          context "with existing base release" do
+            context "bumps to minor version with prerelease" do
+              it "bumps version and sets prerelease" do
+                expect(promote("2.1.3", "minor", "alpha")).to eql("2.2.0-alpha.1")
+                expect(promote("2.1.3", "minor", "beta")).to eql("2.2.0-beta.1")
+                expect(promote("2.1.3", "minor", "rc")).to eql("2.2.0-rc.1")
+              end
+            end
+          end
+
           context "with existing alpha prerelease" do
             context "bump to alpha" do
               it "bumps to minor version and resets prerelease" do
@@ -446,6 +506,16 @@ RSpec.describe Mono::VersionPromoter do
 
       describe "bump to patch version" do
         context "with existing major release" do
+          context "with existing base release" do
+            context "bumps to patch version with prerelease" do
+              it "bumps version and sets prerelease" do
+                expect(promote("2.0.0", "patch", "alpha")).to eql("2.0.1-alpha.1")
+                expect(promote("2.0.0", "patch", "beta")).to eql("2.0.1-beta.1")
+                expect(promote("2.0.0", "patch", "rc")).to eql("2.0.1-rc.1")
+              end
+            end
+          end
+
           context "with existing alpha prerelease" do
             context "bump to alpha" do
               it "only bumps the prerelease" do
@@ -507,7 +577,17 @@ RSpec.describe Mono::VersionPromoter do
           end
         end
 
-        context "with existing patch release" do
+        context "with existing minor release" do
+          context "with existing base release" do
+            context "bumps to patch version with prerelease" do
+              it "bumps version and sets prerelease" do
+                expect(promote("1.2.0", "patch", "alpha")).to eql("1.2.1-alpha.1")
+                expect(promote("1.2.0", "patch", "beta")).to eql("1.2.1-beta.1")
+                expect(promote("1.2.0", "patch", "rc")).to eql("1.2.1-rc.1")
+              end
+            end
+          end
+
           context "with existing alpha prerelease" do
             context "bump to alpha" do
               it "bumps to patch version and resets prerelease" do
@@ -576,6 +656,16 @@ RSpec.describe Mono::VersionPromoter do
         end
 
         context "with existing patch release" do
+          context "with existing base release" do
+            context "bumps to patch version with prerelease" do
+              it "bumps version and sets prerelease" do
+                expect(promote("1.2.3", "patch", "alpha")).to eql("1.2.4-alpha.1")
+                expect(promote("1.2.3", "patch", "beta")).to eql("1.2.4-beta.1")
+                expect(promote("1.2.3", "patch", "rc")).to eql("1.2.4-rc.1")
+              end
+            end
+          end
+
           context "with existing alpha prerelease" do
             context "bump to alpha" do
               it "bumps to patch version and resets prerelease" do
