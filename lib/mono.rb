@@ -4,6 +4,8 @@ module Mono
   class Error < StandardError; end
 end
 
+require "mono/version"
+require "mono/version_promoter"
 require "mono/config"
 require "mono/command"
 require "mono/changeset"

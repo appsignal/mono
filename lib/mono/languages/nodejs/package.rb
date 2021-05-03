@@ -11,7 +11,7 @@ module Mono
             begin
               contents = read_package_json
               matches = VERSION_REGEX.match(contents)
-              Gem::Version.new(matches[1])
+              Version.parse(matches[1])
             end
         end
 

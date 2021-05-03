@@ -29,8 +29,10 @@ module Mono
       @next_version ||=
         begin
           bump = changesets.next_bump
-          major, minor, patch, *_rest = current_version.canonical_segments
-          version =
+          major = current_version.major
+          minor = current_version.minor
+          patch = current_version.patch
+          version_segments =
             case bump
             when "major"
               [major + 1, 0, 0]
@@ -46,7 +48,7 @@ module Mono
               # prerelease
               raise "Unknown package bump type: #{bump}"
             end
-          Gem::Version.new(version.join("."))
+          Version.new(*version_segments)
         end
     end
 
