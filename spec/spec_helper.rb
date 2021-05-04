@@ -36,6 +36,7 @@ RSpec.configure do |config|
   config.order = :random
   Kernel.srand config.seed
 
+  config.include CliHelper
   config.include CommandHelper
   config.include StdStreamsHelper
   config.include ProjectHelper
