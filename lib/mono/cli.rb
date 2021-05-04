@@ -2,6 +2,7 @@
 
 require "yaml"
 require "pathname"
+require "optparse"
 
 module Mono
   module Cli
@@ -97,8 +98,64 @@ module Mono
       end
 
       def exit_cli(message)
-        puts message
+        raise Mono::Error, message
+      end
+    end
+
+    class Wrapper
+      def initialize(command, options)
+        @command = command.to_sym
+        @options = options
+      end
+
+      def execute # rubocop:disable Metrics/CyclomaticComplexity
+        case @command
+        when :init
+          Mono::Cli::Init.new({}).execute
+        when :bootstrap
+          Mono::Cli::Bootstrap.new({}).execute
+        when :clean
+          Mono::Cli::Clean.new({}).execute
+        when :build
+          Mono::Cli::Build.new({}).execute
+        when :test
+          Mono::Cli::Test.new({}).execute
+        when :publish
+          Mono::Cli::Publish.new(parsed_options).execute
+        when :changeset
+          Mono::Cli::Changeset.new({}).execute
+        when :run
+          Mono::Cli::Custom.new({}).execute
+        else
+          puts "Unknown command: #{@command}"
+          exit 1
+        end
+      rescue Mono::Error => error
+        puts "An error was encountered during the `mono #{@command}` " \
+          "command. Stopping operation."
+        puts
+        puts "#{error.class}: #{error.message}"
         exit 1
+      end
+
+      def parsed_options
+        params = {}
+        {
+          :publish => OptionParser.new do |opts|
+            opts.banner = "Usage: mono publish [options]"
+
+            opts.on "--alpha", "Release an alpha prerelease" do
+              params[:prerelease] = :alpha
+            end
+            opts.on "--beta", "Release a beta prerelease" do
+              params[:prerelease] = :beta
+            end
+            opts.on "--rc", "Release a rc prerelease" do
+              params[:prerelease] = :rc
+            end
+          end
+        }.fetch(@command).parse(@options)
+        params
       end
     end
   end

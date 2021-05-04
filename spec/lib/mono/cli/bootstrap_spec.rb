@@ -7,7 +7,7 @@ RSpec.describe Mono::Cli::Bootstrap do
         prepare_project :elixir_single
         output =
           capture_stdout do
-            in_project { described_class.new([]).execute }
+            in_project { run_bootstrap }
           end
 
         expect(output).to include("Bootstrapping package: elixir_single_project (.)")
@@ -23,7 +23,7 @@ RSpec.describe Mono::Cli::Bootstrap do
         prepare_project :elixir_mono
         output =
           capture_stdout do
-            in_project { described_class.new([]).execute }
+            in_project { run_bootstrap }
           end
 
         expect(output).to include("Bootstrapping package: package_one (packages/package_one)")
@@ -43,7 +43,7 @@ RSpec.describe Mono::Cli::Bootstrap do
         prepare_project :ruby_single
         output =
           capture_stdout do
-            in_project { described_class.new([]).execute }
+            in_project { run_bootstrap }
           end
 
         expect(output).to include("Bootstrapping package: ruby_single_project (.)")
@@ -59,7 +59,7 @@ RSpec.describe Mono::Cli::Bootstrap do
         prepare_project :ruby_mono
         output =
           capture_stdout do
-            in_project { described_class.new([]).execute }
+            in_project { run_bootstrap }
           end
 
         expect(output).to include("Bootstrapping package: package_one (packages/package_one)")
@@ -85,7 +85,7 @@ RSpec.describe Mono::Cli::Bootstrap do
             prepare_project :nodejs_npm_single
             output =
               capture_stdout do
-                in_project { described_class.new([]).execute }
+                in_project { run_bootstrap }
               end
 
             expect(output).to include("Bootstrapping project")
@@ -102,7 +102,7 @@ RSpec.describe Mono::Cli::Bootstrap do
             prepare_project :nodejs_npm_mono
             output =
               capture_stdout do
-                in_project { described_class.new([]).execute }
+                in_project { run_bootstrap }
               end
 
             expect(output).to include("Bootstrapping project")
@@ -128,7 +128,7 @@ RSpec.describe Mono::Cli::Bootstrap do
             prepare_project :nodejs_yarn_single
             output =
               capture_stdout do
-                in_project { described_class.new([]).execute }
+                in_project { run_bootstrap }
               end
 
             expect(output).to include("Bootstrapping project")
@@ -145,7 +145,7 @@ RSpec.describe Mono::Cli::Bootstrap do
             prepare_project :nodejs_yarn_mono
             output =
               capture_stdout do
-                in_project { described_class.new([]).execute }
+                in_project { run_bootstrap }
               end
 
             expect(output).to include("Bootstrapping project")
@@ -159,5 +159,9 @@ RSpec.describe Mono::Cli::Bootstrap do
         end
       end
     end
+  end
+
+  def run_bootstrap(args = [])
+    Mono::Cli::Wrapper.new(:bootstrap, args).execute
   end
 end

@@ -104,7 +104,7 @@ RSpec.describe Mono::Cli::Publish do
 
                 perform_commands do
                   stub_commands [/^gem push/, /^git push/] do
-                    run_publish(:prerelease => :alpha)
+                    run_publish(["--alpha"])
                   end
                 end
               end
@@ -377,10 +377,10 @@ RSpec.describe Mono::Cli::Publish do
   end
 
   def run_publish(args = {})
-    described_class.new(args).execute
+    Mono::Cli::Wrapper.new(:publish, args).execute
   end
 
   def run_bootstrap(args = {})
-    Mono::Cli::Bootstrap.new(args).execute
+    Mono::Cli::Wrapper.new(:bootstrap, args).execute
   end
 end

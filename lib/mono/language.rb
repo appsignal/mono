@@ -1,6 +1,18 @@
 # frozen_string_literal: true
 
 module Mono
+  class UnknownLanguageError < Mono::Error
+    def initialize(language)
+      @language = language
+      super()
+    end
+
+    def message
+      "Unknown language configured: `#{@language}`. " \
+        "Please configure `mono.yml` with a `language`."
+    end
+  end
+
   module Language
     def self.for(language)
       case language
@@ -11,8 +23,7 @@ module Mono
       when "ruby"
         Languages::Ruby::Language
       else
-        raise "Unknown language." \
-          "Please configure `mono.yml` with a `language`."
+        raise UnknownLanguageError, language
       end
     end
 

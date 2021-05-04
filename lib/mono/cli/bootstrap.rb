@@ -6,14 +6,8 @@ module Mono
       def execute
         puts "Bootstrapping project"
         run_hooks("bootstrap", "pre")
-        case config.language
-        when "ruby", "elixir", "nodejs"
-          bootstrap_language
-          bootstrap_packages
-        else
-          puts "Error: Unknown language configured"
-          exit 1
-        end
+        bootstrap_language
+        bootstrap_packages
         run_hooks("bootstrap", "post")
       end
 

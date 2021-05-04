@@ -3,53 +3,8 @@
 
 $LOAD_PATH << File.expand_path(File.join(__dir__, "..", "lib"))
 
-require "optparse"
 require "mono"
 require "mono/cli"
 
-class CliParser
-  def self.parse_options(command, _options)
-    params = {}
-    {
-      :publish => OptionParser.new do |opts|
-        opts.banner = "Usage: mono publish [options]"
-
-        opts.on "--alpha", "Release an alpha prerelease" do
-          params[:prerelease] = :alpha
-        end
-        opts.on "--beta", "Release a beta prerelease" do
-          params[:prerelease] = :beta
-        end
-        opts.on "--rc", "Release a rc prerelease" do
-          params[:prerelease] = :rc
-        end
-      end
-    }.fetch(command) { "Unknown command: #{command}" }.parse(options)
-    params
-  end
-end
-
 command, *options = ARGV
-
-case command
-when "init"
-  Mono::Cli::Init.new(options).execute
-when "bootstrap"
-  Mono::Cli::Bootstrap.new(options).execute
-when "clean"
-  Mono::Cli::Clean.new(options).execute
-when "build"
-  Mono::Cli::Build.new(options).execute
-when "test"
-  Mono::Cli::Test.new(options).execute
-when "publish"
-  params = CliParser.parse_options(:publish)
-  Mono::Cli::Publish.new(params).execute
-when "changeset"
-  Mono::Cli::Changeset.new(options).execute
-when "run"
-  Mono::Cli::Custom.new(options).execute
-else
-  puts "Unknown command: #{command}"
-  exit 1
-end
+Mono::Cli::Wrapper.new(command, options).execute
