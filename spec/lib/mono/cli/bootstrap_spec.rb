@@ -161,6 +161,34 @@ RSpec.describe Mono::Cli::Bootstrap do
     end
   end
 
+  context "with unknown language project" do
+    context "with single repo" do
+      it "prints an error and exits" do
+        prepare_project :unknown_single
+        output =
+          capture_stdout do
+            in_project { run_bootstrap }
+          end
+
+        expect(output).to include("UnknownLanguageError: Unknown language configured"), output
+        expect(exit_status).to eql(1), output
+      end
+    end
+
+    context "with mono repo" do
+      it "bootstraps the packages" do
+        prepare_project :unknown_mono
+        output =
+          capture_stdout do
+            in_project { run_bootstrap }
+          end
+
+        expect(output).to include("UnknownLanguageError: Unknown language configured"), output
+        expect(exit_status).to eql(1), output
+      end
+    end
+  end
+
   def run_bootstrap(args = [])
     Mono::Cli::Wrapper.new(:bootstrap, args).execute
   end

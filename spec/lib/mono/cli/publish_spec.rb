@@ -1,6 +1,34 @@
 # frozen_string_literal: true
 
 RSpec.describe Mono::Cli::Publish do
+  context "with unknown language project" do
+    context "with single repo" do
+      it "prints an error and exits" do
+        prepare_project :unknown_single
+        output =
+          capture_stdout do
+            in_project { run_publish }
+          end
+
+        expect(output).to include("UnknownLanguageError: Unknown language configured"), output
+        expect(exit_status).to eql(1), output
+      end
+    end
+
+    context "with mono repo" do
+      it "bootstraps the packages" do
+        prepare_project :unknown_mono
+        output =
+          capture_stdout do
+            in_project { run_publish }
+          end
+
+        expect(output).to include("UnknownLanguageError: Unknown language configured"), output
+        expect(exit_status).to eql(1), output
+      end
+    end
+  end
+
   context "without changes in the package" do
     it "exits with an error" do
       prepare_project :ruby_single

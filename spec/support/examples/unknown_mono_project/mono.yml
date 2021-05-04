@@ -1,0 +1,4 @@
+---
+language: "unknown"
+packages_dir: "packages"
+repo: "https://github.com/appsignal/unknown_mono_project"
