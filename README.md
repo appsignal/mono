@@ -100,7 +100,33 @@ TODO
 
 ### Publish
 
-TODO
+Publish new versions of the package(s) in the project with the publish command.
+This command will scan all packages for changeset files and prepare a new
+release for those that have them. It will automatically bump the version and
+update the changelog of all the packages.
+
+```
+mono publish
+```
+
+If you want to first publish a prerelease, use any of the prerelease option
+flags. If the current is already a prerelease of the same type, it will bump
+the prerelease version.
+
+```
+mono publish --alpha
+mono publish --beta
+mono publish --rc
+```
+
+Examples of releases:
+
+```
+1.0.0         + patch changeset           = 1.0.1
+1.0.0         + patch changeset + --alpha = 1.0.1-alpha.1
+1.0.0-alpha.1 + patch changeset + --alpha = 1.0.1-alpha.2
+1.0.0         + minor changeset + --rc    = 1.1.0-rc.1
+```
 
 ### Clean
 
