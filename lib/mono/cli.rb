@@ -103,58 +103,101 @@ module Mono
     end
 
     class Wrapper
-      def initialize(command, options)
-        @command = command.to_sym
+      def initialize(options)
         @options = options
       end
 
-      def execute # rubocop:disable Metrics/CyclomaticComplexity
-        case @command
-        when :init
-          Mono::Cli::Init.new({}).execute
-        when :bootstrap
-          Mono::Cli::Bootstrap.new({}).execute
-        when :clean
-          Mono::Cli::Clean.new({}).execute
-        when :build
-          Mono::Cli::Build.new({}).execute
-        when :test
-          Mono::Cli::Test.new({}).execute
-        when :publish
-          Mono::Cli::Publish.new(parsed_options).execute
-        when :changeset
-          Mono::Cli::Changeset.new({}).execute
-        when :run
-          Mono::Cli::Custom.new({}).execute
+      def execute
+        parse_global_options
+        execute_command
+      end
+
+      def execute_command # rubocop:disable Metrics/CyclomaticComplexity
+        command = @options.shift
+        case command
+        when "init"
+          Mono::Cli::Init.new.execute
+        when "bootstrap"
+          Mono::Cli::Bootstrap.new.execute
+        when "clean"
+          Mono::Cli::Clean.new.execute
+        when "build"
+          Mono::Cli::Build.new.execute
+        when "test"
+          Mono::Cli::Test.new.execute
+        when "publish"
+          Mono::Cli::Publish.new(publish_options).execute
+        when "changeset"
+          subcommand = @options.shift
+          case subcommand
+          when "add"
+            Mono::Cli::Changeset::Add.new.execute
+          when "status"
+            puts "Not implemented in prototype. " \
+              "But this would print the next determined version number."
+            exit 1
+          end
+        when "run"
+          Mono::Cli::Custom.new.execute
         else
-          puts "Unknown command: #{@command}"
+          puts "Unknown command: #{command}"
           exit 1
         end
       rescue Mono::Error => error
-        puts "An error was encountered during the `mono #{@command}` " \
+        puts "An error was encountered during the `mono #{command}` " \
           "command. Stopping operation."
         puts
         puts "#{error.class}: #{error.message}"
         exit 1
       end
 
-      def parsed_options
-        params = {}
-        {
-          :publish => OptionParser.new do |opts|
-            opts.banner = "Usage: mono publish [options]"
+      private
 
-            opts.on "--alpha", "Release an alpha prerelease" do
-              params[:prerelease] = :alpha
-            end
-            opts.on "--beta", "Release a beta prerelease" do
-              params[:prerelease] = :beta
-            end
-            opts.on "--rc", "Release a rc prerelease" do
-              params[:prerelease] = :rc
-            end
+      AVAILABLE_COMMANDS = %w[
+        init
+        bootstrap
+        clean
+        build
+        test
+        publish
+        changeset
+        run
+      ].freeze
+
+      def parse_global_options
+        OptionParser.new do |o|
+          o.banner = "Usage: mono <command> [options]"
+
+          o.on "-v", "--version", "Print version and exit" do |_arg|
+            puts "Mono #{Mono::VERSION}"
+            exit 0
           end
-        }.fetch(@command).parse(@options)
+
+          o.on "-h", "--help", "Show help and exit" do
+            puts o
+            exit 0
+          end
+
+          o.separator ""
+          o.separator "Available commands: #{AVAILABLE_COMMANDS.join(", ")}"
+        end.order!(@options)
+      end
+
+      def publish_options
+        params = {}
+        OptionParser.new do |opts|
+          opts.banner = "Usage: mono publish [options]"
+
+          opts.on "--alpha", "Release an alpha prerelease" do
+            params[:prerelease] = :alpha
+          end
+          opts.on "--beta", "Release a beta prerelease" do
+            params[:prerelease] = :beta
+          end
+          opts.on "--rc", "Release a rc prerelease" do
+            params[:prerelease] = :rc
+          end
+        end.parse(@options)
         params
       end
     end

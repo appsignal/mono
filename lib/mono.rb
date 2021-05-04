@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module Mono
+  VERSION = "1.0.0.alpha.1"
+
   class Error < StandardError; end
 end
 

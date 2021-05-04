@@ -190,6 +190,6 @@ RSpec.describe Mono::Cli::Bootstrap do
   end
 
   def run_bootstrap(args = [])
-    Mono::Cli::Wrapper.new(:bootstrap, args).execute
+    Mono::Cli::Wrapper.new(["bootstrap"] + args).execute
   end
 end

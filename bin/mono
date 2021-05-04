@@ -6,5 +6,4 @@ $LOAD_PATH << File.expand_path(File.join(__dir__, "..", "lib"))
 require "mono"
 require "mono/cli"
 
-command, *options = ARGV
-Mono::Cli::Wrapper.new(command, options).execute
+Mono::Cli::Wrapper.new(ARGV).execute

@@ -404,11 +404,11 @@ RSpec.describe Mono::Cli::Publish do
       .to match(%r{- \[[a-z0-9]{7}\]\(#{url}/commit/[a-z0-9]{40}\) #{bump} - #{message}})
   end
 
-  def run_publish(args = {})
-    Mono::Cli::Wrapper.new(:publish, args).execute
+  def run_publish(args = [])
+    Mono::Cli::Wrapper.new(["publish"] + args).execute
   end
 
-  def run_bootstrap(args = {})
-    Mono::Cli::Wrapper.new(:bootstrap, args).execute
+  def run_bootstrap(args = [])
+    Mono::Cli::Wrapper.new(["bootstrap"] + args).execute
   end
 end
