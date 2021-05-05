@@ -24,4 +24,18 @@ module CommandHelper
   def exit_status
     Testing.exit_status || 0
   end
+
+  def run_command(command)
+    output = `#{command}`
+    exitstatus = $?
+    unless exitstatus.success?
+      raise <<~ERROR
+        Error: Command failed with #{exitstatus.exitstatus}
+        Command: #{command}
+        Output:\n#{output}
+      ERROR
+    end
+
+    output
+  end
 end

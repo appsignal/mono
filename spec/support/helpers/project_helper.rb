@@ -36,7 +36,8 @@ module ProjectHelper
     FileUtils.cp_r(File.join(EXAMPLES_DIR, project), tmp_path)
 
     in_project_example project do
-      `git init . && git add . && git commit -m "Initial commit"`
+      run_command "git init ."
+      commit_changes "Initial commit"
     end
   end
 

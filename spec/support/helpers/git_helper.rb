@@ -1,6 +1,7 @@
 module GitHelper
   def local_changes
-    `git status -s -u`.split("\n").each do |change|
+    lines = run_command("git status -s -u")
+    lines.split("\n").each do |change|
       change.gsub!(/^.. /, "")
     end
   end
@@ -10,6 +11,12 @@ module GitHelper
   end
 
   def commited_files
-    `git diff HEAD~1 --stat --name-only`.split("\n").sort
+    lines = run_command("git diff HEAD~1 --stat --name-only")
+    lines.split("\n").sort
+  end
+
+  def commit_changes(message)
+    run_command "git add ."
+    run_command %(git commit -m " #{message}")
   end
 end

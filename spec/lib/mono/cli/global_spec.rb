@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-RSpec.describe Mono::Cli::Bootstrap do
+RSpec.describe Mono::Cli do
   context "with --version option" do
     it "prints the Mono version number and exits" do
       output =
         capture_stdout do
-          expect { run_command(["--version"]) }.to raise_error(SystemExit) do |error|
+          expect { run(["--version"]) }.to raise_error(SystemExit) do |error|
             expect(error.status).to eql(0)
           end
         end
@@ -19,7 +19,7 @@ RSpec.describe Mono::Cli::Bootstrap do
     it "prints help and exits" do
       output =
         capture_stdout do
-          expect { run_command(["--help"]) }.to raise_error(SystemExit) do |error|
+          expect { run(["--help"]) }.to raise_error(SystemExit) do |error|
             expect(error.status).to eql(0)
           end
         end
@@ -36,7 +36,7 @@ RSpec.describe Mono::Cli::Bootstrap do
     it "prints error and exits" do
       output =
         capture_stdout do
-          expect { run_command(["unknown"]) }.to raise_error(SystemExit) do |error|
+          expect { run(["unknown"]) }.to raise_error(SystemExit) do |error|
             expect(error.status).to eql(1)
           end
         end
@@ -51,7 +51,7 @@ RSpec.describe Mono::Cli::Bootstrap do
       prepare_project :unknown_single
       output =
         capture_stdout do
-          in_project { run_command(["run", "false"]) }
+          in_project { run(["run", "false"]) }
         end
 
       expect(output).to include(
@@ -69,7 +69,7 @@ RSpec.describe Mono::Cli::Bootstrap do
       output =
         capture_stdout do
           expect do
-            in_project { run_command(["run", "false"]) }
+            in_project { run(["run", "false"]) }
           end.to raise_error(SystemCallError)
         end
 
@@ -80,7 +80,7 @@ RSpec.describe Mono::Cli::Bootstrap do
     end
   end
 
-  def run_command(args = [])
+  def run(args = [])
     Mono::Cli::Wrapper.new(args).execute
   end
 end
