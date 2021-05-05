@@ -135,20 +135,26 @@ module Mono
           when "status"
             puts "Not implemented in prototype. " \
               "But this would print the next determined version number."
-            exit 1
+            exit_cli_with_status 1
           end
         when "run"
           Mono::Cli::Custom.new(@options).execute
         else
           puts "Unknown command: #{command}"
-          exit 1
+          puts "Run `mono --help` for the list of available commands."
+          exit_cli_with_status 1
         end
       rescue Mono::Error => error
-        puts "An error was encountered during the `mono #{command}` " \
+        puts "A Mono error was encountered during the `mono #{command}` " \
           "command. Stopping operation."
         puts
         puts "#{error.class}: #{error.message}"
-        exit 1
+        exit_cli_with_status 1
+      rescue StandardError => error
+        puts "An unexpected error was encountered during the " \
+          "`mono #{command}` command. Stopping operation."
+        puts
+        raise error
       end
 
       private
@@ -164,18 +170,22 @@ module Mono
         run
       ].freeze
 
+      def exit_cli_with_status(status)
+        exit status
+      end
+
       def parse_global_options
         OptionParser.new do |o|
           o.banner = "Usage: mono <command> [options]"
 
           o.on "-v", "--version", "Print version and exit" do |_arg|
             puts "Mono #{Mono::VERSION}"
-            exit 0
+            exit_cli_with_status 0
           end
 
           o.on "-h", "--help", "Show help and exit" do
             puts o
-            exit 0
+            exit_cli_with_status 0
           end
 
           o.separator ""
