@@ -16,6 +16,28 @@ RSpec.describe Mono::Cli::Build do
         ])
         expect(exit_status).to eql(0), output
       end
+
+      context "with hooks" do
+        it "runs hooks around command" do
+          prepare_project :elixir_single
+          output =
+            capture_stdout do
+              in_project do
+                add_hook("build", "pre", "echo before")
+                add_hook("build", "post", "echo after")
+                run_build
+              end
+            end
+
+          expect(output).to include("Building package: elixir_single_project (.)")
+          expect(performed_commands).to eql([
+            ["/elixir_single_project", "echo before"],
+            ["/elixir_single_project", "mix compile"],
+            ["/elixir_single_project", "echo after"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
+      end
     end
 
     context "with mono repo" do
@@ -33,6 +55,35 @@ RSpec.describe Mono::Cli::Build do
           ["/elixir_mono_project/packages/package_two", "mix compile"]
         ])
         expect(exit_status).to eql(0), output
+      end
+
+      context "with hooks" do
+        it "runs hooks around command" do
+          prepare_project :elixir_mono
+          output =
+            capture_stdout do
+              in_project do
+                add_hook("build", "pre", "echo before")
+                add_hook("build", "post", "echo after")
+                run_build
+              end
+            end
+
+          project_path = "/elixir_mono_project"
+          package_one_path = "#{project_path}/packages/package_one"
+          package_two_path = "#{project_path}/packages/package_two"
+          expect(output).to include(
+            "Building package: package_one (packages/package_one)",
+            "Building package: package_two (packages/package_two)"
+          )
+          expect(performed_commands).to eql([
+            [project_path, "echo before"],
+            [package_one_path, "mix compile"],
+            [package_two_path, "mix compile"],
+            [project_path, "echo after"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
       end
     end
   end

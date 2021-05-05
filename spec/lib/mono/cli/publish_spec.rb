@@ -180,6 +180,43 @@ RSpec.describe Mono::Cli::Publish do
           expect(exit_status).to eql(0), output
         end
       end
+
+      context "with hooks" do
+        it "runs hooks around command" do
+          prepare_project :ruby_single
+          output =
+            capture_stdout do
+              in_project do
+                add_changeset(:patch)
+                add_hook("build", "pre", "echo before build")
+                add_hook("build", "post", "echo after build")
+                add_hook("publish", "pre", "echo before publish")
+                add_hook("publish", "post", "echo after publish")
+                commit_changes("Update mono config")
+                perform_commands do
+                  stub_commands [/^gem push/, /^git push/] do
+                    run_publish
+                  end
+                end
+              end
+            end
+
+          project_dir = "/ruby_single_project"
+          next_version = "1.2.4"
+          expect(performed_commands).to eql([
+            [project_dir, "echo before build"],
+            [project_dir, "gem build"],
+            [project_dir, "echo after build"],
+            [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- v#{next_version}'"],
+            [project_dir, "git tag v#{next_version}"],
+            [project_dir, "echo before publish"],
+            [project_dir, "gem push ruby_single_project-#{next_version}.gem"],
+            [project_dir, "echo after publish"],
+            [project_dir, "git push origin main v#{next_version}"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
+      end
     end
 
     context "with single Elixir package" do
@@ -312,6 +349,54 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, "git push origin main #{tag}"]
         ])
         expect(exit_status).to eql(0), output
+      end
+
+      context "with hooks" do
+        it "runs hooks around command" do
+          prepare_project :elixir_mono
+          output =
+            capture_stdout do
+              in_project do
+                in_package "package_one" do
+                  add_changeset(:patch)
+                end
+
+                add_hook("build", "pre", "echo before build")
+                add_hook("build", "post", "echo after build")
+                add_hook("publish", "pre", "echo before publish")
+                add_hook("publish", "post", "echo after publish")
+                commit_changes("Update mono config")
+
+                perform_commands do
+                  stub_commands [/^mix hex.publish package --yes/, /^git push/] do
+                    run_bootstrap
+                    run_publish
+                  end
+                end
+              end
+            end
+
+          project_dir = "/elixir_mono_project"
+          package_one_dir = "#{project_dir}/packages/package_one"
+          package_two_dir = "#{project_dir}/packages/package_two"
+          next_version = "1.2.4"
+          tag = "package_one@#{next_version}"
+
+          expect(performed_commands).to eql([
+            [package_one_dir, "mix deps.get"],
+            [package_two_dir, "mix deps.get"],
+            [project_dir, "echo before build"],
+            [package_one_dir, "mix compile"],
+            [project_dir, "echo after build"],
+            [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- #{tag}'"],
+            [project_dir, "git tag #{tag}"],
+            [project_dir, "echo before publish"],
+            [package_one_dir, "mix hex.publish package --yes"],
+            [project_dir, "echo after publish"],
+            [project_dir, "git push origin main #{tag}"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
       end
     end
 

@@ -16,6 +16,29 @@ RSpec.describe Mono::Cli::Bootstrap do
         ])
         expect(exit_status).to eql(0), output
       end
+
+      context "with hooks" do
+        it "runs hooks around command" do
+          prepare_project :elixir_single
+          output =
+            capture_stdout do
+              in_project do
+                add_hook("bootstrap", "pre", "echo before")
+                add_hook("bootstrap", "post", "echo after")
+                run_bootstrap
+              end
+            end
+
+          project_path = "/elixir_single_project"
+          expect(output).to include("Bootstrapping package: elixir_single_project (.)")
+          expect(performed_commands).to eql([
+            [project_path, "echo before"],
+            [project_path, "mix deps.get"],
+            [project_path, "echo after"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
+      end
     end
 
     context "with mono repo" do
@@ -38,6 +61,35 @@ RSpec.describe Mono::Cli::Bootstrap do
           [package_two_path, "mix deps.get"]
         ])
         expect(exit_status).to eql(0), output
+      end
+
+      context "with hooks" do
+        it "runs hooks around command" do
+          prepare_project :elixir_mono
+          output =
+            capture_stdout do
+              in_project do
+                add_hook("bootstrap", "pre", "echo before")
+                add_hook("bootstrap", "post", "echo after")
+                run_bootstrap
+              end
+            end
+
+          project_path = "/elixir_mono_project"
+          package_one_path = "#{project_path}/packages/package_one"
+          package_two_path = "#{project_path}/packages/package_two"
+          expect(output).to include(
+            "Bootstrapping package: package_one (packages/package_one)",
+            "Bootstrapping package: package_two (packages/package_two)"
+          )
+          expect(performed_commands).to eql([
+            [project_path, "echo before"],
+            [package_one_path, "mix deps.get"],
+            [package_two_path, "mix deps.get"],
+            [project_path, "echo after"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
       end
     end
   end

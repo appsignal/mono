@@ -60,6 +60,22 @@ module ProjectHelper
     )
   end
 
+  # Add a hook to the mono.yml config file in the currently selected project
+  # {selected_project}. It has be prepared {prepare_project} beforehand.
+  #
+  # @command [String] the type of command to add the hook to.
+  # @hook_type [String] either "pre" (before) or "post" (after).
+  # @hook_command [String] the command to run in this hook.
+  def add_hook(command, hook_type, hook_command)
+    config_file = File.join(ROOT_DIR, EXAMPLES_TMP_DIR, selected_project, "mono.yml")
+    config = YAML.safe_load(File.read(config_file))
+    config[command] ||= {}
+    config[command][hook_type] = hook_command
+    File.open(config_file, "w") do |file|
+      file.write(YAML.dump(config))
+    end
+  end
+
   def package_for(package, config)
     Mono::Languages::Nodejs::Package.new(package, File.join("packages", package), config)
   end
