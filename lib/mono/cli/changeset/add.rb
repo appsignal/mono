@@ -7,17 +7,12 @@ module Mono
     class Changeset
       class Add < Base
         def execute
-          if config.monorepo?
-            puts "Available packages:"
-            packages.each_with_index do |package, index|
-              puts "#{index + 1}: #{package.name} (#{package.path})"
+          package =
+            if config.monorepo?
+              prompt_for_package
+            else
+              packages.first
             end
-            package_index =
-              required_input("Select package 1-#{packages.length}: ").to_i
-            package = packages[package_index - 1]
-          else
-            package = packages.first
-          end
 
           dir = File.join(package.path, ".changesets")
           FileUtils.mkdir_p(dir)
@@ -49,6 +44,24 @@ module Mono
         end
 
         private
+
+        def prompt_for_package
+          loop do
+            puts "Available packages:"
+            packages.each_with_index do |package, index|
+              puts "#{index + 1}: #{package.name} (#{package.path})"
+            end
+            package_index =
+              required_input("Select package 1-#{packages.length}: ").to_i
+
+            package = packages[package_index - 1]
+            if package
+              break package
+            else
+              puts "Unknown package selected. Please select package."
+            end
+          end
+        end
 
         def prompt_for_bump
           loop do
