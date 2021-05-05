@@ -7,9 +7,9 @@ module Mono
         exit_cli "No packages found!" unless packages.any?
 
         run_hooks("build", "pre")
-        puts "# Building packages"
+        puts "Building packages"
         packages.each do |package|
-          puts "# Build package: #{package.name} (#{package.path})"
+          puts "# Building package: #{package.name} (#{package.path})"
           package.build
         end
         run_hooks("build", "post")
