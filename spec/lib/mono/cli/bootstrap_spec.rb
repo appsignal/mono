@@ -26,8 +26,10 @@ RSpec.describe Mono::Cli::Bootstrap do
             in_project { run_bootstrap }
           end
 
-        expect(output).to include("Bootstrapping package: package_one (packages/package_one)")
-        expect(output).to include("Bootstrapping package: package_two (packages/package_two)")
+        expect(output).to include(
+          "Bootstrapping package: package_one (packages/package_one)",
+          "Bootstrapping package: package_two (packages/package_two)"
+        )
         expect(performed_commands).to eql([
           ["/elixir_mono_project/packages/package_one", "mix deps.get"],
           ["/elixir_mono_project/packages/package_two", "mix deps.get"]
@@ -62,8 +64,10 @@ RSpec.describe Mono::Cli::Bootstrap do
             in_project { run_bootstrap }
           end
 
-        expect(output).to include("Bootstrapping package: package_one (packages/package_one)")
-        expect(output).to include("Bootstrapping package: package_two (packages/package_two)")
+        expect(output).to include(
+          "Bootstrapping package: package_one (packages/package_one)",
+          "Bootstrapping package: package_two (packages/package_two)"
+        )
         expect(performed_commands).to eql([
           ["/ruby_mono_project/packages/package_one", "bundle install"],
           ["/ruby_mono_project/packages/package_two", "bundle install"]
@@ -88,7 +92,7 @@ RSpec.describe Mono::Cli::Bootstrap do
                 in_project { run_bootstrap }
               end
 
-            expect(output).to include("Bootstrapping project")
+            expect(output).to include("Bootstrapping package: nodejs_npm_single_project (.)")
             expect(performed_commands).to eql([
               ["/nodejs_npm_single_project", "npm install"],
               ["/nodejs_npm_single_project", "npm link"]
@@ -105,7 +109,10 @@ RSpec.describe Mono::Cli::Bootstrap do
                 in_project { run_bootstrap }
               end
 
-            expect(output).to include("Bootstrapping project")
+            expect(output).to include(
+              "Bootstrapping package: package_one (packages/package_one)",
+              "Bootstrapping package: package_two (packages/package_two)"
+            )
             expect(performed_commands).to eql([
               ["/nodejs_npm_mono_project", "npm install"],
               ["/nodejs_npm_mono_project/packages/package_one", "npm link"],
@@ -131,7 +138,7 @@ RSpec.describe Mono::Cli::Bootstrap do
                 in_project { run_bootstrap }
               end
 
-            expect(output).to include("Bootstrapping project")
+            expect(output).to include("Bootstrapping package: nodejs_yarn_single_project (.)")
             expect(performed_commands).to eql([
               ["/nodejs_yarn_single_project", "yarn install"],
               ["/nodejs_yarn_single_project", "yarn link"]
@@ -148,7 +155,10 @@ RSpec.describe Mono::Cli::Bootstrap do
                 in_project { run_bootstrap }
               end
 
-            expect(output).to include("Bootstrapping project")
+            expect(output).to include(
+              "Bootstrapping package: package_one (packages/package_one)",
+              "Bootstrapping package: package_two (packages/package_two)"
+            )
             expect(performed_commands).to eql([
               ["/nodejs_yarn_mono_project", "yarn install"],
               ["/nodejs_yarn_mono_project/packages/package_one", "yarn link"],
