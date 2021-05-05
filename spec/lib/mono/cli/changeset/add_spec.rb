@@ -78,6 +78,29 @@ RSpec.describe Mono::Cli::Changeset do
         expect(exit_status).to eql(0), output
       end
     end
+
+    context "when opening the file in an editor" do
+      it "opens the editor" do
+        prepare_project :elixir_single
+
+        add_cli_input "My Awes/o\\me patch"
+        add_cli_input "patch"
+        add_cli_input "y"
+        output =
+          capture_stdout do
+            in_project { run_changeset_add }
+          end
+
+        changeset_path = ".changesets/my-awes-o-me-patch.md"
+        expect(output).to include(
+          "Opening ./#{changeset_path} with editor..."
+        )
+        expect(performed_commands).to eql([
+          ["/elixir_single_project", "$EDITOR ./#{changeset_path}"]
+        ])
+        expect(exit_status).to eql(0), output
+      end
+    end
   end
 
   context "with mono repo" do

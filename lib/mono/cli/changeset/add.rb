@@ -43,7 +43,10 @@ module Mono
             "Do you want to open this file to add more information? (y/N): ",
             :default => "N"
           )
-          system "$EDITOR #{filepath}" if open_editor
+          if open_editor
+            puts "Opening #{filepath} with editor..."
+            run_command "$EDITOR #{filepath}"
+          end
         end
       end
     end
