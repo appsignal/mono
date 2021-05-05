@@ -79,6 +79,41 @@ RSpec.describe Mono::Cli::Changeset do
       end
     end
 
+    context "with unknown bump type" do
+      it "repeats the bump prompt" do
+        prepare_project :elixir_single
+
+        add_cli_input "My Awes/o\\me patch"
+        add_cli_input "" # User presses enter without input
+        add_cli_input "unknown" # Unsupported bump type
+        add_cli_input "patch" # Supported bump type
+        add_cli_input "n"
+        output =
+          capture_stdout do
+            in_project { run_changeset_add }
+          end
+
+        changeset_path = ".changesets/my-awes-o-me-patch.md"
+        expect(output).to include(
+          "Unknown bump type `unknown`. Please specify supported bump type."
+        )
+        expect(output.scan(/What type of semver bump is this/).length).to eql(3)
+        in_project do
+          expect(current_package_changeset_files.length).to eql(1)
+          contents = File.read(changeset_path)
+          expect(contents).to eql(<<~CHANGESET)
+            ---
+            bump: "patch"
+            ---
+
+            My Awes/o\\me patch
+          CHANGESET
+        end
+        expect(performed_commands).to eql([])
+        expect(exit_status).to eql(0), output
+      end
+    end
+
     context "when opening the file in an editor" do
       it "opens the editor" do
         prepare_project :elixir_single

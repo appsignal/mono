@@ -16,6 +16,10 @@ module Mono
 
     class UnknownBumpTypeError < Mono::Error; end
 
+    def self.supported_bump?(bump)
+      SUPPORTED_BUMPS.include?(bump)
+    end
+
     def self.parse(file)
       contents = File.read(file)
       frontmatter_matches = YAML_FRONT_MATTER_REGEXP.match(contents)

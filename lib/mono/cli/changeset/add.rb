@@ -26,8 +26,7 @@ module Mono
             required_input("Summarize the change (for changeset filename): ")
           filename = change_description.downcase.tr(" /\\", "-")
           filepath = File.join(dir, "#{filename}.md")
-          bump = required_input \
-            "What type of semver bump is this (major/minor/patch): "
+          bump = prompt_for_bump
 
           File.open(filepath, "w+") do |file|
             file.write(<<~CONTENTS)
@@ -46,6 +45,21 @@ module Mono
           if open_editor
             puts "Opening #{filepath} with editor..."
             run_command "$EDITOR #{filepath}"
+          end
+        end
+
+        private
+
+        def prompt_for_bump
+          loop do
+            input = required_input \
+              "What type of semver bump is this (major/minor/patch): "
+            if Mono::Changeset.supported_bump?(input)
+              break input
+            else
+              puts "Unknown bump type `#{input}`. " \
+                "Please specify supported bump type."
+            end
           end
         end
       end

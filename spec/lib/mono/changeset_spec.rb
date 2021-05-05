@@ -1,6 +1,20 @@
 # frozen_string_literal: true
 
 RSpec.describe Mono::Changeset do
+  describe ".supported_bump?" do
+    def supported_bump?(bump)
+      described_class.supported_bump?(bump)
+    end
+
+    it "only returns true for supported bumps" do
+      expect(supported_bump?("major")).to be_truthy
+      expect(supported_bump?("minor")).to be_truthy
+      expect(supported_bump?("patch")).to be_truthy
+      expect(supported_bump?("unknown")).to be_falsy
+      expect(supported_bump?("")).to be_falsy
+    end
+  end
+
   describe ".parse" do
     context "with valid changeset file" do
       it "returns a Changeset object" do
