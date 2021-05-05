@@ -138,7 +138,7 @@ module Mono
             exit 1
           end
         when "run"
-          Mono::Cli::Custom.new.execute
+          Mono::Cli::Custom.new(@options).execute
         else
           puts "Unknown command: #{command}"
           exit 1
