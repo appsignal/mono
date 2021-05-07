@@ -80,7 +80,12 @@ test:
 
 ### Init
 
-TODO
+Add mono to a project. Mono will ask you a couple questions about which
+language the project is written in, and where it can find the packages. If a
+project is not a mono repo, you can skip the packages step and it will
+configure it as a single package project.
+
+Commit the `mono.yml` config file with any other configuration you want to add.
 
 ### Bootstrap
 
@@ -96,7 +101,36 @@ TODO
 
 ### Changeset
 
-TODO
+#### Changeset add
+
+Add a new changeset to a package in the project. Run this command from the root
+of the project and it will prompt you with several questions to create a new
+changeset file. This command is meant as a convenience, it only writes the file
+changeset, which can also be created manually.
+
+```
+mono changeset add
+```
+
+Prompts:
+
+1. Choose the package for which the changeset applies.
+    - When the project is a mono repo, mono will prompt you with a list of
+      packages to choose from.
+1. Summarize the change:
+    - Create a small one line summary of the change. This will be used as the
+      changeset filename.
+1. Choose the bump level.
+    - Choose which bump level the changeset is about. This is one of the bump
+      levels specified below. This level affects how mono will determine the
+      new version number of the package upon `mono publish`.
+1. Lastly mono will ask you if you want to open the changeset file in your
+   configured editor. Add more content to the changeset to make the changelog more
+   complete for people reading it.
+
+After this commit the changeset file and submit your change.
+When `mono publish` is run the changeset file will be removed and its contents
+added to the CHANGELOG file.
 
 ### Publish
 
@@ -134,7 +168,13 @@ TODO
 
 ### Run
 
-TODO
+Run a custom command in every package in the project. By giving `mono run` a
+command it will execute it in every package. With the example below it will run
+the `do_something` Rake task.
+
+```
+mono run rake do_something
+```
 
 ## Development
 
