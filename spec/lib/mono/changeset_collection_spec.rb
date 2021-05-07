@@ -103,5 +103,8 @@ RSpec.describe Mono::ChangesetCollection do
     end
   end
 
+  describe "#write_changesets_to_changelog" do
+  end
+
   pending "Test different version bumps as written to changelog file"
 end

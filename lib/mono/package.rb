@@ -11,7 +11,7 @@ module Mono
       when "ruby"
         Languages::Ruby::Package
       else
-        raise "Unknown language. Please configure `mono.yml` with a `language`."
+        raise UnknownLanguageError, language
       end
     end
 

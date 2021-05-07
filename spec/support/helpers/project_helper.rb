@@ -79,4 +79,8 @@ module ProjectHelper
   def package_for(package, config)
     Mono::Languages::Nodejs::Package.new(package, File.join("packages", package), config)
   end
+
+  def current_project_path
+    File.join(EXAMPLES_TMP_DIR, "#{selected_project}_project")
+  end
 end
