@@ -71,8 +71,21 @@ module ProjectHelper
     config = YAML.safe_load(File.read(config_file))
     config[command] ||= {}
     config[command][hook_type] = hook_command
+    update_config(config)
+  end
+
+  def configure_command(command, custom_command)
+    config_file = File.join(ROOT_DIR, EXAMPLES_TMP_DIR, selected_project, "mono.yml")
+    config = YAML.safe_load(File.read(config_file))
+    config[command] ||= {}
+    config[command]["command"] = custom_command
+    update_config(config)
+  end
+
+  def update_config(new_config)
+    config_file = File.join(ROOT_DIR, EXAMPLES_TMP_DIR, selected_project, "mono.yml")
     File.open(config_file, "w") do |file|
-      file.write(YAML.dump(config))
+      file.write(YAML.dump(new_config))
     end
   end
 
