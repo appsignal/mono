@@ -5,13 +5,19 @@ module Mono
     class Init
       include Helpers
 
-      def initialize(_options = [])
-      end
-
       def execute
         config = {}
         puts "Initializing project..."
-        config["language"] = required_input("Language (ruby/elixir/nodejs): ")
+        loop do
+          config["language"] = required_input("Language (ruby/elixir/nodejs): ")
+          begin
+            Language.for(config["language"]) # Check if language is known
+            break
+          rescue UnknownLanguageError
+            puts "Unknown language `#{config["language"]}`"
+          end
+        end
+
         print "Packages directory (leave empty for single package repo): "
         packages_dir = ask_for_input
         if packages_dir.empty?
@@ -25,6 +31,8 @@ module Mono
         File.open(File.join(Dir.pwd, "mono.yml"), "w+") do |file|
           file.write YAML.dump(config)
         end
+        puts "Mono config file created!"
+        puts "Please see the mono project README for additional config options."
       end
     end
   end
