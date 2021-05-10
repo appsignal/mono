@@ -134,6 +134,7 @@ RSpec.describe Mono::Cli::Publish do
             capture_stdout do
               in_project do
                 FileUtils.touch("ruby_single_project-1.2.3.gem")
+                FileUtils.touch("ruby_single_project-1.2.4-java.gem")
                 add_changeset(:patch)
                 expect(current_package_changeset_files.length).to eql(1)
 
@@ -182,6 +183,7 @@ RSpec.describe Mono::Cli::Publish do
             [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- v#{next_version}'"],
             [project_dir, "git tag v#{next_version}"],
             [project_dir, "gem push ruby_single_project-#{next_version}.gem"],
+            [project_dir, "gem push ruby_single_project-#{next_version}-java.gem"],
             [project_dir, "git push origin main v#{next_version}"]
           ])
           expect(exit_status).to eql(0), output

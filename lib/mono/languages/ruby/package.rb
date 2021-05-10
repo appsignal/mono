@@ -27,11 +27,7 @@ module Mono
         end
 
         def publish_package
-          path = []
-          gem_files_dir = config.publish["gem_files_dir"]
-          path << gem_files_dir if gem_files_dir && !gem_files_dir.empty?
-          path << "*-#{next_version}.gem"
-          gem_files = Dir.glob(File.join(*path))
+          gem_files = fetch_gem_files_paths
           if gem_files.any?
             gem_files.each do |gem_file|
               run_command "gem push #{gem_file}"
@@ -64,6 +60,28 @@ module Mono
         def version_path
           # TODO: Dynamically find version.rb file rather than a hardcoded path?
           File.join(path, "lib/appsignal/version.rb")
+        end
+
+        def fetch_gem_files_paths
+          gem_files_dir = config.publish["gem_files_dir"]
+          dir = gem_files_dir if gem_files_dir && !gem_files_dir.empty?
+
+          # Normal .gem files
+          # Example: package-1.2.3.gem
+          paths = []
+          base_path = []
+          base_path << dir if dir
+          base_path << "*-#{next_version}.gem"
+          paths << File.join(base_path)
+
+          # Platform .gem files
+          # Example: package-1.2.3-java.gem
+          platform_path = []
+          platform_path << dir if dir
+          platform_path << "*-#{next_version}-*.gem"
+          paths << File.join(platform_path)
+
+          Dir.glob(paths)
         end
       end
     end
