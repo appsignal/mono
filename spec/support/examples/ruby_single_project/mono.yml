@@ -1,5 +1,3 @@
 ---
 language: "ruby"
 repo: "https://github.com/appsignal/ruby_single_project"
-publish:
-  gem_files: "*.gem"

@@ -71,10 +71,10 @@ test:
         - `yarn`
 - `publish`
     - Sub options:
-        - `gem_files`
+        - `gem_files_dir`
             - Ruby only.
-            - Specify where the `.gem` files to publish can be found.
-            - Currently required for `ruby` packages, shouldn't be in the future, but default to `.gem` in the root of the repository.
+            - Specify which path the `.gem` files to publish can be found if
+              not in the root of the project.
 
 ## Commands
 
@@ -85,7 +85,8 @@ language the project is written in, and where it can find the packages. If a
 project is not a mono repo, you can skip the packages step and it will
 configure it as a single package project.
 
-Commit the `mono.yml` config file with any other configuration you want to add.
+Commit the `mono.yml` config file with any other configuration you want to add
+to your project.
 
 ### Bootstrap
 

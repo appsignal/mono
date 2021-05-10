@@ -27,19 +27,17 @@ module Mono
         end
 
         def publish_package
-          pkg_path = config.publish.fetch("gem_files")
-          if pkg_path
-            gem_files = Dir.glob(pkg_path)
-            if gem_files.any?
-              gem_files.each do |gem_file|
-                run_command "gem push #{gem_file}"
-              end
-            else
-              raise "No gemfiles found for `#{pkg_path}`"
+          path = []
+          gem_files_dir = config.publish["gem_files_dir"]
+          path << gem_files_dir if gem_files_dir && !gem_files_dir.empty?
+          path << "*-#{next_version}.gem"
+          gem_files = Dir.glob(File.join(*path))
+          if gem_files.any?
+            gem_files.each do |gem_file|
+              run_command "gem push #{gem_file}"
             end
           else
-            # Normal gem push
-            raise "Ruby normal gem push not implemented"
+            raise "No gemfiles found in `#{gem_files_dir || "."}`"
           end
         end
 

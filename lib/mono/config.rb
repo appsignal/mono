@@ -37,7 +37,7 @@ module Mono
     end
 
     def publish
-      @config["publish"]
+      @config.fetch("publish", {})
     end
 
     def config?(key)
