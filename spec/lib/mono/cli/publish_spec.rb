@@ -216,6 +216,7 @@ RSpec.describe Mono::Cli::Publish do
               Next version:    v1.2.4 (patch)
           OUTPUT
           expect(output).to_not include("# Updating package versions"), output
+          expect(output).to_not include("Mono error was encountered"), output
 
           in_project do
             expect(File.read("lib/appsignal/version.rb")).to include(%(VERSION = "1.2.3"))

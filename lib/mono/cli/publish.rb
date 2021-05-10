@@ -56,7 +56,7 @@ module Mono
           :default => "y"
         return if publish
 
-        exit_cli 1
+        exit_with_status 1
       end
 
       def build(packages)
