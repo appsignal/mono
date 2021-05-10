@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 RSpec.describe Mono::Cli::Publish do
+  around do |example|
+    with_mock_stdin { example.run }
+  end
+
   context "with unknown language project" do
     context "with single repo" do
       it "prints an error and exits" do
@@ -65,6 +69,7 @@ RSpec.describe Mono::Cli::Publish do
     context "with single Ruby package" do
       it "publishes the package" do
         prepare_project :ruby_single
+        confirm_publish_package
         output =
           capture_stdout do
             in_project do
@@ -121,9 +126,54 @@ RSpec.describe Mono::Cli::Publish do
         expect(exit_status).to eql(0), output
       end
 
+      context "when not confirming publishing" do
+        it "exits without making changes" do
+          prepare_project :ruby_single
+          do_not_publish_package
+          output =
+            capture_stdout do
+              in_project do
+                add_changeset(:patch)
+                expect(current_package_changeset_files.length).to eql(1)
+                original_commit_count = commit_count
+
+                perform_commands do
+                  stub_commands [/^gem push/, /^git push/] do
+                    run_publish
+                  end
+                end
+                # Does not commit any changes during the publish process on exit
+                expect(commit_count).to eql(original_commit_count)
+              end
+            end
+
+          expect(output).to include(<<~OUTPUT), output
+            The following packages will be published (or not):
+            - ruby_single_project:
+              Current version: v1.2.3
+              Next version:    v1.2.4 (patch)
+          OUTPUT
+          expect(output).to_not include("# Updating package versions"), output
+
+          in_project do
+            expect(File.read("lib/appsignal/version.rb")).to include(%(VERSION = "1.2.3"))
+            expect(Dir.glob(".changesets/*.md").length).to eql(1)
+
+            changelog = File.read("CHANGELOG.md")
+            expect(changelog).to_not include("1.2.4")
+
+            expect(local_changes?).to be_falsy, local_changes.inspect
+          end
+
+          expect(performed_commands).to eql([])
+          expect(exit_status).to eql(1), output
+        end
+      end
+
       context "with --alpha option" do
         it "publishes an alpha prerelease" do
           prepare_project :ruby_single
+          confirm_publish_package
           output =
             capture_stdout do
               in_project do
@@ -184,6 +234,7 @@ RSpec.describe Mono::Cli::Publish do
       context "with hooks" do
         it "runs hooks around command" do
           prepare_project :ruby_single
+          confirm_publish_package
           output =
             capture_stdout do
               in_project do
@@ -222,6 +273,7 @@ RSpec.describe Mono::Cli::Publish do
     context "with single Elixir package" do
       it "publishes the package" do
         prepare_project :elixir_single
+        confirm_publish_package
         output =
           capture_stdout do
             in_project do
@@ -284,6 +336,7 @@ RSpec.describe Mono::Cli::Publish do
     context "with mono Elixir project" do
       it "publishes the package" do
         prepare_project :elixir_mono
+        confirm_publish_package
         output =
           capture_stdout do
             in_project do
@@ -354,6 +407,7 @@ RSpec.describe Mono::Cli::Publish do
       context "with hooks" do
         it "runs hooks around command" do
           prepare_project :elixir_mono
+          confirm_publish_package
           output =
             capture_stdout do
               in_project do
@@ -403,6 +457,7 @@ RSpec.describe Mono::Cli::Publish do
     context "with mono Node.js project" do
       it "publishes the package" do
         prepare_project :nodejs_npm_mono
+        confirm_publish_package
         output =
           capture_stdout do
             in_project do
@@ -489,7 +544,16 @@ RSpec.describe Mono::Cli::Publish do
       .to match(%r{- \[[a-z0-9]{7}\]\(#{url}/commit/[a-z0-9]{40}\) #{bump} - #{message}})
   end
 
+  def do_not_publish_package
+    add_cli_input "n"
+  end
+
+  def confirm_publish_package
+    add_cli_input "y"
+  end
+
   def run_publish(args = [])
+    prepare_cli_input
     Mono::Cli::Wrapper.new(["publish"] + args).execute
   end
 

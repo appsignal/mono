@@ -100,6 +100,11 @@ module Mono
       def exit_cli(message)
         raise Mono::Error, message
       end
+
+      def exit_with_status(status)
+        print "Exiting..."
+        exit status
+      end
     end
 
     class Wrapper

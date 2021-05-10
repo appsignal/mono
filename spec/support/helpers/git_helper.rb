@@ -10,6 +10,10 @@ module GitHelper
     local_changes.any?
   end
 
+  def commit_count
+    run_command "git rev-list --count HEAD"
+  end
+
   def commited_files
     lines = run_command("git diff HEAD~1 --stat --name-only")
     lines.split("\n").sort

@@ -34,6 +34,8 @@ module Mono
 
         print_summary(packages)
         puts
+        ask_for_confirmation
+        puts
         update_package_versions(selected_packages)
         puts
         update_changelog(selected_packages)
@@ -48,6 +50,14 @@ module Mono
       end
 
       private
+
+      def ask_for_confirmation
+        publish = yes_or_no "Do you want to publish the above changes? (Y/n) ",
+          :default => "y"
+        return if publish
+
+        exit_cli 1
+      end
 
       def build(packages)
         puts "# Building packages"
