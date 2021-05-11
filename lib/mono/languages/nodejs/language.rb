@@ -6,7 +6,7 @@ module Mono
       class Language < Language::Base
         include ClientHelper
 
-        def bootstrap
+        def bootstrap(options = {})
           case npm_client
           when "npm"
             # TODO: Use `run_command` and capture the output? This way we can
@@ -32,7 +32,13 @@ module Mono
             raise "Unknown npm_client: #{npm_client}"
           end
 
-          run_command "#{npm_client} install"
+          run_command "#{npm_client} #{install_cmd(:ci => options[:ci])}"
+        end
+
+        private
+
+        def install_cmd(ci: false)
+          ci ? "ci" : "install"
         end
       end
     end

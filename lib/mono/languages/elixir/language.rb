@@ -4,7 +4,7 @@ module Mono
   module Languages
     module Elixir
       class Language < Language::Base
-        def bootstrap
+        def bootstrap(_options = {})
           # noop
         end
       end

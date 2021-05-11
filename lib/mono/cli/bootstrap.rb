@@ -12,13 +12,13 @@ module Mono
       end
 
       def bootstrap_language
-        language.bootstrap
+        language.bootstrap(:ci => options[:ci])
       end
 
       def bootstrap_packages
         packages.each do |package|
           puts "# Bootstrapping package: #{package.name} (#{package.path})"
-          package.bootstrap
+          package.bootstrap(:ci => options[:ci])
         end
       end
     end

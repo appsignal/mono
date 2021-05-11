@@ -24,7 +24,7 @@ module Mono
           end
         end
 
-        def bootstrap_package
+        def bootstrap_package(_options = {})
           run_client_command "link"
         end
 

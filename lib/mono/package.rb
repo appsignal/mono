@@ -78,13 +78,13 @@ module Mono
       raise NotImplementedError
     end
 
-    def bootstrap
+    def bootstrap(options = {})
       chdir do
         if config.command?("bootstrap")
           # Custom command configured
           run_command config.command("bootstrap")
         else
-          bootstrap_package
+          bootstrap_package(options)
         end
       end
     end
@@ -139,7 +139,7 @@ module Mono
     attr_reader :config
 
     # :nocov:
-    def bootstrap_package
+    def bootstrap_package(_options = {})
       raise NotImplementedError
     end
 

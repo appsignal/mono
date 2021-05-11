@@ -81,5 +81,8 @@ Metrics/AbcSize:
 Naming/RescuedExceptionsVariableName:
   Enabled: false
 
+Naming/MethodParameterName:
+  MinNameLength: 2
+
 Bundler/OrderedGems:
   Enabled: false

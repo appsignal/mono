@@ -123,7 +123,7 @@ module Mono
         when "init"
           Mono::Cli::Init.new.execute
         when "bootstrap"
-          Mono::Cli::Bootstrap.new.execute
+          Mono::Cli::Bootstrap.new(bootstrap_options).execute
         when "clean"
           Mono::Cli::Clean.new.execute
         when "build"
@@ -196,6 +196,19 @@ module Mono
           o.separator ""
           o.separator "Available commands: #{AVAILABLE_COMMANDS.join(", ")}"
         end.order!(@options)
+      end
+
+      def bootstrap_options
+        params = {}
+        OptionParser.new do |opts|
+          opts.banner = "Usage: mono publish [options]"
+
+          opts.on "--[no-]ci",
+            "Bootstrap the project optimized for CI environments" do |value|
+            params[:ci] = value
+          end
+        end.parse(@options)
+        params
       end
 
       def publish_options

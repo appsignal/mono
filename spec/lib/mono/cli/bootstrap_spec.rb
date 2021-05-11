@@ -202,6 +202,23 @@ RSpec.describe Mono::Cli::Bootstrap do
             ])
             expect(exit_status).to eql(0), output
           end
+
+          context "with --ci option" do
+            it "calls npm ci" do
+              prepare_project :nodejs_npm_single
+              output =
+                capture_stdout do
+                  in_project { run_bootstrap(["--ci"]) }
+                end
+
+              expect(output).to include("Bootstrapping package: nodejs_npm_single_project (.)")
+              expect(performed_commands).to eql([
+                ["/nodejs_npm_single_project", "npm ci"],
+                ["/nodejs_npm_single_project", "npm link"]
+              ])
+              expect(exit_status).to eql(0), output
+            end
+          end
         end
 
         context "with mono repo" do
