@@ -6,6 +6,10 @@ module Mono
       class Language < Language::Base
         include ClientHelper
 
+        def select_packages(directories)
+          directories.reject { |dir| dir == "node_modules" }
+        end
+
         def bootstrap(options = {})
           case npm_client
           when "npm"

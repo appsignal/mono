@@ -49,13 +49,18 @@ module Mono
         package_class = PackageBase.for(config.language)
         if config.monorepo?
           packages_dir = config.packages_dir
-          @packages =
-            Dir.glob("*", :base => packages_dir).sort.map do |package|
-              path = File.join(packages_dir, package)
-              next unless File.directory?(path)
+          directories = Dir.glob("*", :base => packages_dir)
+            .sort
+            .select { |pkg| File.directory?(File.join(packages_dir, pkg)) }
+          if @language.respond_to? :select_packages
+            directories = @language.select_packages(directories)
+          end
 
+          @packages =
+            directories.map do |package|
+              path = File.join(packages_dir, package)
               package_class.new(package, path, @config)
-            end.compact
+            end
         else
           # Single package repo
           pathname = Pathname.new(Dir.pwd)

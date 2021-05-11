@@ -243,6 +243,33 @@ RSpec.describe Mono::Cli::Bootstrap do
             ])
             expect(exit_status).to eql(0), output
           end
+
+          context "with node_modules dir in workspace" do
+            it "bootstraps the project workspace without the node_modules dir" do
+              prepare_project :nodejs_npm_mono
+              output =
+                capture_stdout do
+                  in_project do
+                    FileUtils.mkdir "packages/node_modules"
+                    run_bootstrap
+                  end
+                end
+
+              project_path = "/nodejs_npm_mono_project"
+              package_one_path = "#{project_path}/packages/package_one"
+              package_two_path = "#{project_path}/packages/package_two"
+              expect(output).to include(
+                "Bootstrapping package: package_one (packages/package_one)",
+                "Bootstrapping package: package_two (packages/package_two)"
+              )
+              expect(performed_commands).to eql([
+                [project_path, "npm install"],
+                [package_one_path, "npm link"],
+                [package_two_path, "npm link"]
+              ])
+              expect(exit_status).to eql(0), output
+            end
+          end
         end
       end
     end
