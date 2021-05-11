@@ -90,7 +90,21 @@ to your project.
 
 ### Bootstrap
 
-TODO
+Set up the packages in the project on the host. This command installs the
+packages dependencies so the packages are ready for development or testing. For
+Node.js projects the packages are also linked on the host, so other projects
+on the host can load these local projects in.
+
+```
+mono bootstrap
+```
+
+#### Options
+
+- `--[no-]ci`
+    - When specified the bootstrap command is optimized for Continuous
+      Integration (CI) environments.
+    - Node.js only.
 
 ### Build
 
