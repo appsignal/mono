@@ -23,24 +23,24 @@ module Mono
         end
 
         def bootstrap_package(_options = {})
-          run_command "mix deps.get"
+          run_command_in_package "mix deps.get"
         end
 
         def publish_package
-          run_command "mix hex.publish --yes"
+          run_command_in_package "mix hex.publish --yes"
         end
 
         def build_package
-          run_command "mix compile"
+          run_command_in_package "mix compile"
         end
 
         def test_package
-          run_command "mix test"
+          run_command_in_package "mix test"
         end
 
         def clean_package
           # TODO: Move this to a "nuke" or "unbootstrap" command instead?
-          run_command "mix deps.clean --all && mix clean"
+          run_command_in_package "mix deps.clean --all && mix clean"
         end
 
         private

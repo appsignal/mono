@@ -1,0 +1,9 @@
+{
+  "name": "nodejs_yarn_single_project",
+  "version": "1.2.3",
+  "main": "index.js",
+  "scripts": {
+    "prebuild": "echo 123 > constants.js",
+    "build": "echo 123"
+  }
+}

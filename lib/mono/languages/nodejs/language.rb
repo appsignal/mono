@@ -42,7 +42,12 @@ module Mono
         private
 
         def install_cmd(ci: false)
-          ci ? "ci" : "install"
+          case npm_client
+          when "npm"
+            ci ? "ci" : "install"
+          else
+            "install"
+          end
         end
       end
     end

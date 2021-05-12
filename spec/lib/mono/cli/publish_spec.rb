@@ -583,10 +583,10 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, "npm install"],
           [package_one_dir, "npm link"],
           [package_two_dir, "npm link"],
-          [package_one_dir, "npm run build"],
+          [project_dir, "npm run build --workspace=package_one"],
           [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- #{tag}'"],
           [project_dir, "git tag #{tag}"],
-          [package_one_dir, "npm publish"],
+          [project_dir, "npm publish --workspace=package_one"],
           [project_dir, "git push origin main #{tag}"]
         ])
         expect(exit_status).to eql(0), output

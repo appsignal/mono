@@ -23,7 +23,7 @@ module Mono
         end
 
         def bootstrap_package(_options = {})
-          run_command "bundle install"
+          run_command_in_package "bundle install"
         end
 
         def publish_package
@@ -38,15 +38,15 @@ module Mono
         end
 
         def build_package
-          run_command "gem build"
+          run_command_in_package "gem build"
         end
 
         def test_package
-          run_command "bundle exec rake test"
+          run_command_in_package "bundle exec rake test"
         end
 
         def clean_package
-          run_command "rm -rf vendor/ tmp/"
+          run_command_in_package "rm -rf vendor/ tmp/"
         end
 
         private

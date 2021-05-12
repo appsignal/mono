@@ -200,13 +200,14 @@ RSpec.describe Mono::Cli::Build do
                 in_project { run_build }
               end
 
+            project_path = "/nodejs_npm_mono_project"
             expect(output).to include(
               "Building package: package_one (packages/package_one)",
               "Building package: package_two (packages/package_two)"
             )
             expect(performed_commands).to eql([
-              ["/nodejs_npm_mono_project/packages/package_one", "npm run build"],
-              ["/nodejs_npm_mono_project/packages/package_two", "npm run build"]
+              [project_path, "npm run build --workspace=package_one"],
+              [project_path, "npm run build --workspace=package_two"]
             ])
             expect(exit_status).to eql(0), output
           end
@@ -244,13 +245,14 @@ RSpec.describe Mono::Cli::Build do
                 in_project { run_build }
               end
 
+            project_path = "/nodejs_yarn_mono_project"
             expect(output).to include(
               "Building package: package_one (packages/package_one)",
               "Building package: package_two (packages/package_two)"
             )
             expect(performed_commands).to eql([
-              ["/nodejs_yarn_mono_project/packages/package_one", "yarn run build"],
-              ["/nodejs_yarn_mono_project/packages/package_two", "yarn run build"]
+              [project_path, "yarn workspace package_one run build"],
+              [project_path, "yarn workspace package_two run build"]
             ])
             expect(exit_status).to eql(0), output
           end

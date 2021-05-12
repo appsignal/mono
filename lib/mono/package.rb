@@ -79,58 +79,55 @@ module Mono
     end
 
     def bootstrap(options = {})
-      chdir do
-        if config.command?("bootstrap")
+      if config.command?("bootstrap")
+        chdir do
           # Custom command configured
           run_command config.command("bootstrap")
-        else
-          bootstrap_package(options)
         end
+      else
+        bootstrap_package(options)
       end
     end
 
     def build
-      chdir do
-        if config.command?("build")
+      if config.command?("build")
+        chdir do
           # Custom command configured
           run_command config.command("build")
-        else
-          build_package
         end
+      else
+        build_package
       end
     end
 
     def publish_next_version
-      chdir do
-        if config.command?("publish")
+      if config.command?("publish")
+        chdir do
           # Custom command configured
-          command = config.command("publish")
-          run_command command
-        else
-          publish_package
+          run_command config.command("publish")
         end
+      else
+        publish_package
       end
     end
 
     def test
-      chdir do
-        if config.command?("test")
+      if config.command?("test")
+        chdir do
           # Custom command configured
           run_command config.command("test")
-        else
-          test_package
         end
+      else
+        test_package
       end
     end
 
     def clean
-      chdir do
-        if config.command?("clean")
-          # Custom command configured
-          run_command config.command("clean")
-        else
-          clean_package
-        end
+      if config.command?("clean")
+        # Custom command configured
+        run_command config.command("clean")
+      else
+        clean_package
       end
     end
 
@@ -139,7 +136,7 @@ module Mono
     attr_reader :config
 
     # :nocov:
-    def bootstrap_package(_options = {})
+    def bootstrap_package
       raise NotImplementedError
     end
 
@@ -158,6 +155,10 @@ module Mono
 
     def chdir(&block)
       Dir.chdir(path, &block)
+    end
+
+    def run_command_in_package(command)
+      chdir { run_command command }
     end
   end
 end
