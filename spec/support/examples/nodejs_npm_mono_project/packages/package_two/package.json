@@ -3,6 +3,7 @@
   "version": "1.2.3",
   "main": "index.js",
   "scripts": {
-    "build": "echo 123"
+    "build": "echo 123",
+    "test": "echo run test"
   }
 }

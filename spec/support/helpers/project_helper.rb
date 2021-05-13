@@ -92,4 +92,17 @@ module ProjectHelper
   def package_for(package, config)
     Mono::Languages::Nodejs::Package.new(package, File.join("packages", package), config)
   end
+
+  def remove_script_from_package_json(command)
+    package_json = JSON.parse(File.read(File.join(Dir.pwd, "package.json")))
+    package_json["scripts"].delete(command)
+    update_package_json(package_json)
+  end
+
+  def update_package_json(new_config)
+    package_json = File.join(Dir.pwd, "package.json")
+    File.open(package_json, "w") do |file|
+      file.write(JSON.dump(new_config))
+    end
+  end
 end

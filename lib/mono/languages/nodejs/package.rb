@@ -41,10 +41,14 @@ module Mono
         end
 
         def build_package
+          check_if_command_exists!("build")
+
           run_client_command_for_package "run build"
         end
 
         def test_package
+          check_if_command_exists!("test")
+
           run_client_command_for_package "run test"
         end
 
@@ -63,6 +67,16 @@ module Mono
 
         def package_json_path
           File.join(path, "package.json")
+        end
+
+        def check_if_command_exists!(command)
+          return if command_configured?(command)
+
+          raise NoSuchCommandError, command
+        end
+
+        def command_configured?(command)
+          @package_json.fetch("scripts", {}).key?(command)
         end
 
         def run_client_command(command)

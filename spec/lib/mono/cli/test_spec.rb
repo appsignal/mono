@@ -191,10 +191,33 @@ RSpec.describe Mono::Cli::Test do
               end
 
             expect(output).to include("Testing package: nodejs_npm_single_project (.)")
+            expect(output).to_not include(
+              "Command not configured. Skipped command for nodejs_npm_single_project (.)"
+            )
             expect(performed_commands).to eql([
               ["/nodejs_npm_single_project", "npm run test"]
             ])
             expect(exit_status).to eql(0), output
+          end
+
+          context "without a test command configured" do
+            it "skips the command for the package" do
+              prepare_project :nodejs_npm_single
+              output =
+                capture_stdout do
+                  in_project do
+                    remove_script_from_package_json("test")
+                    run_test
+                  end
+                end
+
+              expect(output).to include(
+                "Testing package: nodejs_npm_single_project (.)",
+                "Command not configured. Skipped command for nodejs_npm_single_project (.)"
+              )
+              expect(performed_commands).to eql([])
+              expect(exit_status).to eql(0), output
+            end
           end
         end
 
@@ -216,6 +239,32 @@ RSpec.describe Mono::Cli::Test do
               [project_path, "npm run test --workspace=package_two"]
             ])
             expect(exit_status).to eql(0), output
+          end
+
+          context "without a test command configured" do
+            it "skips the command for the package" do
+              prepare_project :nodejs_npm_mono
+              output =
+                capture_stdout do
+                  in_project do
+                    in_package :package_one do
+                      remove_script_from_package_json("test")
+                    end
+                    run_test
+                  end
+                end
+
+              project_path = "/nodejs_npm_mono_project"
+              expect(output).to include(
+                "Testing package: package_one (packages/package_one)",
+                "Command not configured. Skipped command for package_one (packages/package_one)",
+                "Testing package: package_two (packages/package_two)"
+              )
+              expect(performed_commands).to eql([
+                [project_path, "npm run test --workspace=package_two"]
+              ])
+              expect(exit_status).to eql(0), output
+            end
           end
         end
       end

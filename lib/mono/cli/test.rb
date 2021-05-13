@@ -9,6 +9,9 @@ module Mono
         packages.each do |package|
           puts "# Testing package: #{package.name} (#{package.path})"
           package.test
+        rescue NoSuchCommandError
+          puts "Command not configured. " \
+            "Skipped command for #{package.name} (#{package.path})"
         end
         run_hooks("test", "post")
       end

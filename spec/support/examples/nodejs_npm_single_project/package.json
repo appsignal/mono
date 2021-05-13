@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "prebuild": "echo 123 > constants.js",
-    "build": "echo 123"
+    "build": "echo 123",
+    "test": "echo run test"
   }
 }

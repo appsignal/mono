@@ -11,6 +11,9 @@ module Mono
         packages.each do |package|
           puts "# Building package: #{package.name} (#{package.path})"
           package.build
+        rescue NoSuchCommandError
+          puts "Command not configured. " \
+            "Skipped command for #{package.name} (#{package.path})"
         end
         run_hooks("build", "post")
       end
