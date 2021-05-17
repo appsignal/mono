@@ -20,7 +20,7 @@ RSpec.describe Mono::Cli::Publish do
     end
 
     context "with mono repo" do
-      it "bootstraps the packages" do
+      it "prints an error and exits" do
         prepare_project :unknown_mono
         output =
           capture_stdout do
