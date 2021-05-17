@@ -110,9 +110,35 @@ mono bootstrap
 
 TODO
 
+#### Only build specific packages
+
+To only build specific packages, select the packages with the `--package`
+option.
+
+```
+# Single package
+mono build --package package_one
+
+# Multiple packages
+mono build --package package_one,package_two
+```
+
 ### Test
 
 TODO
+
+#### Only test specific packages
+
+To only test specific packages, select the packages with the `--package`
+option.
+
+```
+# Single package
+mono test --package package_one
+
+# Multiple packages
+mono test --package package_one,package_two
+```
 
 ### Changeset
 
@@ -158,6 +184,21 @@ update the changelog of all the packages.
 mono publish
 ```
 
+#### Only publish specific packages
+
+To only publish specific packages, select the packages with the `--package`
+option.
+
+```
+# Single package
+mono publish --package package_one
+
+# Multiple packages
+mono publish --package package_one,package_two
+```
+
+#### Prereleases
+
 If you want to first publish a prerelease, use any of the prerelease option
 flags. If the current is already a prerelease of the same type, it will bump
 the prerelease version.
@@ -190,6 +231,19 @@ the `do_something` Rake task.
 
 ```
 mono run rake do_something
+```
+
+#### Only run command in specific packages
+
+To only run a command in specific packages, select the packages with the
+`--package` option.
+
+```
+# Single package
+mono run rake do_something --package package_one
+
+# Multiple packages
+mono run rake do_something --package package_one,package_two
 ```
 
 ## Development
