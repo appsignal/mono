@@ -101,7 +101,7 @@ RSpec.describe Mono::Cli::Publish do
         OUTPUT
 
         in_project do
-          expect(File.read("lib/appsignal/version.rb")).to include(%(VERSION = "#{next_version}"))
+          expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
           expect(Dir.glob(".changesets/*.md").length).to eql(0)
 
           changelog = File.read("CHANGELOG.md")
@@ -112,7 +112,7 @@ RSpec.describe Mono::Cli::Publish do
           expect(commited_files).to eql([
             ".changesets/1_patch.md",
             "CHANGELOG.md",
-            "lib/appsignal/version.rb"
+            "lib/example/version.rb"
           ])
         end
 
@@ -163,7 +163,7 @@ RSpec.describe Mono::Cli::Publish do
           OUTPUT
 
           in_project do
-            expect(File.read("lib/appsignal/version.rb")).to include(%(VERSION = "#{next_version}"))
+            expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
             expect(Dir.glob(".changesets/*.md").length).to eql(0)
 
             changelog = File.read("CHANGELOG.md")
@@ -174,7 +174,7 @@ RSpec.describe Mono::Cli::Publish do
             expect(commited_files).to eql([
               ".changesets/1_patch.md",
               "CHANGELOG.md",
-              "lib/appsignal/version.rb"
+              "lib/example/version.rb"
             ])
           end
 
@@ -221,7 +221,7 @@ RSpec.describe Mono::Cli::Publish do
           expect(output).to_not include("Mono error was encountered"), output
 
           in_project do
-            expect(File.read("lib/appsignal/version.rb")).to include(%(VERSION = "1.2.3"))
+            expect(File.read("lib/example/version.rb")).to include(%(VERSION = "1.2.3"))
             expect(Dir.glob(".changesets/*.md").length).to eql(1)
 
             changelog = File.read("CHANGELOG.md")
@@ -270,7 +270,7 @@ RSpec.describe Mono::Cli::Publish do
           OUTPUT
 
           in_project do
-            expect(File.read("lib/appsignal/version.rb")).to include(%(VERSION = "#{next_version}"))
+            expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
             expect(Dir.glob(".changesets/*.md").length).to eql(0)
 
             changelog = File.read("CHANGELOG.md")
@@ -281,7 +281,7 @@ RSpec.describe Mono::Cli::Publish do
             expect(commited_files).to eql([
               ".changesets/1_patch.md",
               "CHANGELOG.md",
-              "lib/appsignal/version.rb"
+              "lib/example/version.rb"
             ])
           end
 

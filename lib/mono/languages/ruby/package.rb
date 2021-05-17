@@ -58,8 +58,8 @@ module Mono
         end
 
         def version_path
-          # TODO: Dynamically find version.rb file rather than a hardcoded path?
-          File.join(path, "lib/appsignal/version.rb")
+          version_file = Dir.glob("lib/*/version.rb").first
+          File.join(path, version_file)
         end
 
         def fetch_gem_files_paths
