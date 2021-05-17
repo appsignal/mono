@@ -7,7 +7,9 @@ module Mono
         include ClientHelper
 
         def select_packages(directories)
-          directories.reject { |dir| dir == "node_modules" }
+          directories.select do |dir|
+            File.exist?(File.join(config.packages_dir, dir, "package.json"))
+          end
         end
 
         def bootstrap(options = {})
