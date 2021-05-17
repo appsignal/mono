@@ -133,6 +133,56 @@ RSpec.describe Mono::Cli::Test do
           expect(exit_status).to eql(0), output
         end
       end
+
+      context "with only one package selected" do
+        it "only tests the selected package" do
+          prepare_project :elixir_mono
+          output =
+            capture_stdout do
+              in_project do
+                run_test(["--package", "package_one"])
+              end
+            end
+
+          project_path = "/elixir_mono_project"
+          package_one_path = "#{project_path}/packages/package_one"
+          expect(output).to include(
+            "Testing package: package_one (packages/package_one)"
+          ), output
+          expect(output).to_not include(
+            "Testing package: package_two (packages/package_two)"
+          ), output
+          expect(performed_commands).to eql([
+            [package_one_path, "mix test"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
+      end
+
+      context "with multiple packages selected" do
+        it "builds the selected packages" do
+          prepare_project :elixir_mono
+          output =
+            capture_stdout do
+              in_project do
+                run_test(["--package", "package_one,package_two"])
+              end
+            end
+
+          project_path = "/elixir_mono_project"
+          package_one_path = "#{project_path}/packages/package_one"
+          package_two_path = "#{project_path}/packages/package_two"
+          expect(output).to include(
+            "Testing package: package_one (packages/package_one)",
+            "Testing package: package_two (packages/package_two)"
+          ), output
+          expect(performed_commands).to eql([
+            [package_one_path, "mix test"],
+            [package_two_path, "mix test"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
+      end
     end
   end
 

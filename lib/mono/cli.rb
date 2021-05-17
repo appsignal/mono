@@ -42,7 +42,7 @@ module Mono
       include Helpers
       include Command::Helper
 
-      def initialize(options = [])
+      def initialize(options = {})
         @options = options
         @config = Config.new(YAML.safe_load(File.read("mono.yml")))
         @language = Language.for(config.language).new(config)
@@ -61,6 +61,12 @@ module Mono
               path = File.join(packages_dir, package)
               package_class.new(package, path, @config)
             end
+
+          if options[:packages]
+            @packages.select! do |package|
+              options[:packages].include?(package.name)
+            end
+          end
         else
           # Single package repo
           pathname = Pathname.new(Dir.pwd)
@@ -132,9 +138,9 @@ module Mono
         when "clean"
           Mono::Cli::Clean.new.execute
         when "build"
-          Mono::Cli::Build.new.execute
+          Mono::Cli::Build.new(build_options).execute
         when "test"
-          Mono::Cli::Test.new.execute
+          Mono::Cli::Test.new(test_options).execute
         when "publish"
           Mono::Cli::Publish.new(publish_options).execute
         when "changeset"
@@ -148,7 +154,7 @@ module Mono
             exit_cli_with_status 1
           end
         when "run"
-          Mono::Cli::Custom.new(@options).execute
+          Mono::Cli::Custom.new(*custom_options).execute
         else
           puts "Unknown command: #{command}"
           puts "Run `mono --help` for the list of available commands."
@@ -216,11 +222,41 @@ module Mono
         params
       end
 
+      def build_options
+        params = {}
+        OptionParser.new do |opts|
+          opts.banner = "Usage: mono build [options]"
+
+          opts.on "-p", "--package package1,package2,package3", Array,
+            "Select packages to build" do |value|
+            params[:packages] = value
+          end
+        end.parse(@options)
+        params
+      end
+
+      def test_options
+        params = {}
+        OptionParser.new do |opts|
+          opts.banner = "Usage: mono test [options]"
+
+          opts.on "-p", "--package package1,package2,package3", Array,
+            "Select packages to test" do |value|
+            params[:packages] = value
+          end
+        end.parse(@options)
+        params
+      end
+
       def publish_options
         params = {}
         OptionParser.new do |opts|
           opts.banner = "Usage: mono publish [options]"
 
+          opts.on "-p", "--package package1,package2,package3", Array,
+            "Select packages to publish" do |value|
+            params[:packages] = value
+          end
           opts.on "--alpha", "Release an alpha prerelease" do
             params[:prerelease] = :alpha
           end
@@ -232,6 +268,19 @@ module Mono
           end
         end.parse(@options)
         params
+      end
+
+      def custom_options
+        params = {}
+        OptionParser.new do |opts|
+          opts.banner = "Usage: mono run [options]"
+
+          opts.on "-p", "--package package1,package2,package3", Array,
+            "Select packages to run command in" do |value|
+            params[:packages] = value
+          end
+        end.parse!(@options)
+        [@options, params]
       end
     end
   end

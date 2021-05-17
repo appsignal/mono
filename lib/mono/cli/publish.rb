@@ -6,9 +6,9 @@ module Mono
       attr_reader :prerelease
       alias prerelease? prerelease
 
-      def initialize(prerelease: nil)
-        @prerelease = prerelease
-        super()
+      def initialize(options = {})
+        @prerelease = options[:prerelease]
+        super(options)
       end
 
       def execute

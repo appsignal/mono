@@ -517,6 +517,94 @@ RSpec.describe Mono::Cli::Publish do
           expect(exit_status).to eql(0), output
         end
       end
+
+      context "with one package selected" do
+        it "only publishes only the selected package" do
+          prepare_project :elixir_mono
+          confirm_publish_package
+          output =
+            capture_stdout do
+              in_project do
+                in_package "package_one" do
+                  add_changeset(:patch)
+                end
+                in_package "package_two" do
+                  add_changeset(:patch)
+                end
+
+                perform_commands do
+                  stub_commands [/^mix hex.publish package --yes/, /^git push/] do
+                    run_bootstrap
+                    run_publish ["--package", "package_one"]
+                  end
+                end
+              end
+            end
+
+          project_dir = "/elixir_mono_project"
+          package_one_dir = "#{project_dir}/packages/package_one"
+          package_two_dir = "#{project_dir}/packages/package_two"
+          next_version = "1.2.4"
+          tag = "package_one@#{next_version}"
+
+          expect(performed_commands).to eql([
+            [package_one_dir, "mix deps.get"],
+            [package_two_dir, "mix deps.get"],
+            [package_one_dir, "mix compile"],
+            [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- #{tag}'"],
+            [project_dir, "git tag #{tag}"],
+            [package_one_dir, "mix hex.publish package --yes"],
+            [project_dir, "git push origin main #{tag}"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
+      end
+
+      context "with multiple package selected" do
+        it "only publishes only the selected packages" do
+          prepare_project :elixir_mono
+          confirm_publish_package
+          output =
+            capture_stdout do
+              in_project do
+                in_package "package_one" do
+                  add_changeset(:patch)
+                end
+                in_package "package_two" do
+                  add_changeset(:patch)
+                end
+
+                perform_commands do
+                  stub_commands [/^mix hex.publish package --yes/, /^git push/] do
+                    run_bootstrap
+                    run_publish ["--package", "package_one,package_two"]
+                  end
+                end
+              end
+            end
+
+          project_dir = "/elixir_mono_project"
+          package_one_dir = "#{project_dir}/packages/package_one"
+          package_two_dir = "#{project_dir}/packages/package_two"
+          next_version = "1.2.4"
+          tag1 = "package_one@#{next_version}"
+          tag2 = "package_two@#{next_version}"
+
+          expect(performed_commands).to eql([
+            [package_one_dir, "mix deps.get"],
+            [package_two_dir, "mix deps.get"],
+            [package_one_dir, "mix compile"],
+            [package_two_dir, "mix compile"],
+            [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- #{tag1}\n- #{tag2}'"],
+            [project_dir, "git tag #{tag1}"],
+            [project_dir, "git tag #{tag2}"],
+            [package_one_dir, "mix hex.publish package --yes"],
+            [package_two_dir, "mix hex.publish package --yes"],
+            [project_dir, "git push origin main #{tag1} #{tag2}"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
+      end
     end
 
     context "with mono Node.js project" do
