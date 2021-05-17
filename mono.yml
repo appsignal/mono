@@ -1,0 +1,9 @@
+---
+language: "ruby"
+repo: "https://github.com/appsignal/mono/"
+build:
+  command: "echo noop"
+publish:
+  command: "echo noop"
+test:
+  command: "bundle exec rspec"
