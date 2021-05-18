@@ -120,8 +120,9 @@ module Mono
           packages.map do |package|
             "- #{package.next_tag}"
           end.join("\n")
+        run_command "git add -A"
         run_command \
-          "git commit -am 'Publish packages [ci skip]' -m '#{packages_list}'"
+          "git commit -m 'Publish packages [ci skip]' -m '#{packages_list}'"
 
         packages.each do |package|
           puts "## Tag package #{package.next_tag}"

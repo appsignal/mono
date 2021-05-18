@@ -118,12 +118,73 @@ RSpec.describe Mono::Cli::Publish do
 
         expect(performed_commands).to eql([
           [project_dir, "gem build"],
-          [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- v#{next_version}'"],
+          [project_dir, "git add -A"],
+          [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- v#{next_version}'"],
           [project_dir, "git tag v#{next_version}"],
           [project_dir, "gem push ruby_single_project-#{next_version}.gem"],
           [project_dir, "git push origin main v#{next_version}"]
         ])
         expect(exit_status).to eql(0), output
+      end
+
+      context "without CHANGELOG" do
+        it "commits the CHANGELOG" do
+          prepare_project :ruby_single
+          confirm_publish_package
+          output =
+            capture_stdout do
+              in_project do
+                add_changeset(:patch)
+                FileUtils.rm("CHANGELOG.md")
+                commit_changes "Remove CHANGELOG.md"
+
+                perform_commands do
+                  stub_commands [/^gem push/, /^git push/] do
+                    run_publish
+                  end
+                end
+              end
+            end
+
+          project_dir = "/ruby_single_project"
+          next_version = "1.2.4"
+
+          expect(output).to include(<<~OUTPUT), output
+            The following packages will be published (or not):
+            - ruby_single_project:
+              Current version: v1.2.3
+              Next version:    v1.2.4 (patch)
+          OUTPUT
+          expect(output).to include(<<~OUTPUT), output
+            # Updating package versions
+            - ruby_single_project:
+              Current version: v1.2.3
+              Next version:    v1.2.4 (patch)
+          OUTPUT
+
+          in_project do
+            changelog = File.read("CHANGELOG.md")
+            expect_changelog_to_include_version_header(changelog, next_version)
+            expect_changelog_to_include_release_notes(changelog, :patch)
+
+            expect(local_changes?).to be_falsy, local_changes.inspect
+            expect(commited_files).to eql([
+              ".changesets/1_patch.md",
+              "CHANGELOG.md",
+              "lib/example/version.rb"
+            ])
+          end
+
+          expect(performed_commands).to eql([
+            [project_dir, "gem build"],
+            [project_dir, "git add -A"],
+            [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- v#{next_version}'"],
+            [project_dir, "git tag v#{next_version}"],
+            [project_dir, "gem push ruby_single_project-#{next_version}.gem"],
+            [project_dir, "git push origin main v#{next_version}"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
       end
 
       context "with multiple .gem files" do
@@ -180,7 +241,8 @@ RSpec.describe Mono::Cli::Publish do
 
           expect(performed_commands).to eql([
             [project_dir, "gem build"],
-            [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- v#{next_version}'"],
+            [project_dir, "git add -A"],
+            [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- v#{next_version}'"],
             [project_dir, "git tag v#{next_version}"],
             [project_dir, "gem push ruby_single_project-#{next_version}.gem"],
             [project_dir, "gem push ruby_single_project-#{next_version}-java.gem"],
@@ -287,7 +349,8 @@ RSpec.describe Mono::Cli::Publish do
 
           expect(performed_commands).to eql([
             [project_dir, "gem build"],
-            [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- v#{next_version}'"],
+            [project_dir, "git add -A"],
+            [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- v#{next_version}'"],
             [project_dir, "git tag v#{next_version}"],
             [project_dir, "gem push ruby_single_project-#{next_version}.gem"],
             [project_dir, "git push origin main v#{next_version}"]
@@ -323,7 +386,8 @@ RSpec.describe Mono::Cli::Publish do
             [project_dir, "echo before build"],
             [project_dir, "gem build"],
             [project_dir, "echo after build"],
-            [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- v#{next_version}'"],
+            [project_dir, "git add -A"],
+            [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- v#{next_version}'"],
             [project_dir, "git tag v#{next_version}"],
             [project_dir, "echo before publish"],
             [project_dir, "gem push ruby_single_project-#{next_version}.gem"],
@@ -389,7 +453,8 @@ RSpec.describe Mono::Cli::Publish do
         expect(performed_commands).to eql([
           [project_dir, "mix deps.get"],
           [project_dir, "mix compile"],
-          [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- v#{next_version}'"],
+          [project_dir, "git add -A"],
+          [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- v#{next_version}'"],
           [project_dir, "git tag v#{next_version}"],
           [project_dir, "mix hex.publish package --yes"],
           [project_dir, "git push origin main v#{next_version}"]
@@ -461,7 +526,8 @@ RSpec.describe Mono::Cli::Publish do
           [package_one_dir, "mix deps.get"],
           [package_two_dir, "mix deps.get"],
           [package_one_dir, "mix compile"],
-          [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- #{tag}'"],
+          [project_dir, "git add -A"],
+          [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- #{tag}'"],
           [project_dir, "git tag #{tag}"],
           [package_one_dir, "mix hex.publish package --yes"],
           [project_dir, "git push origin main #{tag}"]
@@ -507,7 +573,8 @@ RSpec.describe Mono::Cli::Publish do
             [project_dir, "echo before build"],
             [package_one_dir, "mix compile"],
             [project_dir, "echo after build"],
-            [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- #{tag}'"],
+            [project_dir, "git add -A"],
+            [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- #{tag}'"],
             [project_dir, "git tag #{tag}"],
             [project_dir, "echo before publish"],
             [package_one_dir, "mix hex.publish package --yes"],
@@ -551,7 +618,8 @@ RSpec.describe Mono::Cli::Publish do
             [package_one_dir, "mix deps.get"],
             [package_two_dir, "mix deps.get"],
             [package_one_dir, "mix compile"],
-            [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- #{tag}'"],
+            [project_dir, "git add -A"],
+            [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- #{tag}'"],
             [project_dir, "git tag #{tag}"],
             [package_one_dir, "mix hex.publish package --yes"],
             [project_dir, "git push origin main #{tag}"]
@@ -595,7 +663,8 @@ RSpec.describe Mono::Cli::Publish do
             [package_two_dir, "mix deps.get"],
             [package_one_dir, "mix compile"],
             [package_two_dir, "mix compile"],
-            [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- #{tag1}\n- #{tag2}'"],
+            [project_dir, "git add -A"],
+            [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- #{tag1}\n- #{tag2}'"],
             [project_dir, "git tag #{tag1}"],
             [project_dir, "git tag #{tag2}"],
             [package_one_dir, "mix hex.publish package --yes"],
@@ -672,7 +741,8 @@ RSpec.describe Mono::Cli::Publish do
           [package_one_dir, "npm link"],
           [package_two_dir, "npm link"],
           [project_dir, "npm run build --workspace=package_one"],
-          [project_dir, "git commit -am 'Publish packages [ci skip]' -m '- #{tag}'"],
+          [project_dir, "git add -A"],
+          [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- #{tag}'"],
           [project_dir, "git tag #{tag}"],
           [project_dir, "npm publish --workspace=package_one"],
           [project_dir, "git push origin main #{tag}"]
