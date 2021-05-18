@@ -41,6 +41,10 @@ module Mono
           run_command "#{npm_client} #{install_cmd(:ci => options[:ci])}"
         end
 
+        def clean(_options = {})
+          run_command "rm -rf node_modules"
+        end
+
         private
 
         def install_cmd(ci: false)

@@ -48,7 +48,7 @@ RSpec.describe Mono::Cli::Clean do
 
   context "with Elixir project" do
     context "with single repo" do
-      it "builds the project" do
+      it "cleans the project" do
         prepare_project :elixir_single
         output =
           capture_stdout do
@@ -86,7 +86,7 @@ RSpec.describe Mono::Cli::Clean do
     end
 
     context "with mono repo" do
-      it "builds the packages" do
+      it "cleans the packages" do
         prepare_project :elixir_mono
         output =
           capture_stdout do
@@ -157,7 +157,7 @@ RSpec.describe Mono::Cli::Clean do
       end
 
       context "with multiple packages selected" do
-        it "builds the selected packages" do
+        it "cleans the selected packages" do
           prepare_project :elixir_mono
           output =
             capture_stdout do
@@ -185,7 +185,7 @@ RSpec.describe Mono::Cli::Clean do
 
   context "with Ruby project" do
     context "with single repo" do
-      it "builds the project" do
+      it "cleans the project" do
         prepare_project :ruby_single
         output =
           capture_stdout do
@@ -201,7 +201,7 @@ RSpec.describe Mono::Cli::Clean do
     end
 
     context "with mono repo" do
-      it "builds the packages" do
+      it "cleans the packages" do
         prepare_project :ruby_mono
         output =
           capture_stdout do
@@ -227,7 +227,7 @@ RSpec.describe Mono::Cli::Clean do
 
       context "with npm >= 7" do
         context "with single repo" do
-          it "builds the project" do
+          it "cleans the project" do
             prepare_project :nodejs_npm_single
             output =
               capture_stdout do
@@ -236,6 +236,7 @@ RSpec.describe Mono::Cli::Clean do
 
             expect(output).to include("Cleaning package: nodejs_npm_single_project (.)")
             expect(performed_commands).to eql([
+              ["/nodejs_npm_single_project", "rm -rf node_modules"],
               ["/nodejs_npm_single_project", "rm -rf node_modules"]
             ])
             expect(exit_status).to eql(0), output
@@ -243,7 +244,7 @@ RSpec.describe Mono::Cli::Clean do
         end
 
         context "with mono repo" do
-          it "builds the project workspace" do
+          it "cleans the project workspace" do
             prepare_project :nodejs_npm_mono
             output =
               capture_stdout do
@@ -258,6 +259,7 @@ RSpec.describe Mono::Cli::Clean do
               "Cleaning package: package_two (packages/package_two)"
             )
             expect(performed_commands).to eql([
+              [project_path, "rm -rf node_modules"],
               [package_one_path, "rm -rf node_modules"],
               [package_two_path, "rm -rf node_modules"]
             ])
@@ -274,7 +276,7 @@ RSpec.describe Mono::Cli::Clean do
 
       context "with yarn >= 1" do
         context "with single repo" do
-          it "builds the project" do
+          it "cleans the project" do
             prepare_project :nodejs_yarn_single
             output =
               capture_stdout do
@@ -283,6 +285,7 @@ RSpec.describe Mono::Cli::Clean do
 
             expect(output).to include("Cleaning package: nodejs_yarn_single_project (.)")
             expect(performed_commands).to eql([
+              ["/nodejs_yarn_single_project", "rm -rf node_modules"],
               ["/nodejs_yarn_single_project", "rm -rf node_modules"]
             ])
             expect(exit_status).to eql(0), output
@@ -290,7 +293,7 @@ RSpec.describe Mono::Cli::Clean do
         end
 
         context "with mono repo" do
-          it "builds the project workspace" do
+          it "cleans the project workspace" do
             prepare_project :nodejs_yarn_mono
             output =
               capture_stdout do
@@ -305,6 +308,7 @@ RSpec.describe Mono::Cli::Clean do
               "Cleaning package: package_two (packages/package_two)"
             )
             expect(performed_commands).to eql([
+              [project_path, "rm -rf node_modules"],
               [package_one_path, "rm -rf node_modules"],
               [package_two_path, "rm -rf node_modules"]
             ])
@@ -330,7 +334,7 @@ RSpec.describe Mono::Cli::Clean do
     end
 
     context "with mono repo" do
-      it "builds the packages" do
+      it "cleans the packages" do
         prepare_project :unknown_mono
         output =
           capture_stdout do

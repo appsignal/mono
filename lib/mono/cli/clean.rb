@@ -6,8 +6,9 @@ module Mono
       def execute
         puts "Cleaning project"
         run_hooks("clean", "pre")
+        language.clean
         packages.each do |package|
-          puts "Cleaning package: #{package.name} (#{package.path})"
+          puts "# Cleaning package: #{package.name} (#{package.path})"
           package.clean
         end
         run_hooks("clean", "post")
