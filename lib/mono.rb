@@ -15,6 +15,7 @@ module Mono
   end
 end
 
+require "mono/version"
 require "mono/version_object"
 require "mono/version_promoter"
 require "mono/config"
