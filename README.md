@@ -246,7 +246,32 @@ mono run rake do_something --package package_one
 mono run rake do_something --package package_one,package_two
 ```
 
+## Publishing
+
+Mono is published using mono. When a new release is ready to be published run
+the publish command. Since mono is not published as a Ruby gem, the gem build
+and gem push steps are skipped. Mono will only push the new version to the
+repository, along with all the other normal publish steps.
+
+```
+mono publish
+```
+
 ## Development
+
+### Adding changes
+
+When adding a notable change, create a [changeset file](#changeset) that
+describes the change for the `CHANGELOG.md`. Run the command below and enter
+the prompts. These changesets will be merged into the `CHANGELOG.md` file upon
+[publish](#publishing).
+
+```
+mono changeset add
+```
+
+Be sure to commit the changeset file in the same commit as the rest of your
+changes.
 
 ### Testing
 
