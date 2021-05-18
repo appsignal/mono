@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 module Mono
-  VERSION = "1.0.0.alpha.1"
-
   class Error < StandardError; end
 
   class NoSuchCommandError < Error
@@ -17,7 +15,7 @@ module Mono
   end
 end
 
-require "mono/version"
+require "mono/version_object"
 require "mono/version_promoter"
 require "mono/config"
 require "mono/command"
