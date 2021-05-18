@@ -39,7 +39,6 @@ module Mono
         end
 
         def clean_package
-          # TODO: Move this to a "nuke" or "unbootstrap" command instead?
           run_command_in_package "mix deps.clean --all && mix clean"
         end
 

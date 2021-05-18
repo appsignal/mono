@@ -221,7 +221,32 @@ Examples of releases:
 
 ### Clean
 
-TODO
+Clean the project to a state before the initial bootstrap. This command removes
+all dependencies and deletes temporary directories.
+
+```
+mono clean
+```
+
+- Ruby:
+    - Removes the `tmp/` and `vendor/` directories.
+- Elixir:
+    - Removes the dependencies by calling `mix clean`.
+- Node.js
+    - Removes the dependencies by removing the `node_modules` directory.
+
+#### Only run command in specific packages
+
+To only run the clean operation in specific packages, select the packages with
+the `--package` option.
+
+```
+# Single package
+mono clean --package package_one
+
+# Multiple packages
+mono clean --package package_one,package_two
+```
 
 ### Run
 

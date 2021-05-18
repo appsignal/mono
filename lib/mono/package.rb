@@ -124,8 +124,10 @@ module Mono
 
     def clean
       if config.command?("clean")
-        # Custom command configured
-        run_command config.command("clean")
+        chdir do
+          # Custom command configured
+          run_command config.command("clean")
+        end
       else
         clean_package
       end

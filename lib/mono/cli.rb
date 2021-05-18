@@ -136,7 +136,7 @@ module Mono
         when "bootstrap"
           Mono::Cli::Bootstrap.new(bootstrap_options).execute
         when "clean"
-          Mono::Cli::Clean.new.execute
+          Mono::Cli::Clean.new(clean_options).execute
         when "build"
           Mono::Cli::Build.new(build_options).execute
         when "test"
@@ -217,6 +217,19 @@ module Mono
           opts.on "--[no-]ci",
             "Bootstrap the project optimized for CI environments" do |value|
             params[:ci] = value
+          end
+        end.parse(@options)
+        params
+      end
+
+      def clean_options
+        params = {}
+        OptionParser.new do |opts|
+          opts.banner = "Usage: mono clean [options]"
+
+          opts.on "-p", "--package package1,package2,package3", Array,
+            "Select packages to clean" do |value|
+            params[:packages] = value
           end
         end.parse(@options)
         params

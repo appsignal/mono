@@ -53,8 +53,7 @@ module Mono
         end
 
         def clean_package
-          # TODO: Move this to a "unbootstrap" command instead?
-          run_command_for_package "rm -rf node_modules"
+          run_command_in_package "rm -rf node_modules"
         end
 
         private
