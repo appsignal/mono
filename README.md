@@ -5,7 +5,7 @@ Multi language tool for managing single and mono repository packages.
 ## Installation
 
 ```
-bin/setup
+script/setup
 ```
 
 ## Usage
