@@ -18,9 +18,13 @@ mono <command> [options]
 
 ### Dry run
 
-Note: Dry run is not fully implemented yet. While it won't publish your packages to a package manager, it will update version files in packages, delete changeset files and update their changelogs.
+Note: Dry run is not fully implemented yet. While it won't publish your
+packages to a package manager, it will update version files in packages, delete
+changeset files and update their changelogs.
 
-Don't want to run the command for real, but want to see what commands it will perform? Use the dry run feature. Set the `DRY_RUN=true` environment variable to use dry run mode.
+Don't want to run the command for real, but want to see what commands it will
+perform? Use the dry run feature. Set the `DRY_RUN=true` environment variable
+to use dry run mode.
 
 ```
 DRY_RUN=true mono publish
@@ -28,9 +32,11 @@ DRY_RUN=true mono publish
 
 ## Configuration
 
-Create a `mono.yml` file in the root of the repository you want to manage.
+Configuration is done in the `mono.yml` file in the root of the repository you
+want to manage. Create a new config file by running `mono init` and customize
+it later.
 
-```
+```yaml
 # mono.yml example
 ---
 language: nodejs
@@ -62,7 +68,9 @@ test:
     - Git tag prefix used to namespace tags.
     - Example value `@appsignal/` creates the tag `@appsignal/<package>@1.2.3`
 - `packages_dir`
-    - Specify the directory in which the mono repo's packages can be found. If specified mono will consider this repository a mono repo.
+    - Specify the path, from the root of the project, to the directory in which
+      the mono project packages can be found. If this config option is
+      specified mono will consider this repository a mono repo.
     - Wildcards are not supported.
 - `npm_client`
     - Node.js only.
@@ -75,6 +83,36 @@ test:
             - Ruby only.
             - Specify which path the `.gem` files to publish can be found if
               not in the root of the project.
+
+### Customize commands
+
+Every preconfigured mono command can be customized by overriding the command
+that is run. For the command configuration, add a `command` key and specify
+which command to run as the value. This command will be run in _every package_.
+
+```yaml
+build:
+  command: echo I am run inside the package
+```
+
+Commands that can be customized:
+
+- `bootstrap`
+- `build`
+- `test`
+- `clean`
+- `publish`
+
+### Hooks
+
+Every command can be customized by adding hooks. These hooks are run _once_
+before (`pre`) and after (`post`) the configured command.
+
+```yaml
+build:
+  pre:  echo I am run _before_ the build command
+  post: echo I am run _after_ the build command
+```
 
 ## Commands
 
@@ -108,37 +146,32 @@ mono bootstrap
 
 ### Build
 
-TODO
+Build packages in the project. Every package will be build using the language
+specific build process. This step is also run before the [publish](#publish)
+command to ensure the latest build will be published.
 
-#### Only build specific packages
-
-To only build specific packages, select the packages with the `--package`
-option.
-
-```
-# Single package
-mono build --package package_one
-
-# Multiple packages
-mono build --package package_one,package_two
-```
+- Elixir
+    - `mix compile`
+- Node.js
+    - `npm/yarn run build`
+    - A `build` script has to be configured in the `package.json` file. If no
+      `build` script is configured, the package will be skipped.
+- Ruby
+    - `gem build`
 
 ### Test
 
-TODO
+Test packages in the project. Every package will be tested using the language
+specific test command.
 
-#### Only test specific packages
-
-To only test specific packages, select the packages with the `--package`
-option.
-
-```
-# Single package
-mono test --package package_one
-
-# Multiple packages
-mono test --package package_one,package_two
-```
+- Elixir
+    - `mix test`
+- Node.js
+    - `npm/yarn run test`
+    - A `test` script has to be configured in the `package.json` file. If no
+      `test` script is configured, the package will be skipped.
+- Ruby
+    - `bundle exec rake test`
 
 ### Changeset
 
@@ -184,19 +217,6 @@ update the changelog of all the packages.
 mono publish
 ```
 
-#### Only publish specific packages
-
-To only publish specific packages, select the packages with the `--package`
-option.
-
-```
-# Single package
-mono publish --package package_one
-
-# Multiple packages
-mono publish --package package_one,package_two
-```
-
 #### Prereleases
 
 If you want to first publish a prerelease, use any of the prerelease option
@@ -235,19 +255,6 @@ mono clean
 - Node.js
     - Removes the dependencies by removing the `node_modules` directory.
 
-#### Only run command in specific packages
-
-To only run the clean operation in specific packages, select the packages with
-the `--package` option.
-
-```
-# Single package
-mono clean --package package_one
-
-# Multiple packages
-mono clean --package package_one,package_two
-```
-
 ### Run
 
 Run a custom command in every package in the project. By giving `mono run` a
@@ -258,17 +265,23 @@ the `do_something` Rake task.
 mono run rake do_something
 ```
 
-#### Only run command in specific packages
+### Only run commands for specific packages
 
-To only run a command in specific packages, select the packages with the
-`--package` option.
+To only run a mono command for specific packages, select the packages with the
+`--package` option. This is supported for the following commands:
+
+- `build`
+- `test`
+- `clean`
+- `publish`
+- `run`
 
 ```
 # Single package
-mono run rake do_something --package package_one
+mono <command> --package package_one
 
 # Multiple packages
-mono run rake do_something --package package_one,package_two
+mono <command> --package package_one,package_two
 ```
 
 ## Publishing
@@ -283,6 +296,17 @@ mono publish
 ```
 
 ## Development
+
+### Installation for development
+
+Mono has no runtime dependencies, but does have some dependencies for
+development.
+
+Install the dependencies by running the following command:
+
+```
+bundle install
+```
 
 ### Adding changes
 
@@ -300,11 +324,22 @@ changes.
 
 ### Testing
 
+This project uses RSpec for the test suite. Run RSpec with the following
+command:
+
 ```
-# Install dependencies
-bundle install
 # Run RSpec test suite
 bundle exec rspec
+
 # Run RSpec test suite and generate a test coverage report
 COV=1 bundle exec rspec
+```
+
+### Linting
+
+This project uses RuboCop to enforce a code style. Run RuboCop with the
+following command:
+
+```
+bundle exec rubocop
 ```
