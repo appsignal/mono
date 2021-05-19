@@ -180,6 +180,24 @@ RSpec.describe Mono::Cli::Clean do
           expect(exit_status).to eql(0), output
         end
       end
+
+      context "with unknown packages selected" do
+        it "exits with an error" do
+          prepare_project :elixir_mono
+          output =
+            capture_stdout do
+              in_project do
+                run_clean(["--package", "package_one,package_three"])
+              end
+            end
+
+          expect(output).to include(
+            "Mono::PackageNotFound: The package with the name `package_three` could not be found."
+          ), output
+          expect(performed_commands).to eql([])
+          expect(exit_status).to eql(1), output
+        end
+      end
     end
   end
 

@@ -56,28 +56,42 @@ module Mono
             directories = @language.select_packages(directories)
           end
 
-          @packages =
-            directories.map do |package|
-              path = File.join(packages_dir, package)
-              package_class.new(package, path, @config)
+          selected_packages = options[:packages]
+          @packages = []
+          directories.each do |package|
+            path = File.join(packages_dir, package)
+            package = package_class.new(package, path, config)
+            if selected_packages && !selected_packages.include?(package.name)
+              next
             end
 
-          if options[:packages]
-            @packages.select! do |package|
-              options[:packages].include?(package.name)
-            end
+            @packages << package
           end
         else
           # Single package repo
           pathname = Pathname.new(Dir.pwd)
           package = pathname.basename
-          @packages = [package_class.new(package, ".", @config)]
+          @packages = [package_class.new(package, ".", config)]
         end
+
+        validate(options)
       end
 
       private
 
       attr_reader :options, :config, :language, :packages
+
+      def validate(options)
+        selected_packages = options[:packages]
+        if config.monorepo? && selected_packages
+          selected_packages.each do |package_name|
+            next if packages.find { |package| package.name == package_name }
+
+            # One of the selected packages was not found. Exit mono.
+            raise PackageNotFound, package_name
+          end
+        end
+      end
 
       def packages_to_publish
         packages.select(&:will_update?)

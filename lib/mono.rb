@@ -3,6 +3,17 @@
 module Mono
   class Error < StandardError; end
 
+  class PackageNotFound < Error
+    def initialize(package)
+      @package = package
+      super()
+    end
+
+    def message
+      "The package with the name `#{@package}` could not be found."
+    end
+  end
+
   class NoSuchCommandError < Error
     def initialize(command)
       @command = command
