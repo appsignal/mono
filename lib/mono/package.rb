@@ -134,7 +134,7 @@ module Mono
     end
 
     def run_custom_command(command)
-      run_command_in_package command.join(" ")
+      run_command_in_package command
     end
 
     private
