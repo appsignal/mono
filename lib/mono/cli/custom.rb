@@ -13,9 +13,7 @@ module Mono
         run_hooks("custom", "pre")
         packages.each do |package|
           puts "# Custom command for package: #{package.name} (#{package.path})"
-          chdir package.path do
-            run_command @command.join(" ")
-          end
+          package.run_custom_command @command.join(" ")
         end
         run_hooks("custom", "post")
       end

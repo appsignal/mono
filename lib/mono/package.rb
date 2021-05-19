@@ -133,6 +133,10 @@ module Mono
       end
     end
 
+    def run_custom_command(command)
+      run_command_in_package command.join(" ")
+    end
+
     private
 
     attr_reader :config

@@ -117,11 +117,6 @@ module Mono
         end.any?
       end
 
-      def chdir(dir, &block)
-        puts "cd #{dir}"
-        Dir.chdir(dir, &block)
-      end
-
       def exit_cli(message)
         raise Mono::Error, message
       end
