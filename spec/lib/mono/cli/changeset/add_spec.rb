@@ -10,7 +10,7 @@ RSpec.describe Mono::Cli::Changeset do
       it "creates the .changeset directory and a changeset file" do
         prepare_project :elixir_single
 
-        add_cli_input "My Awes/o\\me patch"
+        add_cli_input "My Awes/o\\me pa.tch"
         add_cli_input "patch"
         add_cli_input "n"
         output =
@@ -18,7 +18,7 @@ RSpec.describe Mono::Cli::Changeset do
             in_project { run_changeset_add }
           end
 
-        changeset_path = ".changesets/my-awes-o-me-patch.md"
+        changeset_path = ".changesets/my-awes-o-me-pa-tch.md"
         expect(output).to include(
           "Summarize the change (for changeset filename):",
           "What type of semver bump is this (major/minor/patch): ",
@@ -33,7 +33,7 @@ RSpec.describe Mono::Cli::Changeset do
             bump: "patch"
             ---
 
-            My Awes/o\\me patch
+            My Awes/o\\me pa.tch
           CHANGESET
         end
         expect(performed_commands).to eql([])
@@ -45,7 +45,7 @@ RSpec.describe Mono::Cli::Changeset do
       it "creates the .changeset directory and a changeset file" do
         prepare_project :elixir_single
 
-        add_cli_input "My Awes/o\\me patch"
+        add_cli_input "My Awes/o\\me pa.tch"
         add_cli_input "minor"
         add_cli_input "n"
         output =
@@ -56,7 +56,7 @@ RSpec.describe Mono::Cli::Changeset do
             end
           end
 
-        changeset_path = ".changesets/my-awes-o-me-patch.md"
+        changeset_path = ".changesets/my-awes-o-me-pa-tch.md"
         expect(output).to include(
           "Summarize the change (for changeset filename):",
           "What type of semver bump is this (major/minor/patch): ",
@@ -71,7 +71,7 @@ RSpec.describe Mono::Cli::Changeset do
             bump: "minor"
             ---
 
-            My Awes/o\\me patch
+            My Awes/o\\me pa.tch
           CHANGESET
         end
         expect(performed_commands).to eql([])
