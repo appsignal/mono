@@ -1,5 +1,12 @@
 # Mono
 
+## 0.4.0
+
+- [6070517](https://github.com/appsignal/mono//commit/6070517bbb819857a44aae13ab0a054dcbaa34ce) minor - Add the unbootstrap command. This command will be the same behavior as the
+  previous "clean" command. The clean command will instead be the opposite of the
+  "build" command, cleaning up after the build command, removing any build
+  artifacts.
+
 ## 0.3.0
 
 - [c4bc910](https://github.com/appsignal/mono//commit/c4bc9103fcf19d60a5989841a3ef224c74008c33) minor - Add --parallel CLI option to mono run to run commands in parallel like `npm run
