@@ -205,6 +205,7 @@ RSpec.describe Mono::Cli::Unbootstrap do
           )
           expect(performed_commands).to eql([
             [project_path, "rm -rf node_modules"],
+            [project_path, "rm -rf packages/node_modules"],
             [package_one_path, "rm -rf node_modules"],
             [package_two_path, "rm -rf node_modules"]
           ])
@@ -248,6 +249,7 @@ RSpec.describe Mono::Cli::Unbootstrap do
           )
           expect(performed_commands).to eql([
             [project_path, "rm -rf node_modules"],
+            [project_path, "rm -rf packages/node_modules"],
             [package_one_path, "rm -rf node_modules"],
             [package_two_path, "rm -rf node_modules"]
           ])
