@@ -46,14 +46,23 @@ module Mono
         @options = options
         @config = Config.new(YAML.safe_load(File.read("mono.yml")))
         @language = Language.for(config.language).new(config)
+        find_packages
+        validate(options)
+      end
+
+      private
+
+      attr_reader :options, :config, :language, :packages
+
+      def find_packages
         package_class = PackageBase.for(config.language)
         if config.monorepo?
           packages_dir = config.packages_dir
           directories = Dir.glob("*", :base => packages_dir)
             .sort
             .select { |pkg| File.directory?(File.join(packages_dir, pkg)) }
-          if @language.respond_to? :select_packages
-            directories = @language.select_packages(directories)
+          if language.respond_to? :select_packages
+            directories = language.select_packages(directories)
           end
 
           selected_packages = options[:packages]
@@ -73,13 +82,7 @@ module Mono
           package = pathname.basename
           @packages = [package_class.new(package, ".", config)]
         end
-
-        validate(options)
       end
-
-      private
-
-      attr_reader :options, :config, :language, :packages
 
       def validate(options)
         selected_packages = options[:packages]
