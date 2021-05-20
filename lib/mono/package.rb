@@ -80,10 +80,8 @@ module Mono
 
     def bootstrap(options = {})
       if config.command?("bootstrap")
-        chdir do
-          # Custom command configured
-          run_command config.command("bootstrap")
-        end
+        # Custom command configured
+        run_command_in_package config.command("bootstrap")
       else
         bootstrap_package(options)
       end
@@ -91,10 +89,8 @@ module Mono
 
     def build
       if config.command?("build")
-        chdir do
-          # Custom command configured
-          run_command config.command("build")
-        end
+        # Custom command configured
+        run_command_in_package config.command("build")
       else
         build_package
       end
@@ -102,10 +98,8 @@ module Mono
 
     def publish_next_version
       if config.command?("publish")
-        chdir do
-          # Custom command configured
-          run_command config.command("publish")
-        end
+        # Custom command configured
+        run_command_in_package config.command("publish")
       else
         publish_package
       end
@@ -113,10 +107,8 @@ module Mono
 
     def test
       if config.command?("test")
-        chdir do
-          # Custom command configured
-          run_command config.command("test")
-        end
+        # Custom command configured
+        run_command_in_package config.command("test")
       else
         test_package
       end
@@ -124,10 +116,8 @@ module Mono
 
     def clean
       if config.command?("clean")
-        chdir do
-          # Custom command configured
-          run_command config.command("clean")
-        end
+        # Custom command configured
+        run_command_in_package config.command("clean")
       else
         clean_package
       end
@@ -159,12 +149,8 @@ module Mono
     end
     # :nocov:
 
-    def chdir(&block)
-      Dir.chdir(path, &block)
-    end
-
     def run_command_in_package(command)
-      chdir { run_command command }
+      run_command command, :dir => path
     end
   end
 end

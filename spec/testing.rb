@@ -33,10 +33,15 @@ module Testing
 
   module Command
     def execute
+      paths = [Dir.pwd]
+      paths << path if path # Leave out if empty so the path is consistent
+      current_dir = File.join(*paths)
+
       # Store executed commands with their working directory
-      # Do not actually execute the commands
+      # Do not actually execute the commands unless {Testing.perform_commands}
+      # is used.
       Testing.commands << [
-        Dir.pwd.sub(File.join(SPEC_DIR, "tmp/examples"), ""),
+        current_dir.sub(File.join(SPEC_DIR, "tmp/examples"), ""),
         command
       ]
 

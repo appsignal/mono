@@ -32,7 +32,7 @@ module Mono
         end
 
         def bootstrap_package(_options = {})
-          chdir { run_client_command "link" }
+          run_client_command_in_package "link"
         end
 
         def publish_package
@@ -80,6 +80,10 @@ module Mono
 
         def run_client_command(command)
           run_command "#{npm_client} #{command}"
+        end
+
+        def run_client_command_in_package(command)
+          run_command_in_package "#{npm_client} #{command}"
         end
 
         def run_client_command_for_package(command)
