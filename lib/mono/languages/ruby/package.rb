@@ -46,6 +46,18 @@ module Mono
         end
 
         def clean_package
+          paths = []
+          files_dir = gem_files_dir
+          paths << path
+          paths << files_dir if files_dir
+          paths << "*.gem"
+          gem_files = Dir.glob(File.join(paths))
+          gem_files.each do |gem_file|
+            FileUtils.remove gem_file
+          end
+        end
+
+        def unbootstrap_package
           run_command_in_package "rm -rf vendor/ tmp/"
         end
 
@@ -62,22 +74,26 @@ module Mono
           File.join(path, version_file)
         end
 
-        def fetch_gem_files_paths
+        def gem_files_dir
           gem_files_dir = config.publish["gem_files_dir"]
-          dir = gem_files_dir if gem_files_dir && !gem_files_dir.empty?
+          gem_files_dir if gem_files_dir && !gem_files_dir.strip.empty?
+        end
+
+        def fetch_gem_files_paths
+          files_dir = gem_files_dir
 
           # Normal .gem files
           # Example: package-1.2.3.gem
           paths = []
           base_path = []
-          base_path << dir if dir
+          base_path << files_dir if files_dir
           base_path << "*-#{next_version}.gem"
           paths << File.join(base_path)
 
           # Platform .gem files
           # Example: package-1.2.3-java.gem
           platform_path = []
-          platform_path << dir if dir
+          platform_path << files_dir if files_dir
           platform_path << "*-#{next_version}-*.gem"
           paths << File.join(platform_path)
 

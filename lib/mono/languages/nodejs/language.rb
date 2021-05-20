@@ -42,6 +42,10 @@ module Mono
         end
 
         def clean(_options = {})
+          # noop
+        end
+
+        def unbootstrap(_options = {})
           run_command "rm -rf node_modules"
         end
 

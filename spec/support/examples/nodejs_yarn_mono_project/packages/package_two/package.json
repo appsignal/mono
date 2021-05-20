@@ -5,6 +5,7 @@
   "scripts": {
     "prebuild": "echo 123 > constants.js",
     "build": "echo 123",
-    "test": "echo run test"
+    "test": "echo run test",
+    "clean": "echo run clean"
   }
 }

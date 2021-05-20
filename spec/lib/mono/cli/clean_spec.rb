@@ -57,7 +57,7 @@ RSpec.describe Mono::Cli::Clean do
 
         expect(output).to include("Cleaning package: elixir_single_project (.)")
         expect(performed_commands).to eql([
-          ["/elixir_single_project", "mix deps.clean --all && mix clean"]
+          ["/elixir_single_project", "rm -rf _build"]
         ])
         expect(exit_status).to eql(0), output
       end
@@ -77,7 +77,7 @@ RSpec.describe Mono::Cli::Clean do
           expect(output).to include("Cleaning package: elixir_single_project (.)")
           expect(performed_commands).to eql([
             ["/elixir_single_project", "echo before"],
-            ["/elixir_single_project", "mix deps.clean --all && mix clean"],
+            ["/elixir_single_project", "rm -rf _build"],
             ["/elixir_single_project", "echo after"]
           ])
           expect(exit_status).to eql(0), output
@@ -96,8 +96,8 @@ RSpec.describe Mono::Cli::Clean do
         expect(output).to include("Cleaning package: package_one (packages/package_one)")
         expect(output).to include("Cleaning package: package_two (packages/package_two)")
         expect(performed_commands).to eql([
-          ["/elixir_mono_project/packages/package_one", "mix deps.clean --all && mix clean"],
-          ["/elixir_mono_project/packages/package_two", "mix deps.clean --all && mix clean"]
+          ["/elixir_mono_project/packages/package_one", "rm -rf _build"],
+          ["/elixir_mono_project/packages/package_two", "rm -rf _build"]
         ])
         expect(exit_status).to eql(0), output
       end
@@ -123,8 +123,8 @@ RSpec.describe Mono::Cli::Clean do
           )
           expect(performed_commands).to eql([
             [project_path, "echo before"],
-            [package_one_path, "mix deps.clean --all && mix clean"],
-            [package_two_path, "mix deps.clean --all && mix clean"],
+            [package_one_path, "rm -rf _build"],
+            [package_two_path, "rm -rf _build"],
             [project_path, "echo after"]
           ])
           expect(exit_status).to eql(0), output
@@ -150,7 +150,7 @@ RSpec.describe Mono::Cli::Clean do
             "Cleaning package: package_two (packages/package_two)"
           ), output
           expect(performed_commands).to eql([
-            [package_one_path, "mix deps.clean --all && mix clean"]
+            [package_one_path, "rm -rf _build"]
           ])
           expect(exit_status).to eql(0), output
         end
@@ -174,8 +174,8 @@ RSpec.describe Mono::Cli::Clean do
             "Cleaning package: package_two (packages/package_two)"
           ), output
           expect(performed_commands).to eql([
-            [package_one_path, "mix deps.clean --all && mix clean"],
-            [package_two_path, "mix deps.clean --all && mix clean"]
+            [package_one_path, "rm -rf _build"],
+            [package_two_path, "rm -rf _build"]
           ])
           expect(exit_status).to eql(0), output
         end
@@ -205,15 +205,23 @@ RSpec.describe Mono::Cli::Clean do
     context "with single repo" do
       it "cleans the project" do
         prepare_project :ruby_single
+        gem_file1 = "test-1.0.0.gem"
+        gem_file2 = "test-1.0.1.gem"
         output =
           capture_stdout do
-            in_project { run_clean }
+            in_project do
+              FileUtils.touch gem_file1
+              FileUtils.touch gem_file2
+              run_clean
+            end
           end
 
         expect(output).to include("Cleaning package: ruby_single_project (.)")
-        expect(performed_commands).to eql([
-          ["/ruby_single_project", "rm -rf vendor/ tmp/"]
-        ])
+        in_project do
+          expect(File.exist?(gem_file1)).to be_falsy
+          expect(File.exist?(gem_file2)).to be_falsy
+        end
+        expect(performed_commands).to eql([])
         expect(exit_status).to eql(0), output
       end
     end
@@ -221,17 +229,36 @@ RSpec.describe Mono::Cli::Clean do
     context "with mono repo" do
       it "cleans the packages" do
         prepare_project :ruby_mono
+        gem_file1 = "test-1.0.0.gem"
+        gem_file2 = "test-1.0.1.gem"
         output =
           capture_stdout do
-            in_project { run_clean }
+            in_project do
+              in_package "package_one" do
+                FileUtils.touch gem_file1
+                FileUtils.touch gem_file2
+              end
+              in_package "package_two" do
+                FileUtils.touch gem_file1
+                FileUtils.touch gem_file2
+              end
+              run_clean
+            end
           end
 
         expect(output).to include("Cleaning package: package_one (packages/package_one)")
         expect(output).to include("Cleaning package: package_two (packages/package_two)")
-        expect(performed_commands).to eql([
-          ["/ruby_mono_project/packages/package_one", "rm -rf vendor/ tmp/"],
-          ["/ruby_mono_project/packages/package_two", "rm -rf vendor/ tmp/"]
-        ])
+        in_project do
+          in_package "package_one" do
+            expect(File.exist?(gem_file1)).to be_falsy
+            expect(File.exist?(gem_file2)).to be_falsy
+          end
+          in_package "package_two" do
+            expect(File.exist?(gem_file1)).to be_falsy
+            expect(File.exist?(gem_file2)).to be_falsy
+          end
+        end
+        expect(performed_commands).to eql([])
         expect(exit_status).to eql(0), output
       end
     end
@@ -239,99 +266,79 @@ RSpec.describe Mono::Cli::Clean do
 
   context "with Node.js project" do
     context "with npm" do
-      context "with npm < 7" do
-        pending "install new npm version"
+      context "with single repo" do
+        it "cleans the project" do
+          prepare_project :nodejs_npm_single
+          output =
+            capture_stdout do
+              in_project { run_clean }
+            end
+
+          expect(output).to include("Cleaning package: nodejs_npm_single_project (.)")
+          expect(performed_commands).to eql([
+            ["/nodejs_npm_single_project", "npm run clean"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
       end
 
-      context "with npm >= 7" do
-        context "with single repo" do
-          it "cleans the project" do
-            prepare_project :nodejs_npm_single
-            output =
-              capture_stdout do
-                in_project { run_clean }
-              end
+      context "with mono repo" do
+        it "cleans the project workspace" do
+          prepare_project :nodejs_npm_mono
+          output =
+            capture_stdout do
+              in_project { run_clean }
+            end
 
-            expect(output).to include("Cleaning package: nodejs_npm_single_project (.)")
-            expect(performed_commands).to eql([
-              ["/nodejs_npm_single_project", "rm -rf node_modules"],
-              ["/nodejs_npm_single_project", "rm -rf node_modules"]
-            ])
-            expect(exit_status).to eql(0), output
-          end
-        end
-
-        context "with mono repo" do
-          it "cleans the project workspace" do
-            prepare_project :nodejs_npm_mono
-            output =
-              capture_stdout do
-                in_project { run_clean }
-              end
-
-            project_path = "/nodejs_npm_mono_project"
-            package_one_path = "#{project_path}/packages/package_one"
-            package_two_path = "#{project_path}/packages/package_two"
-            expect(output).to include(
-              "Cleaning package: package_one (packages/package_one)",
-              "Cleaning package: package_two (packages/package_two)"
-            )
-            expect(performed_commands).to eql([
-              [project_path, "rm -rf node_modules"],
-              [package_one_path, "rm -rf node_modules"],
-              [package_two_path, "rm -rf node_modules"]
-            ])
-            expect(exit_status).to eql(0), output
-          end
+          project_path = "/nodejs_npm_mono_project"
+          expect(output).to include(
+            "Cleaning package: package_one (packages/package_one)",
+            "Cleaning package: package_two (packages/package_two)"
+          )
+          expect(performed_commands).to eql([
+            [project_path, "npm run clean --workspace=package_one"],
+            [project_path, "npm run clean --workspace=package_two"]
+          ])
+          expect(exit_status).to eql(0), output
         end
       end
     end
 
     context "with yarn" do
-      context "with yarn < 1" do
-        pending "install new yarn version"
+      context "with single repo" do
+        it "cleans the project" do
+          prepare_project :nodejs_yarn_single
+          output =
+            capture_stdout do
+              in_project { run_clean }
+            end
+
+          expect(output).to include("Cleaning package: nodejs_yarn_single_project (.)")
+          expect(performed_commands).to eql([
+            ["/nodejs_yarn_single_project", "yarn run clean"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
       end
 
-      context "with yarn >= 1" do
-        context "with single repo" do
-          it "cleans the project" do
-            prepare_project :nodejs_yarn_single
-            output =
-              capture_stdout do
-                in_project { run_clean }
-              end
+      context "with mono repo" do
+        it "cleans the project workspace" do
+          prepare_project :nodejs_yarn_mono
+          output =
+            capture_stdout do
+              in_project { run_clean }
+            end
 
-            expect(output).to include("Cleaning package: nodejs_yarn_single_project (.)")
-            expect(performed_commands).to eql([
-              ["/nodejs_yarn_single_project", "rm -rf node_modules"],
-              ["/nodejs_yarn_single_project", "rm -rf node_modules"]
-            ])
-            expect(exit_status).to eql(0), output
-          end
-        end
-
-        context "with mono repo" do
-          it "cleans the project workspace" do
-            prepare_project :nodejs_yarn_mono
-            output =
-              capture_stdout do
-                in_project { run_clean }
-              end
-
-            project_path = "/nodejs_yarn_mono_project"
-            package_one_path = "#{project_path}/packages/package_one"
-            package_two_path = "#{project_path}/packages/package_two"
-            expect(output).to include(
-              "Cleaning package: package_one (packages/package_one)",
-              "Cleaning package: package_two (packages/package_two)"
-            )
-            expect(performed_commands).to eql([
-              [project_path, "rm -rf node_modules"],
-              [package_one_path, "rm -rf node_modules"],
-              [package_two_path, "rm -rf node_modules"]
-            ])
-            expect(exit_status).to eql(0), output
-          end
+          project_path = "/nodejs_yarn_mono_project"
+          expect(output).to include(
+            "Cleaning package: package_one (packages/package_one)",
+            "Cleaning package: package_two (packages/package_two)"
+          )
+          expect(performed_commands).to eql([
+            [project_path, "yarn workspace package_one run clean"],
+            [project_path, "yarn workspace package_two run clean"]
+          ])
+          expect(exit_status).to eql(0), output
         end
       end
     end
