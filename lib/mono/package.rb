@@ -123,6 +123,15 @@ module Mono
       end
     end
 
+    def unbootstrap
+      if config.command?("unbootstrap")
+        # Custom command configured
+        run_command_in_package config.command("unbootstrap")
+      else
+        unbootstrap_package
+      end
+    end
+
     def run_custom_command(command)
       run_command_in_package command
     end
@@ -145,6 +154,10 @@ module Mono
     end
 
     def clean_package
+      raise NotImplementedError
+    end
+
+    def unbootstrap_package
       raise NotImplementedError
     end
     # :nocov:

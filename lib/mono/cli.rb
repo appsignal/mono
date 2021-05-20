@@ -151,6 +151,8 @@ module Mono
           Mono::Cli::Init.new.execute
         when "bootstrap"
           Mono::Cli::Bootstrap.new(bootstrap_options).execute
+        when "unbootstrap"
+          Mono::Cli::Unbootstrap.new(unbootstrap_options).execute
         when "clean"
           Mono::Cli::Clean.new(clean_options).execute
         when "build"
@@ -197,6 +199,7 @@ module Mono
       AVAILABLE_COMMANDS = %w[
         init
         bootstrap
+        unbootstrap
         clean
         build
         test
@@ -237,6 +240,14 @@ module Mono
             "Bootstrap the project optimized for CI environments" do |value|
             params[:ci] = value
           end
+        end.parse(@options)
+        params
+      end
+
+      def unbootstrap_options
+        params = {}
+        OptionParser.new do |opts|
+          opts.banner = "Usage: mono unbootstrap [options]"
         end.parse(@options)
         params
       end

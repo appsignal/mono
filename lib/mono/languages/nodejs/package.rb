@@ -53,6 +53,12 @@ module Mono
         end
 
         def clean_package
+          check_if_command_exists!("clean")
+
+          run_client_command_for_package "run clean"
+        end
+
+        def unbootstrap_package
           run_command_in_package "rm -rf node_modules"
         end
 

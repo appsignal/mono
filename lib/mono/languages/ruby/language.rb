@@ -8,6 +8,10 @@ module Mono
           # noop
         end
 
+        def unbootstrap(_options = {})
+          # noop
+        end
+
         def clean(_options = {})
           # noop
         end

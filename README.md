@@ -241,11 +241,31 @@ Examples of releases:
 
 ### Clean
 
-Clean the project to a state before the initial bootstrap. This command removes
-all dependencies and deletes temporary directories.
+Clean the project to before the [build](#build) step.
 
 ```
 mono clean
+```
+
+- Ruby:
+    - Removes `*.gem` files specified in the `gem_files_dir`.
+- Elixir:
+    - Removes the build artifacts in `_build`.
+- Node.js
+    - Runs the `clean` script configured for the package's `package.json`.
+
+Clean the project package(s) to a before [build](#build) state.
+
+### Unbootstrap
+
+Resets the project to a state before the initial bootstrap. This command
+removes all dependencies and deletes temporary directories.
+
+Run the [clean](#clean) command before this command if you also want to undo
+the [build](#build) step.
+
+```
+mono unbootstrap
 ```
 
 - Ruby:

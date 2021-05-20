@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build": "echo 123",
-    "test": "echo run test"
+    "test": "echo run test",
+    "clean": "echo run clean"
   }
 }

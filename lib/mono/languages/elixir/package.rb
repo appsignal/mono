@@ -39,6 +39,10 @@ module Mono
         end
 
         def clean_package
+          run_command_in_package "rm -rf _build"
+        end
+
+        def unbootstrap_package
           run_command_in_package "mix deps.clean --all && mix clean"
         end
 
