@@ -15,6 +15,13 @@ module Testing
       @commands ||= []
     end
 
+    def track_command(path, command)
+      @commands_mutex ||= Mutex.new
+      @commands_mutex.synchronize do
+        commands << [path, command]
+      end
+    end
+
     def perform_commands
       @perform_commands = true
       yield
@@ -40,10 +47,9 @@ module Testing
       # Store executed commands with their working directory
       # Do not actually execute the commands unless {Testing.perform_commands}
       # is used.
-      Testing.commands << [
+      Testing.track_command \
         current_dir.sub(File.join(SPEC_DIR, "tmp/examples"), ""),
         command
-      ]
 
       return unless Testing.perform_commands?
       return if Testing.stubbed_commands.find { |matcher| matcher.match?(command) }

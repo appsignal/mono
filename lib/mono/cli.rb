@@ -110,6 +110,10 @@ module Mono
         end
       end
 
+      def parallel?
+        options[:parallel]
+      end
+
       def current_branch
         `git rev-parse --abbrev-ref HEAD`.chomp
       end
@@ -183,6 +187,9 @@ module Mono
           "`mono #{command}` command. Stopping operation."
         puts
         raise error
+      rescue Interrupt
+        puts "User interrupted command. Exiting..."
+        exit 1
       end
 
       private
@@ -303,6 +310,9 @@ module Mono
           opts.on "-p", "--package package1,package2,package3", Array,
             "Select packages to run command in" do |value|
             params[:packages] = value
+          end
+          opts.on "--[no-]parallel", "Run commands in parallel" do |value|
+            params[:parallel] = value
           end
         end.parse!(@options)
         [@options, params]

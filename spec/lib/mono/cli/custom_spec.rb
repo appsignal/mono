@@ -139,6 +139,34 @@ RSpec.describe Mono::Cli::Custom do
       end
     end
 
+    context "with --parallel" do
+      it "runs the command in parallel" do
+        prepare_project :elixir_mono
+        output =
+          capture_stdout do
+            in_project do
+              perform_commands do
+                run_custom(["echo 123", "--parallel"])
+              end
+            end
+          end
+
+        project_path = "/elixir_mono_project"
+        package_one_path = "#{project_path}/packages/package_one"
+        package_two_path = "#{project_path}/packages/package_two"
+        expect(output).to include(
+          "Custom command for project in parallel",
+          "Custom command for package: package_one (packages/package_one)",
+          "Custom command for package: package_two (packages/package_two)"
+        ), output
+        expect(performed_commands.sort_by { |path, _| path }).to eql([
+          [package_one_path, "echo 123"],
+          [package_two_path, "echo 123"]
+        ])
+        expect(exit_status).to eql(0), output
+      end
+    end
+
     context "with unknown packages selected" do
       it "exits with an error" do
         prepare_project :elixir_mono
