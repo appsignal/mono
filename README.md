@@ -4,8 +4,19 @@ Multi language tool for managing single and mono repository packages.
 
 ## Installation
 
+Install mono by downloading the git repository or a [specific
+release](https://github.com/appsignal/mono/releases), and then running the
+setup script. Mono will add itself to your `$PATH`, which will require a reload
+of your shell configuration.
+
 ```
+cd <path to install mono to>
+git clone git@github.com:appsignal/mono.git
+cd mono
 script/setup
+# Reload your shell
+source ~/.bashrc
+source ~/.zshrc
 ```
 
 ## Usage
