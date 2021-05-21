@@ -46,9 +46,7 @@ module Mono
           #{lines.join("").strip}
         CHANGELOG
       end
-      changesets.each do |changeset|
-        FileUtils.rm changeset.path
-      end
+      changesets.each(&:remove)
     end
 
     def next_bump

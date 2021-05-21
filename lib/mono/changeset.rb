@@ -70,5 +70,9 @@ module Mono
           }
         end
     end
+
+    def remove
+      FileUtils.rm path
+    end
   end
 end
