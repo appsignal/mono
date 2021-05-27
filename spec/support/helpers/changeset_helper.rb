@@ -25,7 +25,7 @@ module ChangesetHelper
   def commit_changeset(message = "No message")
     @commit_count ||= 0
     @commit_count += 1
-    `git add . && git commit -m "Commit #{@commit_count}: #{message}"`
+    commit_changes "Commit #{@commit_count}: #{message}"
   end
 
   def current_package_changeset_files

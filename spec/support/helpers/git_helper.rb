@@ -20,7 +20,7 @@ module GitHelper
   end
 
   def commit_changes(message)
-    run_command "git add ."
+    run_command "git add -A"
     run_command %(git commit -m " #{message}")
   end
 end
