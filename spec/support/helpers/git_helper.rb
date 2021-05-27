@@ -19,8 +19,12 @@ module GitHelper
     lines.split("\n").sort
   end
 
+  def git_init_directory
+    run_command "git init ."
+  end
+
   def commit_changes(message)
     run_command "git add -A"
-    run_command %(git commit -m " #{message}")
+    run_command %(git commit -m "#{message}")
   end
 end

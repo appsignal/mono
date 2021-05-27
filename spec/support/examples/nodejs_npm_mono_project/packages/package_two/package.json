@@ -6,5 +6,8 @@
     "build": "echo 123",
     "test": "echo run test",
     "clean": "echo run clean"
+  },
+  "optionalDependencies": {
+    "package_one": "=1.2.3"
   }
 }

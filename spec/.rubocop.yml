@@ -3,5 +3,8 @@ inherit_from: ../.rubocop.yml
 Metrics/BlockLength:
   Enabled: false
 
+Metrics/ModuleLength:
+  Enabled: false
+
 Layout/LineLength:
   Max: 100

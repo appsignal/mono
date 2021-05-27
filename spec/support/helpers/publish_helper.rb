@@ -1,13 +1,22 @@
+# frozen_string_literal: true
+
 module PublishHelper
   def expect_changelog_to_include_version_header(changelog, version)
     expect(changelog).to include("## #{version}")
   end
 
-  def expect_changelog_to_include_release_notes(changelog, bump)
-    url = "https://github.com/appsignal/#{selected_project}"
-    message = "This is a #{bump} changeset bump."
+  def expect_changelog_to_include_release_notes(changelog, bump, message = nil)
+    url = "https://github.com/appsignal/#{current_project}"
+    message ||= "This is a #{bump} changeset bump."
     expect(changelog)
       .to match(%r{- \[[a-z0-9]{7}\]\(#{url}/commit/[a-z0-9]{40}\) #{bump} - #{message}})
+  end
+
+  def expect_changelog_to_include_package_bump(changelog, package, version)
+    url = "https://github.com/appsignal/#{current_project}"
+    message = "Update #{package} dependency to #{version}"
+    expect(changelog)
+      .to match(%r{- \[[a-z0-9]{7}\]\(#{url}/commit/[a-z0-9]{40}\) patch - #{message}})
   end
 
   def do_not_publish_package

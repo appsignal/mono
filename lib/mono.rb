@@ -29,6 +29,7 @@ end
 require "mono/version"
 require "mono/version_object"
 require "mono/version_promoter"
+require "mono/package_promoter"
 require "mono/config"
 require "mono/command"
 require "mono/changeset"
