@@ -101,7 +101,7 @@ RSpec.describe Mono::Cli::Publish do
 
         in_project do
           expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
-          expect(Dir.glob(".changesets/*.md").length).to eql(0)
+          expect(current_package_changeset_files.length).to eql(0)
 
           changelog = File.read("CHANGELOG.md")
           expect_changelog_to_include_version_header(changelog, next_version)
@@ -223,7 +223,7 @@ RSpec.describe Mono::Cli::Publish do
 
           in_project do
             expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
-            expect(Dir.glob(".changesets/*.md").length).to eql(0)
+            expect(current_package_changeset_files.length).to eql(0)
 
             changelog = File.read("CHANGELOG.md")
             expect_changelog_to_include_version_header(changelog, next_version)
@@ -281,7 +281,7 @@ RSpec.describe Mono::Cli::Publish do
 
           in_project do
             expect(File.read("lib/example/version.rb")).to include(%(VERSION = "1.2.3"))
-            expect(Dir.glob(".changesets/*.md").length).to eql(1)
+            expect(current_package_changeset_files.length).to eql(1)
 
             changelog = File.read("CHANGELOG.md")
             expect(changelog).to_not include("1.2.4")
@@ -329,7 +329,7 @@ RSpec.describe Mono::Cli::Publish do
 
           in_project do
             expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
-            expect(Dir.glob(".changesets/*.md").length).to eql(0)
+            expect(current_package_changeset_files.length).to eql(0)
 
             changelog = File.read("CHANGELOG.md")
             expect_changelog_to_include_version_header(changelog, next_version)
@@ -431,7 +431,7 @@ RSpec.describe Mono::Cli::Publish do
 
         in_project do
           expect(File.read("mix.exs")).to include(%(@version "#{next_version}"))
-          expect(Dir.glob(".changesets/*.md").length).to eql(0)
+          expect(current_package_changeset_files.length).to eql(0)
 
           changelog = File.read("CHANGELOG.md")
           expect_changelog_to_include_version_header(changelog, next_version)
@@ -501,7 +501,7 @@ RSpec.describe Mono::Cli::Publish do
         in_project do
           in_package "package_one" do
             expect(File.read("mix.exs")).to include(%(@version "#{next_version}"))
-            expect(Dir.glob(".changesets/*.md").length).to eql(0)
+            expect(current_package_changeset_files.length).to eql(0)
 
             changelog = File.read("CHANGELOG.md")
             expect_changelog_to_include_version_header(changelog, next_version)
@@ -689,7 +689,7 @@ RSpec.describe Mono::Cli::Publish do
     end
 
     context "with mono Node.js project" do
-      it "publishes the package" do
+      it "publishes the updated package" do
         prepare_project :nodejs_npm_mono
         confirm_publish_package
         output =
