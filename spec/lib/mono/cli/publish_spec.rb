@@ -55,7 +55,7 @@ RSpec.describe Mono::Cli::Publish do
           capture_stdout do
             in_project do
               add_changeset(:patch)
-              `touch uncommited_file`
+              FileUtils.touch "uncommited_file"
               run_publish
             end
           end
