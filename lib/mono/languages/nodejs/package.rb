@@ -71,7 +71,7 @@ module Mono
         end
 
         def package_json_path
-          File.join(path, "package.json")
+          package_path("package.json")
         end
 
         def check_if_command_exists!(command)

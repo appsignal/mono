@@ -140,6 +140,10 @@ module Mono
 
     attr_reader :config
 
+    def package_path(file)
+      File.join(path, file)
+    end
+
     # :nocov:
     def bootstrap_package
       raise NotImplementedError

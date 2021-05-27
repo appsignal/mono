@@ -70,8 +70,7 @@ module Mono
         end
 
         def version_path
-          version_file = Dir.glob("lib/*/version.rb").first
-          File.join(path, version_file)
+          Dir.glob(package_path("lib/*/version.rb")).first
         end
 
         def gem_files_dir

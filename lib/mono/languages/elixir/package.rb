@@ -55,7 +55,7 @@ module Mono
         end
 
         def mix_exs_path
-          File.join(path, "mix.exs")
+          package_path("mix.exs")
         end
       end
     end
