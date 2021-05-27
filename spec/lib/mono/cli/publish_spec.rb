@@ -74,7 +74,6 @@ RSpec.describe Mono::Cli::Publish do
           capture_stdout do
             in_project do
               add_changeset(:patch)
-              expect(current_package_changeset_files.length).to eql(1)
 
               perform_commands do
                 stub_commands [/^gem push/, /^git push/] do
@@ -197,7 +196,6 @@ RSpec.describe Mono::Cli::Publish do
                 FileUtils.touch("ruby_single_project-1.2.3.gem")
                 FileUtils.touch("ruby_single_project-1.2.4-java.gem")
                 add_changeset(:patch)
-                expect(current_package_changeset_files.length).to eql(1)
 
                 perform_commands do
                   stub_commands [/^gem push/, /^git push/] do
@@ -260,7 +258,6 @@ RSpec.describe Mono::Cli::Publish do
             capture_stdout do
               in_project do
                 add_changeset(:patch)
-                expect(current_package_changeset_files.length).to eql(1)
                 original_commit_count = commit_count
 
                 perform_commands do
@@ -305,7 +302,6 @@ RSpec.describe Mono::Cli::Publish do
             capture_stdout do
               in_project do
                 add_changeset(:patch)
-                expect(current_package_changeset_files.length).to eql(1)
 
                 perform_commands do
                   stub_commands [/^gem push/, /^git push/] do
@@ -407,7 +403,6 @@ RSpec.describe Mono::Cli::Publish do
           capture_stdout do
             in_project do
               add_changeset(:patch)
-              expect(current_package_changeset_files.length).to eql(1)
 
               perform_commands do
                 stub_commands [/^mix hex.publish package --yes/, /^git push/] do
@@ -472,7 +467,6 @@ RSpec.describe Mono::Cli::Publish do
             in_project do
               in_package "package_one" do
                 add_changeset(:patch)
-                expect(current_package_changeset_files.length).to eql(1)
               end
 
               perform_commands do
@@ -703,7 +697,6 @@ RSpec.describe Mono::Cli::Publish do
             in_project do
               in_package "package_one" do
                 add_changeset(:patch)
-                expect(current_package_changeset_files.length).to eql(1)
               end
 
               perform_commands do
@@ -738,7 +731,6 @@ RSpec.describe Mono::Cli::Publish do
         in_project do
           in_package "package_one" do
             expect(File.read("package.json")).to include(%("version": "#{next_version}"))
-            expect(current_package_changeset_files.length).to eql(0)
 
             changelog = File.read("CHANGELOG.md")
             expect_changelog_to_include_version_header(changelog, next_version)
