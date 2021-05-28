@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
+require "set"
+
 module Mono
   class PackagePromoter
     def initialize(packages)
       @packages = packages
-      @updated_packages = []
+      @updated_packages = Set.new
     end
 
     # Find packages that will be updated, and update packages that depend on

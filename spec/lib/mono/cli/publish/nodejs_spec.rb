@@ -498,6 +498,98 @@ RSpec.describe Mono::Cli::Publish do
       ])
       expect(exit_status).to eql(0), output
     end
+
+    it "updates dependencies between pckages and publishes packages" do
+      prepare_nodejs_project "packages_dir" => "packages/" do
+        create_package :package_a do
+          create_package_json :version => "1.0.0"
+          add_changeset :patch
+        end
+        create_package :package_b do
+          create_package_json :version => "2.3.4",
+            :dependencies => { :package_a => "=1.0.0" }
+          add_changeset :patch
+        end
+      end
+      confirm_publish_package
+      output = run_publish_process
+
+      project_dir = "/#{current_project}"
+      package_dir_a = "#{project_dir}/packages/package_a"
+      package_dir_b = "#{project_dir}/packages/package_b"
+      next_version_a = "1.0.1"
+      next_version_b = "2.3.5"
+      package_tag_a = "package_a@#{next_version_a}"
+      package_tag_b = "package_b@#{next_version_b}"
+
+      expect(output).to include(<<~OUTPUT), output
+        The following packages will be published (or not):
+        - package_a:
+          Current version: package_a@1.0.0
+          Next version:    package_a@1.0.1 (patch)
+        - package_b:
+          Current version: package_b@2.3.4
+          Next version:    package_b@2.3.5 (patch)
+      OUTPUT
+      expect(output).to include(<<~OUTPUT), output
+        # Updating package versions
+        - package_a:
+          Current version: package_a@1.0.0
+          Next version:    package_a@1.0.1 (patch)
+        - package_b:
+          Current version: package_b@2.3.4
+          Next version:    package_b@2.3.5 (patch)
+      OUTPUT
+
+      in_project do
+        in_package :package_a do
+          package_json = JSON.parse(File.read("package.json"))
+          expect(package_json["version"]).to eql(next_version_a)
+
+          changelog = File.read("CHANGELOG.md")
+          expect_changelog_to_include_version_header(changelog, next_version_a)
+          expect_changelog_to_include_release_notes(changelog, :patch)
+        end
+
+        in_package :package_b do
+          package_json = JSON.parse(File.read("package.json"))
+          expect(package_json["version"]).to eql(next_version_b)
+          expect(package_json["dependencies"]["package_a"]).to eql("=#{next_version_a}")
+
+          changelog = File.read("CHANGELOG.md")
+          expect_changelog_to_include_version_header(changelog, next_version_b)
+          expect_changelog_to_include_package_bump(changelog, :package_a, next_version_a)
+        end
+
+        expect(local_changes?).to be_falsy, local_changes.inspect
+        expect(commited_files).to eql([
+          "packages/package_a/.changesets/1_patch.md",
+          "packages/package_a/CHANGELOG.md",
+          "packages/package_a/package.json",
+          "packages/package_b/.changesets/2_patch.md",
+          "packages/package_b/CHANGELOG.md",
+          "packages/package_b/package.json"
+        ])
+      end
+
+      commit_message = "- #{package_tag_a}\n- #{package_tag_b}"
+      expect(performed_commands).to eql([
+        [project_dir, "npm install"],
+        [package_dir_a, "npm link"],
+        [package_dir_b, "npm link"],
+        [project_dir, "npm run build --workspace=package_a"],
+        [project_dir, "npm run build --workspace=package_b"],
+        [project_dir, "git add -A"],
+        [project_dir, "git commit -m 'Publish packages [ci skip]' -m '#{commit_message}'"],
+        [project_dir, "git tag #{package_tag_a}"],
+        [project_dir, "git tag #{package_tag_b}"],
+        [package_dir_a, "npm publish"],
+        [package_dir_b, "npm publish"],
+        [project_dir,
+         "git push origin main #{package_tag_a} #{package_tag_b}"]
+      ])
+      expect(exit_status).to eql(0), output
+    end
   end
 
   def prepare_nodejs_project(config = {})
