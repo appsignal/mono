@@ -42,8 +42,7 @@ RSpec.describe Mono::Cli::Init do
         config = YAML.safe_load(File.read("mono.yml"))
         expect(config).to eql(
           "language" => "elixir",
-          "packages_dir" => "packages",
-          "tag_prefix" => ""
+          "packages_dir" => "packages"
         )
       end
       expect(performed_commands).to eql([])

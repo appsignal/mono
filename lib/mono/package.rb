@@ -73,28 +73,12 @@ module Mono
       @changesets ||= ChangesetCollection.new(config, self)
     end
 
-    def tag_prefix
-      return unless @config.config?("tag_prefix")
-
-      @config.config("tag_prefix")
-    end
-
     def current_tag
-      version = current_version
-      if config.monorepo?
-        "#{tag_prefix}#{name}@#{version}"
-      else # Single repo
-        "v#{version}"
-      end
+      build_tag current_version
     end
 
     def next_tag
-      version = next_version
-      if config.monorepo?
-        "#{tag_prefix}#{name}@#{version}"
-      else # Single repo
-        "v#{version}"
-      end
+      build_tag next_version
     end
 
     def current_version
@@ -191,6 +175,14 @@ module Mono
 
     def run_command_in_package(command)
       run_command command, :dir => path
+    end
+
+    def build_tag(version)
+      if config.monorepo?
+        "#{name}@#{version}"
+      else # Single repo
+        "v#{version}"
+      end
     end
   end
 end

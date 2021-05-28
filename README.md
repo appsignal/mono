@@ -53,7 +53,6 @@ it later.
 language: nodejs
 repo: "https://github.com/appsignal/appsignal-javascript"
 npm_client: "yarn"
-tag_prefix: "@appsignal/"
 packages_dir: "packages"
 clean:
   command: "npm run clean"
@@ -72,12 +71,6 @@ test:
 - `repo`
     - Repository used to link back to from the `CHANGELOG` file.
     - Must be a valid URL.
-- `tag_prefix`
-    - Git tag prefix used to namespace tags.
-    - Example value `@appsignal/` creates the tag `@appsignal/<package>@1.2.3`
-- `tag_prefix`
-    - Git tag prefix used to namespace tags.
-    - Example value `@appsignal/` creates the tag `@appsignal/<package>@1.2.3`
 - `packages_dir`
     - Specify the path, from the root of the project, to the directory in which
       the mono project packages can be found. If this config option is
