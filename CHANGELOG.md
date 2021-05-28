@@ -1,5 +1,9 @@
 # Mono
 
+## 0.5.1
+
+- [f289e39](https://github.com/appsignal/mono//commit/f289e398bee433a53771bb6808440e48ab734353) patch - Run npm publish in package dir to publish packages. Fixes the inability to publish packages with npm.
+
 ## 0.5.0
 
 - [5de62a5](https://github.com/appsignal/mono//commit/5de62a56cc0272c11f10887569d6c5c0ee52d682) patch - Add support for Node.js prerelease tags. When a prerelease is published, it will automatically tag the release on npmjs.org with the matching prerelease tag. For example: `mono publish --alpha` creates the "alpha" tag.
