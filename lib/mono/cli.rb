@@ -302,13 +302,13 @@ module Mono
             params[:packages] = value
           end
           opts.on "--alpha", "Release an alpha prerelease" do
-            params[:prerelease] = :alpha
+            params[:prerelease] = "alpha"
           end
           opts.on "--beta", "Release a beta prerelease" do
-            params[:prerelease] = :beta
+            params[:prerelease] = "beta"
           end
           opts.on "--rc", "Release a rc prerelease" do
-            params[:prerelease] = :rc
+            params[:prerelease] = "rc"
           end
         end.parse(@options)
         params
