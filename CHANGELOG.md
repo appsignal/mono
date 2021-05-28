@@ -1,5 +1,11 @@
 # Mono
 
+## 0.5.0.alpha.1
+
+- [9ddd720](https://github.com/appsignal/mono//commit/9ddd720090f9baaeef2aab7322d1b377c5131c34) minor - Update dependent packages in project. When there are multiple packages in the mono repo, and they depend on one another, when a dependency of a package gets updated, it also updates the package that depends on it with the new version number. This only works for Ruby and Node.js currently. It uses a strict version lock system now, but we hope to add support for range based version locks, e.g. `~> 1.2.0`.
+- [80979ab](https://github.com/appsignal/mono//commit/80979ab92a130204a5ed883c6f288ce9cb06628e) patch - Remove all node_modules on unbootstrap. Also remove the node_modules directory
+  for mono repos in the packages dir.
+
 ## 0.4.0
 
 - [6070517](https://github.com/appsignal/mono//commit/6070517bbb819857a44aae13ab0a054dcbaa34ce) minor - Add the unbootstrap command. This command will be the same behavior as the
