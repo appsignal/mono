@@ -71,7 +71,8 @@ module Mono
         next unless package_names.include? package.name
 
         @tree[package.name][:package] = package
-        @tree[package.name][:dependencies] = package.dependencies.keys
+        deps = package.dependencies
+        @tree[package.name][:dependencies] = deps.keys if deps
       end
       # Loop through it again to figure out depenents from the dependencies
       packages.each do |package| # rubocop:disable Style/CombinableLoops

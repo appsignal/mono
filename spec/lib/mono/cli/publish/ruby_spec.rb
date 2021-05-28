@@ -8,7 +8,7 @@ RSpec.describe Mono::Cli::Publish do
   context "with single Ruby package" do
     it "publishes the package" do
       prepare_ruby_project do
-        create_package_gemspec :name => "mygem", :version => "1.2.3"
+        create_ruby_package_files :name => "mygem", :version => "1.2.3"
         add_changeset :patch
       end
       confirm_publish_package
@@ -60,7 +60,7 @@ RSpec.describe Mono::Cli::Publish do
     context "with multiple .gem files" do
       it "only publishes this version's gemfiles" do
         prepare_ruby_project do
-          create_package_gemspec :name => "mygem", :version => "1.2.3"
+          create_ruby_package_files :name => "mygem", :version => "1.2.3"
           add_changeset :patch
           FileUtils.touch("mygem-1.2.3.gem")
           FileUtils.touch("mygem-1.2.4-java.gem")
@@ -112,17 +112,71 @@ RSpec.describe Mono::Cli::Publish do
         expect(exit_status).to eql(0), output
       end
     end
+
+    it "publishes the package without gemspec" do
+      prepare_ruby_project do
+        create_ruby_package_files :name => "mygem", :version => "1.2.3"
+        configure_command "build", "echo build"
+        configure_command "publish", "echo push"
+        FileUtils.rm "mygem.gemspec"
+        add_changeset :patch
+      end
+      confirm_publish_package
+      output = run_publish_process
+
+      project_dir = "/#{current_project}"
+      next_version = "1.2.4"
+
+      expect(output).to include(<<~OUTPUT), output
+        The following packages will be published (or not):
+        - #{current_project}:
+          Current version: v1.2.3
+          Next version:    v1.2.4 (patch)
+      OUTPUT
+      expect(output).to include(<<~OUTPUT), output
+        # Updating package versions
+        - #{current_project}:
+          Current version: v1.2.3
+          Next version:    v1.2.4 (patch)
+      OUTPUT
+
+      in_project do
+        expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
+        expect(current_package_changeset_files.length).to eql(0)
+
+        changelog = File.read("CHANGELOG.md")
+        expect_changelog_to_include_version_header(changelog, next_version)
+        expect_changelog_to_include_release_notes(changelog, :patch)
+
+        expect(local_changes?).to be_falsy, local_changes.inspect
+        expect(commited_files).to eql([
+          ".changesets/1_patch.md",
+          "CHANGELOG.md",
+          "lib/example/version.rb"
+        ])
+      end
+
+      expect(performed_commands).to eql([
+        [project_dir, "echo build"],
+        [project_dir, "git add -A"],
+        [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- v#{next_version}'"],
+        [project_dir, "git tag v#{next_version}"],
+        [project_dir, "echo push"],
+        [project_dir, "git push origin main v#{next_version}"]
+      ])
+      expect(exit_status).to eql(0), output
+    end
   end
 
   context "with mono Ruby package" do
     it "publishes the updated package" do
       prepare_ruby_project "packages_dir" => "packages/" do
         create_package :package_a do
-          create_package_gemspec :name => "package_a", :version => "1.2.3"
+          create_ruby_package_files :name => "package_a", :version => "1.2.3"
           add_changeset :patch
         end
         create_package :package_b do
-          create_package_gemspec :name => "package_b", :version => "2.0.0"
+          create_ruby_package_files :name => "package_b", :version => "2.0.0"
         end
       end
       confirm_publish_package
@@ -179,11 +233,11 @@ RSpec.describe Mono::Cli::Publish do
     it "publishes multiple updated packages" do
       prepare_ruby_project "packages_dir" => "packages/" do
         create_package :package_a do
-          create_package_gemspec :name => "package_a", :version => "1.2.3"
+          create_ruby_package_files :name => "package_a", :version => "1.2.3"
           add_changeset :patch
         end
         create_package :package_b do
-          create_package_gemspec :name => "package_b", :version => "2.0.0"
+          create_ruby_package_files :name => "package_b", :version => "2.0.0"
           add_changeset :patch
         end
       end
@@ -264,16 +318,16 @@ RSpec.describe Mono::Cli::Publish do
     it "publishes depenent packages" do
       prepare_ruby_project "packages_dir" => "packages/" do
         create_package :package_a do
-          create_package_gemspec :name => "package_a", :version => "1.2.3"
+          create_ruby_package_files :name => "package_a", :version => "1.2.3"
           add_changeset :patch
         end
         create_package :package_b do
-          create_package_gemspec :name => "package_b",
+          create_ruby_package_files :name => "package_b",
             :version => "2.0.0",
             :dependencies => { "package_a" => "1.2.3" }
         end
         create_package :package_c do
-          create_package_gemspec :name => "package_c",
+          create_ruby_package_files :name => "package_c",
             :version => "3.3.0",
             :dependencies => { "package_b" => "2.0.0" }
         end

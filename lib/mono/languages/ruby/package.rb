@@ -17,6 +17,8 @@ module Mono
           return @dependencies if defined? @dependencies
 
           @dependencies = {}
+          return unless spec_path
+
           contents = File.read(spec_path)
           contents.lines.each do |line|
             matches = DEPENDENCY_REGEX.match(line)
@@ -33,11 +35,13 @@ module Mono
             file.write new_contents
           end
 
+          return unless spec_path
+
           contents = read_spec
-          @updated_dependencies.each do |_dep, _version|
+          @updated_dependencies.each do |_dep, version|
             contents =
               contents.sub(/.add_dependency (["'].*["']), (["'])(.*)["']/,
-                ".add_dependency \\1, \\21.2.4\\2")
+                ".add_dependency \\1, \\2#{version}\\2")
           end
           File.open(spec_path, "w+") do |file|
             file.write contents
@@ -97,11 +101,13 @@ module Mono
         end
 
         def read_spec
-          File.read(spec_path)
+          File.read(spec_path) if spec_path
         end
 
         def spec_path
-          Dir.glob(package_path("*.gemspec")).first
+          return @spec_path if defined? @spec_path
+
+          @spec_path = Dir.glob(package_path("*.gemspec")).first
         end
 
         def gem_files_dir

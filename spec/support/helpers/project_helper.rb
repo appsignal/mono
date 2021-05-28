@@ -156,7 +156,7 @@ module ProjectHelper
     end
   end
 
-  def create_package_gemspec(custom_config)
+  def create_ruby_package_files(custom_config)
     File.open("Gemfile", "w") do |file|
       contents = <<~CONTENTS
         source "https://rubygems.org"
