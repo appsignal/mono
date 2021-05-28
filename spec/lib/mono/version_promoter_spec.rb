@@ -8,26 +8,54 @@ RSpec.describe Mono::VersionPromoter do
 
   describe ".promote" do
     context "when promoting to a base release" do
-      context "when promoting to a major release" do
-        it "bumps to a new major version" do
-          expect(promote("1.2.3", "major")).to eql("2.0.0")
-          expect(promote("1.2.0", "major")).to eql("2.0.0")
-          expect(promote("1.0.0", "major")).to eql("2.0.0")
+      context "when promoting a base release" do
+        context "when promoting to a major release" do
+          it "bumps to a new major version" do
+            expect(promote("1.2.3", "major")).to eql("2.0.0")
+            expect(promote("1.2.0", "major")).to eql("2.0.0")
+            expect(promote("1.0.0", "major")).to eql("2.0.0")
+          end
+        end
+
+        context "when promoting to a minor release" do
+          it "bumps to a new minor version" do
+            expect(promote("1.2.3", "minor")).to eql("1.3.0")
+            expect(promote("1.2.0", "minor")).to eql("1.3.0")
+            expect(promote("1.0.0", "minor")).to eql("1.1.0")
+          end
+        end
+
+        context "when promoting to a patch release" do
+          it "bumps to a new patch version" do
+            expect(promote("1.2.3", "patch")).to eql("1.2.4")
+            expect(promote("1.2.4", "patch")).to eql("1.2.5")
+          end
         end
       end
 
-      context "when promoting to a minor release" do
-        it "bumps to a new minor version" do
-          expect(promote("1.2.3", "minor")).to eql("1.3.0")
-          expect(promote("1.2.0", "minor")).to eql("1.3.0")
-          expect(promote("1.0.0", "minor")).to eql("1.1.0")
+      context "when promoting a prerelease" do
+        context "when promoting to a major release" do
+          it "bumps to a new major version" do
+            expect(promote("1.2.3-alpha.1", "major")).to eql("2.0.0")
+            expect(promote("1.2.0-beta.2", "major")).to eql("2.0.0")
+            expect(promote("1.0.0-rc.3", "major")).to eql("1.0.0")
+          end
         end
-      end
 
-      context "when promoting to a patch release" do
-        it "bumps to a new patch version" do
-          expect(promote("1.2.3", "patch")).to eql("1.2.4")
-          expect(promote("1.2.4", "patch")).to eql("1.2.5")
+        context "when promoting to a minor release" do
+          it "bumps to a new minor version" do
+            expect(promote("1.2.3-alpha.1", "minor")).to eql("1.3.0")
+            expect(promote("1.2.0-beta.2", "minor")).to eql("1.2.0")
+            expect(promote("1.0.0-rc.3", "minor")).to eql("1.0.0")
+          end
+        end
+
+        context "when promoting to a patch release" do
+          it "bumps to a new patch version" do
+            expect(promote("1.2.3-alpha.1", "patch")).to eql("1.2.3")
+            expect(promote("1.2.0-beta.2", "patch")).to eql("1.2.0")
+            expect(promote("1.0.0-rc.3", "patch")).to eql("1.0.0")
+          end
         end
       end
     end
