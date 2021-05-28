@@ -1,5 +1,9 @@
 # Mono
 
+## 0.5.3
+
+- [bcd4b76](https://github.com/appsignal/mono//commit/bcd4b76c74c43c5751c833d3f9528dbc6d5e5f1b) patch - Fix packages being published multiple times. If a package had a changeset and a dependency that was updated, it was recorded twice as being updated causing errors.
+
 ## 0.5.2
 
 - [5bb53cc](https://github.com/appsignal/mono//commit/5bb53cc7f08865e8adb18e5f944a1498620cdb24) patch - Remove tag_prefix config option. It is no longer necessary for Node.js packages. We already read the package name from the `package.json` file, where the package name includes the prefix already.
