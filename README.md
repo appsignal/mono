@@ -248,6 +248,8 @@ Examples of releases:
 1.0.0-alpha.1 + patch changeset + --alpha = 1.0.1-alpha.2
 1.2.3-alpha.1 + minor changeset + --alpha = 1.3.0-alpha.1
 1.0.0         + minor changeset + --rc    = 1.1.0-rc.1
+1.0.0.alpha.1 + minor changeset           = 1.0.0
+1.0.1.alpha.1 + minor changeset           = 1.1.0
 ```
 
 ### Clean
