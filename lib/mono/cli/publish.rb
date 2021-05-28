@@ -14,17 +14,17 @@ module Mono
       def execute
         exit_cli "No packages found in this directory!" unless packages.any?
 
-        changed_packages = package_promoter.changed_packages
-        unless changed_packages.any?
-          exit_cli "No packages found to publish! No changes detected."
-        end
-
         if prerelease?
           # Tell to-be-published packages that they should update to a
           # prerelease
-          changed_packages.each do |package|
+          packages.each do |package|
             package.prerelease = prerelease
           end
+        end
+
+        changed_packages = package_promoter.changed_packages
+        unless changed_packages.any?
+          exit_cli "No packages found to publish! No changes detected."
         end
 
         if local_changes?
