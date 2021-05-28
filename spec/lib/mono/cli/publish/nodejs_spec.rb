@@ -245,7 +245,7 @@ RSpec.describe Mono::Cli::Publish do
         [project_dir, "git add -A"],
         [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- #{tag}'"],
         [project_dir, "git tag #{tag}"],
-        [project_dir, "npm publish --workspace=package_one"],
+        [package_one_dir, "npm publish"],
         [project_dir, "git push origin main #{tag}"]
       ])
       expect(exit_status).to eql(0), output
@@ -333,8 +333,8 @@ RSpec.describe Mono::Cli::Publish do
         [project_dir, "git commit -m 'Publish packages [ci skip]' -m '#{commit_message}'"],
         [project_dir, "git tag #{package_one_tag}"],
         [project_dir, "git tag #{package_two_tag}"],
-        [project_dir, "npm publish --workspace=package_one"],
-        [project_dir, "npm publish --workspace=package_two"],
+        [package_one_dir, "npm publish"],
+        [package_two_dir, "npm publish"],
         [project_dir, "git push origin main #{package_one_tag} #{package_two_tag}"]
       ])
       expect(exit_status).to eql(0), output
@@ -490,9 +490,9 @@ RSpec.describe Mono::Cli::Publish do
         [project_dir, "git tag #{package_tag_a}"],
         [project_dir, "git tag #{package_tag_b}"],
         [project_dir, "git tag #{package_tag_c}"],
-        [project_dir, "npm publish --workspace=package_a"],
-        [project_dir, "npm publish --workspace=package_b"],
-        [project_dir, "npm publish --workspace=package_c"],
+        [package_dir_a, "npm publish"],
+        [package_dir_b, "npm publish"],
+        [package_dir_c, "npm publish"],
         [project_dir,
          "git push origin main #{package_tag_a} #{package_tag_b} #{package_tag_c}"]
       ])

@@ -55,7 +55,7 @@ module Mono
           if next_version.prerelease?
             options = " --tag #{next_version.prerelease_type}"
           end
-          run_client_command_for_package "publish#{options}"
+          run_client_command_in_package "publish#{options}"
         end
 
         def build_package
