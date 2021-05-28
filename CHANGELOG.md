@@ -1,5 +1,9 @@
 # Mono
 
+## 0.5.4
+
+- [ec52f98](https://github.com/appsignal/mono//commit/ec52f9836a7db7a122f193a7fc2cea60272e2614) patch - Fix prerelease version incrementation. Mono would not properly update an alpha 1 release to an alpha 2 release.
+
 ## 0.5.3
 
 - [bcd4b76](https://github.com/appsignal/mono//commit/bcd4b76c74c43c5751c833d3f9528dbc6d5e5f1b) patch - Fix packages being published multiple times. If a package had a changeset and a dependency that was updated, it was recorded twice as being updated causing errors.
