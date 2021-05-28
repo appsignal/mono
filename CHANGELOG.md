@@ -1,5 +1,10 @@
 # Mono
 
+## 0.5.0
+
+- [5de62a5](https://github.com/appsignal/mono//commit/5de62a56cc0272c11f10887569d6c5c0ee52d682) patch - Add support for Node.js prerelease tags. When a prerelease is published, it will automatically tag the release on npmjs.org with the matching prerelease tag. For example: `mono publish --alpha` creates the "alpha" tag.
+- [4bfd850](https://github.com/appsignal/mono//commit/4bfd850ab933b42b9cc65c80c6111220230f08aa) patch - Fix base release after prerelease. The `mono publish` command would fail if the package version was a prerelease, updating to a base/final release.
+
 ## 0.5.0.alpha.1
 
 - [9ddd720](https://github.com/appsignal/mono//commit/9ddd720090f9baaeef2aab7322d1b377c5131c34) minor - Update dependent packages in project. When there are multiple packages in the mono repo, and they depend on one another, when a dependency of a package gets updated, it also updates the package that depends on it with the new version number. This only works for Ruby and Node.js currently. It uses a strict version lock system now, but we hope to add support for range based version locks, e.g. `~> 1.2.0`.
