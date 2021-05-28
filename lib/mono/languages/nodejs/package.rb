@@ -52,7 +52,9 @@ module Mono
         end
 
         def publish_package
-          options = " --tag beta" if next_version.prerelease?
+          if next_version.prerelease?
+            options = " --tag #{next_version.prerelease_type}"
+          end
           run_client_command_for_package "publish#{options}"
         end
 

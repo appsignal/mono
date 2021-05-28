@@ -58,6 +58,132 @@ RSpec.describe Mono::Cli::Publish do
       ])
       expect(exit_status).to eql(0), output
     end
+
+    it "publishes the updated package as an alpha release" do
+      prepare_nodejs_project do
+        create_package_json :name => "my_package", :version => "1.0.0"
+        add_changeset :patch
+      end
+      confirm_publish_package
+      output = run_publish_process(["--alpha"])
+
+      project_dir = "/#{current_project}"
+      next_version = "1.0.1-alpha.1"
+      tag = "v#{next_version}"
+
+      expect(output).to include(<<~OUTPUT), output
+        The following packages will be published (or not):
+        - my_package:
+          Current version: v1.0.0
+          Next version:    v1.0.1-alpha.1 (patch)
+      OUTPUT
+      expect(output).to include(<<~OUTPUT), output
+        # Updating package versions
+        - my_package:
+          Current version: v1.0.0
+          Next version:    v1.0.1-alpha.1 (patch)
+      OUTPUT
+
+      in_project do
+        expect(File.read("package.json")).to include(%("version": "#{next_version}"))
+      end
+
+      expect(performed_commands).to eql([
+        [project_dir, "npm install"],
+        [project_dir, "npm link"],
+        [project_dir, "npm run build"],
+        [project_dir, "git add -A"],
+        [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- #{tag}'"],
+        [project_dir, "git tag #{tag}"],
+        [project_dir, "npm publish --tag alpha"],
+        [project_dir, "git push origin main #{tag}"]
+      ])
+      expect(exit_status).to eql(0), output
+    end
+
+    it "publishes the updated package as a beta release" do
+      prepare_nodejs_project do
+        create_package_json :name => "my_package", :version => "1.0.0"
+        add_changeset :patch
+      end
+      confirm_publish_package
+      output = run_publish_process(["--beta"])
+
+      project_dir = "/#{current_project}"
+      next_version = "1.0.1-beta.1"
+      tag = "v#{next_version}"
+
+      expect(output).to include(<<~OUTPUT), output
+        The following packages will be published (or not):
+        - my_package:
+          Current version: v1.0.0
+          Next version:    v1.0.1-beta.1 (patch)
+      OUTPUT
+      expect(output).to include(<<~OUTPUT), output
+        # Updating package versions
+        - my_package:
+          Current version: v1.0.0
+          Next version:    v1.0.1-beta.1 (patch)
+      OUTPUT
+
+      in_project do
+        expect(File.read("package.json")).to include(%("version": "#{next_version}"))
+      end
+
+      expect(performed_commands).to eql([
+        [project_dir, "npm install"],
+        [project_dir, "npm link"],
+        [project_dir, "npm run build"],
+        [project_dir, "git add -A"],
+        [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- #{tag}'"],
+        [project_dir, "git tag #{tag}"],
+        [project_dir, "npm publish --tag beta"],
+        [project_dir, "git push origin main #{tag}"]
+      ])
+      expect(exit_status).to eql(0), output
+    end
+
+    it "publishes the updated package as a rc release" do
+      prepare_nodejs_project do
+        create_package_json :name => "my_package", :version => "1.0.0"
+        add_changeset :patch
+      end
+      confirm_publish_package
+      output = run_publish_process(["--rc"])
+
+      project_dir = "/#{current_project}"
+      next_version = "1.0.1-rc.1"
+      tag = "v#{next_version}"
+
+      expect(output).to include(<<~OUTPUT), output
+        The following packages will be published (or not):
+        - my_package:
+          Current version: v1.0.0
+          Next version:    v1.0.1-rc.1 (patch)
+      OUTPUT
+      expect(output).to include(<<~OUTPUT), output
+        # Updating package versions
+        - my_package:
+          Current version: v1.0.0
+          Next version:    v1.0.1-rc.1 (patch)
+      OUTPUT
+
+      in_project do
+        expect(File.read("package.json")).to include(%("version": "#{next_version}"))
+      end
+
+      expect(performed_commands).to eql([
+        [project_dir, "npm install"],
+        [project_dir, "npm link"],
+        [project_dir, "npm run build"],
+        [project_dir, "git add -A"],
+        [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- #{tag}'"],
+        [project_dir, "git tag #{tag}"],
+        [project_dir, "npm publish --tag rc"],
+        [project_dir, "git push origin main #{tag}"]
+      ])
+      expect(exit_status).to eql(0), output
+    end
   end
 
   context "with mono Node.js project" do
@@ -382,13 +508,13 @@ RSpec.describe Mono::Cli::Publish do
     end
   end
 
-  def run_publish_process
+  def run_publish_process(args = [])
     capture_stdout do
       in_project do
         perform_commands do
           stub_commands [/^npm publish/, /^git push/] do
             run_bootstrap
-            run_publish
+            run_publish(args)
           end
         end
       end
