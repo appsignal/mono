@@ -5,9 +5,64 @@ RSpec.describe Mono::Cli::Publish do
 
   around { |example| with_mock_stdin { example.run } }
 
-  context "with mono Node.js project" do
+  context "with single Node.js package" do
     it "publishes the updated package" do
       prepare_nodejs_project do
+        create_package_json :name => "my_package", :version => "1.0.0"
+        add_changeset :patch
+      end
+      confirm_publish_package
+      output = run_publish_process
+
+      project_dir = "/#{current_project}"
+      next_version = "1.0.1"
+      tag = "v#{next_version}"
+
+      expect(output).to include(<<~OUTPUT), output
+        The following packages will be published (or not):
+        - my_package:
+          Current version: v1.0.0
+          Next version:    v1.0.1 (patch)
+      OUTPUT
+      expect(output).to include(<<~OUTPUT), output
+        # Updating package versions
+        - my_package:
+          Current version: v1.0.0
+          Next version:    v1.0.1 (patch)
+      OUTPUT
+
+      in_project do
+        expect(File.read("package.json")).to include(%("version": "#{next_version}"))
+
+        changelog = File.read("CHANGELOG.md")
+        expect_changelog_to_include_version_header(changelog, next_version)
+        expect_changelog_to_include_release_notes(changelog, :patch)
+
+        expect(local_changes?).to be_falsy, local_changes.inspect
+        expect(commited_files).to eql([
+          ".changesets/1_patch.md",
+          "CHANGELOG.md",
+          "package.json"
+        ])
+      end
+
+      expect(performed_commands).to eql([
+        [project_dir, "npm install"],
+        [project_dir, "npm link"],
+        [project_dir, "npm run build"],
+        [project_dir, "git add -A"],
+        [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- #{tag}'"],
+        [project_dir, "git tag #{tag}"],
+        [project_dir, "npm publish"],
+        [project_dir, "git push origin main #{tag}"]
+      ])
+      expect(exit_status).to eql(0), output
+    end
+  end
+
+  context "with mono Node.js project" do
+    it "publishes the updated package" do
+      prepare_nodejs_project "packages_dir" => "packages/" do
         create_package :package_one do
           create_package_json :version => "1.0.0"
           add_changeset :patch
@@ -71,7 +126,7 @@ RSpec.describe Mono::Cli::Publish do
     end
 
     it "publishes multiple packages" do
-      prepare_nodejs_project do
+      prepare_nodejs_project "packages_dir" => "packages/" do
         create_package :package_one do
           create_package_json :version => "1.0.0"
           add_changeset :patch
@@ -160,7 +215,7 @@ RSpec.describe Mono::Cli::Publish do
     end
 
     it "publishes the updated package with build artifacts" do
-      prepare_nodejs_project do
+      prepare_nodejs_project "packages_dir" => "packages/" do
         create_package :package_a do
           File.open("constants.js", "w") { |file| file.write("000") }
           create_package_json :version => "1.0.0",
@@ -200,7 +255,7 @@ RSpec.describe Mono::Cli::Publish do
     end
 
     it "publishes dependent packages" do
-      prepare_nodejs_project do
+      prepare_nodejs_project "packages_dir" => "packages/" do
         create_package :package_a do
           create_package_json :version => "1.0.0"
           add_changeset :patch
@@ -319,11 +374,9 @@ RSpec.describe Mono::Cli::Publish do
     end
   end
 
-  pending "Node.js single project (optional: for non AppSignal projects)"
-
-  def prepare_nodejs_project
+  def prepare_nodejs_project(config = {})
     prepare_new_project do
-      create_mono_config "language" => "nodejs", "packages_dir" => "packages/"
+      create_mono_config({ "language" => "nodejs" }.merge(config))
       create_package_json :name => "root", :private => true, :workspaces => ["packages/*"]
       yield
     end
