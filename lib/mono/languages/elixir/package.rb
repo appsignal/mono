@@ -13,7 +13,19 @@ module Mono
             end
         end
 
-        def write_new_version
+        def dependencies
+          return @dependencies if defined? @dependencies
+
+          @dependencies = {}
+          contents = read_mix_exs
+          contents.lines.each do |line|
+            matches = DEPENDENCY_REGEX.match(line)
+            @dependencies[matches[1]] = matches[2] if matches
+          end
+          @dependencies
+        end
+
+        def update_spec
           contents = read_mix_exs
           new_contents =
             contents.sub(VERSION_REGEX, %(@version "#{next_version}"))
@@ -49,6 +61,7 @@ module Mono
         private
 
         VERSION_REGEX = /@version "(.*)"$/.freeze
+        DEPENDENCY_REGEX = /^\s*{:(.*), "(.*)"}/.freeze
 
         def read_mix_exs
           File.read(mix_exs_path)

@@ -14,15 +14,15 @@ module Mono
       def execute
         exit_cli "No packages found in this directory!" unless packages.any?
 
-        selected_packages = packages_to_publish
-        unless selected_packages.any?
+        changed_packages = package_promoter.changed_packages
+        unless changed_packages.any?
           exit_cli "No packages found to publish! No changes detected."
         end
 
         if prerelease?
           # Tell to-be-published packages that they should update to a
           # prerelease
-          selected_packages.each do |package|
+          changed_packages.each do |package|
             package.prerelease = prerelease
           end
         end
@@ -36,17 +36,17 @@ module Mono
         puts
         ask_for_confirmation
         puts
-        update_package_versions(selected_packages)
+        update_packages(changed_packages)
         puts
-        update_changelog(selected_packages)
+        update_changelog(changed_packages)
         puts
-        build(selected_packages)
+        build(changed_packages)
         puts
-        commit_changes(selected_packages)
+        commit_changes(changed_packages)
         puts
-        publish_package_manager(selected_packages)
+        publish_package_manager(changed_packages)
         puts
-        publish_git(selected_packages)
+        publish_git(changed_packages)
       end
 
       private
@@ -80,11 +80,11 @@ module Mono
         end
       end
 
-      def update_package_versions(packages)
+      def update_packages(packages)
         puts "# Updating package versions"
         packages.each do |package|
           print_package_summary(package)
-          package.write_new_version
+          package.update_spec
         end
       end
 

@@ -96,8 +96,9 @@ module Mono
         end
       end
 
-      def packages_to_publish
-        packages.select(&:will_update?)
+      # Helper class to update dependencies between packages in a mono project
+      def package_promoter
+        @package_promoter ||= PackagePromoter.new(packages)
       end
 
       def run_hooks(command, type)

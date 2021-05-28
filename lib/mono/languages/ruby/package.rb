@@ -13,12 +13,34 @@ module Mono
             end
         end
 
-        def write_new_version
+        def dependencies
+          return @dependencies if defined? @dependencies
+
+          @dependencies = {}
+          contents = File.read(spec_path)
+          contents.lines.each do |line|
+            matches = DEPENDENCY_REGEX.match(line)
+            @dependencies[matches[1]] = matches[2] if matches
+          end
+          @dependencies
+        end
+
+        def update_spec
           contents = read_version
           new_contents =
             contents.sub(VERSION_REGEX, %(VERSION = "#{next_version}"))
           File.open(version_path, "w+") do |file|
             file.write new_contents
+          end
+
+          contents = read_spec
+          @updated_dependencies.each do |_dep, _version|
+            contents =
+              contents.sub(/.add_dependency (["'].*["']), (["'])(.*)["']/,
+                ".add_dependency \\1, \\21.2.4\\2")
+          end
+          File.open(spec_path, "w+") do |file|
+            file.write contents
           end
         end
 
@@ -64,6 +86,7 @@ module Mono
         private
 
         VERSION_REGEX = /VERSION = "(.*)"/.freeze
+        DEPENDENCY_REGEX = /.*.add_dependency ["'](.*)["'], ["'](.*)["']/.freeze
 
         def read_version
           File.read(version_path)
@@ -71,6 +94,14 @@ module Mono
 
         def version_path
           Dir.glob(package_path("lib/*/version.rb")).first
+        end
+
+        def read_spec
+          File.read(spec_path)
+        end
+
+        def spec_path
+          Dir.glob(package_path("*.gemspec")).first
         end
 
         def gem_files_dir
@@ -85,6 +116,7 @@ module Mono
           # Example: package-1.2.3.gem
           paths = []
           base_path = []
+          base_path << path if config.monorepo?
           base_path << files_dir if files_dir
           base_path << "*-#{next_version}.gem"
           paths << File.join(base_path)
@@ -92,6 +124,7 @@ module Mono
           # Platform .gem files
           # Example: package-1.2.3-java.gem
           platform_path = []
+          platform_path << path if config.monorepo?
           platform_path << files_dir if files_dir
           platform_path << "*-#{next_version}-*.gem"
           paths << File.join(platform_path)

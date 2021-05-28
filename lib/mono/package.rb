@@ -24,6 +24,7 @@ module Mono
       @path = path
       @name = name
       @config = config
+      @updated_dependencies = {}
     end
 
     def next_version
@@ -41,6 +42,32 @@ module Mono
     def will_update?
       next_bump
     end
+
+    # :nocov:
+    def dependencies
+      raise NotImplementedError
+    end
+    # :nocov:
+
+    def dependency?(package)
+      dependencies.key?(package.name)
+    end
+
+    def update_dependency(package)
+      return unless dependency?(package)
+
+      @updated_dependencies[package.name] = package.next_version.to_s
+      changesets.changesets << MemoryChangeset.new(
+        { "bump" => "patch" },
+        "Update #{package.name} dependency to #{package.next_version}"
+      )
+    end
+
+    # :nocov:
+    def update_spec
+      raise NotImplementedError
+    end
+    # :nocov:
 
     def changesets
       @changesets ||= ChangesetCollection.new(config, self)
@@ -71,10 +98,6 @@ module Mono
     end
 
     def current_version
-      raise NotImplementedError
-    end
-
-    def write_new_version
       raise NotImplementedError
     end
 

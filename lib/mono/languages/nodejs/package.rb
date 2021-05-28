@@ -22,13 +22,29 @@ module Mono
             end
         end
 
-        def write_new_version
+        def update_spec
           contents = read_package_json
-          new_contents =
+          contents =
             contents.sub(VERSION_REGEX, %("version": "#{next_version}"))
-          File.open(package_json_path, "w+") do |file|
-            file.write new_contents
+          @updated_dependencies.each do |dep, version|
+            contents =
+              contents.sub(
+                /"#{dep}": ".*"/,
+                %("#{dep}": "=#{version}")
+              )
           end
+          File.open(package_json_path, "w+") do |file|
+            file.write contents
+          end
+        end
+
+        def dependencies
+          @dependencies ||=
+            begin
+              deps = @package_json.fetch("dependencies", {})
+              optional_deps = @package_json.fetch("optionalDependencies", {})
+              deps.merge(optional_deps)
+            end
         end
 
         def bootstrap_package(_options = {})

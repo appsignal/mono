@@ -75,4 +75,14 @@ module Mono
       FileUtils.rm path
     end
   end
+
+  class MemoryChangeset < Changeset
+    def initialize(metadata, message)
+      super(nil, metadata, message)
+    end
+
+    def remove
+      # noop
+    end
+  end
 end
