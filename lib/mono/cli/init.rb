@@ -25,7 +25,6 @@ module Mono
         else
           puts "Configuring for mono package repo."
           config["packages_dir"] = packages_dir
-          config["tag_prefix"] = ""
         end
         puts "Writing config file."
         File.open(File.join(Dir.pwd, "mono.yml"), "w+") do |file|
