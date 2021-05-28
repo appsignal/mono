@@ -1,5 +1,9 @@
 # Mono
 
+## 0.5.2
+
+- [5bb53cc](https://github.com/appsignal/mono//commit/5bb53cc7f08865e8adb18e5f944a1498620cdb24) patch - Remove tag_prefix config option. It is no longer necessary for Node.js packages. We already read the package name from the `package.json` file, where the package name includes the prefix already.
+
 ## 0.5.1
 
 - [f289e39](https://github.com/appsignal/mono//commit/f289e398bee433a53771bb6808440e48ab734353) patch - Run npm publish in package dir to publish packages. Fixes the inability to publish packages with npm.
