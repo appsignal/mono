@@ -3,6 +3,7 @@
 ## 0.5.3
 
 - [bcd4b76](https://github.com/appsignal/mono//commit/bcd4b76c74c43c5751c833d3f9528dbc6d5e5f1b) patch - Fix packages being published multiple times. If a package had a changeset and a dependency that was updated, it was recorded twice as being updated causing errors.
+- [c0dce23](https://github.com/appsignal/mono//commit/c0dce236b2701b148b2a2f1487421700ad9a6991) patch - Fix dependent package versions to prereleases. Dependencies wouldn't be updated to use a prerelease version if a prerelease version was chosen on `mono publish --alpha|beta|rc`.
 
 ## 0.5.2
 
