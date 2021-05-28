@@ -35,7 +35,7 @@ RSpec.describe Mono::Languages::Ruby::Package do
   def create_package_with_dependencies(path, dependencies)
     prepare_new_project do
       create_package path do
-        create_package_gemspec :version => "1.2.3",
+        create_ruby_package_files :version => "1.2.3",
           :dependencies => dependencies
       end
     end
