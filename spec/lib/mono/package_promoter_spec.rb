@@ -122,6 +122,94 @@ RSpec.describe Mono::PackagePromoter do
       package_two = nodejs_package("two")
       expect(package_two.current_version.to_s).to eql("2.0.0") # Unchanged
     end
+
+    context "without changes" do
+      it "updates package to final version if it's a prerelease" do
+        prepare_new_project do
+          create_package "one" do
+            create_package_json :name => "one", :version => "1.0.0-rc.7"
+          end
+        end
+        package_one = nodejs_package("one")
+        promoter = described_class.new([package_one])
+        expect(promoter.changed_packages).to contain_exactly(package_one)
+        update_packages(promoter.changed_packages)
+
+        package_one = nodejs_package("one")
+        expect(package_one.current_version.to_s).to eql("1.0.0")
+      end
+
+      it "updates packages to final version if it's a prerelease" do
+        prepare_new_project do
+          create_package "a" do
+            create_package_json :name => "a", :version => "1.0.0-rc.7"
+          end
+          create_package "b" do
+            create_package_json :name => "b", :version => "2.1.0-rc.10"
+          end
+          create_package "c" do
+            create_package_json :name => "c", :version => "2.1.1-beta.10"
+          end
+        end
+        package_a = nodejs_package("a")
+        package_b = nodejs_package("b")
+        package_c = nodejs_package("c")
+        promoter = described_class.new([package_a, package_b, package_c])
+        expect(promoter.changed_packages).to contain_exactly(package_a, package_b, package_c)
+        update_packages(promoter.changed_packages)
+
+        package_a = nodejs_package("a")
+        expect(package_a.current_version.to_s).to eql("1.0.0")
+        package_b = nodejs_package("b")
+        expect(package_b.current_version.to_s).to eql("2.1.0")
+        package_c = nodejs_package("c")
+        expect(package_c.current_version.to_s).to eql("2.1.1")
+      end
+
+      it "updates dependent packages if all are a prerelease" do
+        prepare_new_project do
+          create_package "a" do
+            create_package_json :name => "a", :version => "1.0.0-rc.7"
+          end
+          create_package "b" do
+            create_package_json :name => "b", :version => "2.1.0-rc.10",
+              :dependencies => { "a" => "1.0.0-rc.7" }
+          end
+        end
+        package_a = nodejs_package("a")
+        package_b = nodejs_package("b")
+        promoter = described_class.new([package_a, package_b])
+        expect(promoter.changed_packages).to contain_exactly(package_a, package_b)
+        update_packages(promoter.changed_packages)
+
+        package_a = nodejs_package("a")
+        expect(package_a.current_version.to_s).to eql("1.0.0")
+        package_b = nodejs_package("b")
+        expect(package_b.current_version.to_s).to eql("2.1.0")
+      end
+
+      it "updates dependent packages if dependency is a prerelease" do
+        prepare_new_project do
+          create_package "a" do
+            create_package_json :name => "a", :version => "1.0.0-rc.7"
+          end
+          create_package "b" do
+            create_package_json :name => "b", :version => "2.1.0",
+              :dependencies => { "a" => "1.0.0-rc.7" }
+          end
+        end
+        package_a = nodejs_package("a")
+        package_b = nodejs_package("b")
+        promoter = described_class.new([package_a, package_b])
+        expect(promoter.changed_packages).to contain_exactly(package_a, package_b)
+        update_packages(promoter.changed_packages)
+
+        package_a = nodejs_package("a")
+        expect(package_a.current_version.to_s).to eql("1.0.0")
+        package_b = nodejs_package("b")
+        expect(package_b.current_version.to_s).to eql("2.1.1")
+      end
+    end
   end
 
   def nodejs_package(path)

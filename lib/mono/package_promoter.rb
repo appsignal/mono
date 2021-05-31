@@ -4,14 +4,15 @@ require "set"
 
 module Mono
   class PackagePromoter
-    def initialize(packages)
+    def initialize(packages, prerelease: nil)
       @packages = packages
+      @prerelease = prerelease
       @updated_packages = Set.new
     end
 
     # Find packages that will be updated, and update packages that depend on
     # those packages to use the updated version of that package.
-    def changed_packages
+    def changed_packages # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       @changed_packages ||=
         begin
           build_tree
@@ -19,8 +20,23 @@ module Mono
           packages_with_changes = []
 
           # Make a registry of packages that require a new release
-          packages.select do |package|
+          packages.each do |package|
             if package.will_update?
+              packages_with_changes << package
+              updated_packages << package
+            end
+          end
+
+          # If there are no registered changes (changesets) and it's a new base
+          # release, update packages that are currently prereleases.
+          # This covers the scenario where you did a prerelease, no further
+          # fixes/changes are needed and the latest prerelease will become the
+          # final release.
+          if updated_packages.empty? && !prerelease?
+            packages.each do |package|
+              next unless package.current_version.prerelease?
+
+              package.bump_version_to_final
               packages_with_changes << package
               updated_packages << package
             end
@@ -37,7 +53,9 @@ module Mono
 
     private
 
-    attr_reader :packages, :tree, :updated_packages
+    attr_reader :packages, :tree, :updated_packages, :prerelease
+
+    alias prerelease? prerelease
 
     def update_package_and_dependents(package)
       tree[package.name][:dependents].each do |dependent|

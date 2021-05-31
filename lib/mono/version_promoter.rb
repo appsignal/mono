@@ -124,6 +124,10 @@ module Mono
     def self.larger_bump?(current, new)
       current_index = RELEASE_VERSIONS.index(current)
       new_index = RELEASE_VERSIONS.index(new)
+
+      # New release is not a prerelease, so it can be updated
+      return true unless new_index
+
       # Test against reverse order of array values
       new_index < current_index
     end

@@ -96,11 +96,6 @@ module Mono
         end
       end
 
-      # Helper class to update dependencies between packages in a mono project
-      def package_promoter
-        @package_promoter ||= PackagePromoter.new(packages)
-      end
-
       def run_hooks(command, type)
         hooks = config.hooks(command, type)
         return unless hooks.any?

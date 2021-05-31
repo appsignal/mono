@@ -292,7 +292,7 @@ RSpec.describe Mono::Cli::Publish do
   end
 
   context "with prerelease" do
-    it "publishes a final release" do
+    it "publishes a final release with changesets" do
       prepare_new_project do
         create_mono_config "language" => "ruby"
         create_ruby_package_files :name => "package_a", :version => "1.2.3.alpha.1"
@@ -351,6 +351,87 @@ RSpec.describe Mono::Cli::Publish do
         [project_dir, "git push origin main v#{next_version}"]
       ])
       expect(exit_status).to eql(0), output
+    end
+
+    it "publishes a final release without changesets" do
+      prepare_new_project do
+        create_mono_config "language" => "ruby"
+        create_ruby_package_files :name => "package_a", :version => "1.2.3.alpha.1"
+      end
+      confirm_publish_package
+      output =
+        capture_stdout do
+          in_project do
+            perform_commands do
+              stub_commands [/^gem push/, /^git push/] do
+                run_publish
+              end
+            end
+          end
+        end
+
+      project_dir = "/#{current_project}"
+      next_version = "1.2.3"
+
+      expect(output).to include(<<~OUTPUT), output
+        The following packages will be published (or not):
+        - #{current_project}:
+          Current version: v1.2.3.alpha.1
+          Next version:    v1.2.3 (patch)
+      OUTPUT
+      expect(output).to include(<<~OUTPUT), output
+        # Updating package versions
+        - #{current_project}:
+          Current version: v1.2.3.alpha.1
+          Next version:    v1.2.3 (patch)
+      OUTPUT
+
+      in_project do
+        expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
+        expect(current_package_changeset_files.length).to eql(0)
+
+        changelog = File.read("CHANGELOG.md")
+        expect_changelog_to_include_version_header(changelog, next_version)
+        expect_changelog_to_include_release_notes(changelog, :patch, "Package release.")
+
+        expect(local_changes?).to be_falsy, local_changes.inspect
+        expect(commited_files).to eql([
+          "CHANGELOG.md",
+          "lib/example/version.rb"
+        ])
+      end
+
+      expect(performed_commands).to eql([
+        [project_dir, "gem build"],
+        [project_dir, "git add -A"],
+        [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- v#{next_version}'"],
+        [project_dir, "git tag v#{next_version}"],
+        [project_dir, "gem push package_a-#{next_version}.gem"],
+        [project_dir, "git push origin main v#{next_version}"]
+      ])
+      expect(exit_status).to eql(0), output
+    end
+
+    it "without changes doesn't publish another prerelease" do
+      prepare_new_project do
+        create_mono_config "language" => "ruby"
+        create_ruby_package_files :name => "package_a", :version => "1.2.3.alpha.1"
+      end
+      confirm_publish_package
+      output =
+        capture_stdout do
+          in_project do
+            perform_commands do
+              stub_commands [/^gem push/, /^git push/] do
+                run_publish(["--alpha"])
+              end
+            end
+          end
+        end
+
+      expect(output).to include("Mono::Error: No packages found to publish! No changes detected.")
+      expect(performed_commands).to eql([])
+      expect(exit_status).to eql(1), output
     end
   end
 

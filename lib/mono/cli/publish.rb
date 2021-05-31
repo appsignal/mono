@@ -139,6 +139,12 @@ module Mono
         run_command "git push origin #{current_branch} #{package_versions}"
         run_hooks("git-publish", "post")
       end
+
+      # Helper class to update dependencies between packages in a mono project
+      def package_promoter
+        @package_promoter ||=
+          PackagePromoter.new(packages, :prerelease => prerelease)
+      end
     end
   end
 end

@@ -43,6 +43,13 @@ module Mono
       next_bump
     end
 
+    def bump_version_to_final
+      changesets.changesets << MemoryChangeset.new(
+        { "bump" => current_version.current_bump },
+        "Package release."
+      )
+    end
+
     # :nocov:
     def dependencies
       raise NotImplementedError
