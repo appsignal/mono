@@ -49,9 +49,7 @@ module Mono
       @prerelease_type && @prerelease_version
     end
 
-    def prerelease_bump
-      return unless prerelease?
-
+    def current_bump
       if minor == 0 && patch == 0 # rubocop:disable Style/NumericPredicate
         # For example: "3.0.0"
         "major"
