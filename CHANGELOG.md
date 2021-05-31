@@ -1,5 +1,9 @@
 # Mono
 
+## 0.5.5
+
+- [0a3f464](https://github.com/appsignal/mono//commit/0a3f464b63129d1eb0acf049a3f66cd31519b3de) patch - Support final releases from prereleases without changes. Run `mono publish` for a package with version `1.0.0-rc.4` and mono will publish it as `1.0.0` if no changesets are present. It's always possible to publish another prerelease, as long as there are changesets.
+
 ## 0.5.4
 
 - [ec52f98](https://github.com/appsignal/mono//commit/ec52f9836a7db7a122f193a7fc2cea60272e2614) patch - Fix prerelease version incrementation. Mono would not properly update an alpha 1 release to an alpha 2 release.
