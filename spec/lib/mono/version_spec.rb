@@ -177,30 +177,31 @@ RSpec.describe Mono::Version do
   end
 
   describe "#prerelease_bump" do
-    context "with major prerelease" do
+    context "with major bump" do
       it "returns major" do
-        expect(parse("1.0.0-alpha.2").prerelease_bump).to eql(:major)
-        expect(parse_ruby("3.0.0.alpha.4").prerelease_bump).to eql(:major)
+        expect(parse("1.0.0-alpha.2").prerelease_bump).to eql("major")
+        expect(parse_ruby("3.0.0.alpha.4").prerelease_bump).to eql("major")
       end
     end
 
-    context "with minor prerelease" do
+    context "with minor bump" do
       it "returns minor" do
-        expect(parse("1.2.0-alpha.3").prerelease_bump).to eql(:minor)
-        expect(parse_ruby("3.4.0.alpha.5").prerelease_bump).to eql(:minor)
+        expect(parse("1.2.0-alpha.3").prerelease_bump).to eql("minor")
+        expect(parse_ruby("3.4.0.alpha.5").prerelease_bump).to eql("minor")
       end
     end
 
-    context "with patch prerelease" do
+    context "with patch bump" do
       it "returns patch" do
-        expect(parse("1.2.3-alpha.4").prerelease_bump).to eql(:patch)
-        expect(parse_ruby("5.6.7.alpha.8").prerelease_bump).to eql(:patch)
+        expect(parse("1.2.3-alpha.4").prerelease_bump).to eql("patch")
+        expect(parse_ruby("5.6.7.alpha.8").prerelease_bump).to eql("patch")
       end
     end
 
     context "without prerelease" do
       it "returns nil" do
         expect(parse("1.2.3").prerelease_bump).to be_nil
+        expect(parse_ruby("5.6.7").prerelease_bump).to be_nil
       end
     end
   end

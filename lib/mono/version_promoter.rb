@@ -36,7 +36,7 @@ module Mono
           # - 1.2.3-alpha.2 + bump minor alpha = 1.3.0.alpha.1 - Base bump
           # - 2.3.0-alpha.1 + bump minor alpha = 2.3.0.alpha.2 - No base bump
           # - 3.0.0-alpha.1 + bump minor alpha = 3.0.0.alpha.2 - No base bump
-          if larger_bump?(version.prerelease_bump.to_s, bump.to_s)
+          if larger_bump?(version.prerelease_bump, bump)
             # The bump larger than current bump in the prerelease, so reset the
             # prerelease type and version by bumping as normal. The prerelease
             # bump is added later.

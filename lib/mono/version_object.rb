@@ -54,13 +54,13 @@ module Mono
 
       if minor == 0 && patch == 0 # rubocop:disable Style/NumericPredicate
         # For example: "3.0.0"
-        :major
+        "major"
       elsif patch == 0 # rubocop:disable Style/NumericPredicate
         # For example: "3.2.0"
-        :minor
+        "minor"
       else
         # For example: "3.2.1"
-        :patch
+        "patch"
       end
     end
 
