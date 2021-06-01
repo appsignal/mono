@@ -66,7 +66,7 @@ module Mono
       @updated_dependencies[package.name] = package.next_version.to_s
       changesets.changesets << MemoryChangeset.new(
         { "bump" => "patch" },
-        "Update #{package.name} dependency to #{package.next_version}"
+        "Update #{package.name} dependency to #{package.next_version}."
       )
     end
 
