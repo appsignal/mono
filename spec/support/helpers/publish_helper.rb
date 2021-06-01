@@ -12,11 +12,13 @@ module PublishHelper
       .to match(%r{- \[[a-z0-9]{7}\]\(#{url}/commit/[a-z0-9]{40}\) #{bump} - #{message}})
   end
 
+  def expect_changelog_to_include_message(changelog, bump, message)
+    expect(changelog).to match(/- #{bump} - #{message}/)
+  end
+
   def expect_changelog_to_include_package_bump(changelog, package, version)
-    url = "https://github.com/appsignal/#{current_project}"
     message = "Update #{package} dependency to #{version}"
-    expect(changelog)
-      .to match(%r{- \[[a-z0-9]{7}\]\(#{url}/commit/[a-z0-9]{40}\) patch - #{message}})
+    expect_changelog_to_include_message(changelog, "patch", message)
   end
 
   def do_not_publish_package

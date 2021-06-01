@@ -58,6 +58,10 @@ module Mono
       @metadata["bump"]
     end
 
+    def date
+      commit[:date]
+    end
+
     def commit
       @commit ||=
         begin
@@ -79,6 +83,14 @@ module Mono
   class MemoryChangeset < Changeset
     def initialize(metadata, message)
       super(nil, metadata, message)
+    end
+
+    def date
+      @date ||= Time.now
+    end
+
+    def commit
+      # noop
     end
 
     def remove

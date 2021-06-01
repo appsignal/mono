@@ -24,12 +24,9 @@ module Mono
 
     def write_changesets_to_changelog
       new_messages = []
-      sets = changesets.sort_by { |set| [set.bump, set.commit[:date]] }
+      sets = changesets.sort_by { |set| [set.bump, set.date] }
       sets.each do |changeset|
-        commit = changeset.commit
-        url = "#{config.repo}/commit/#{commit[:long]}"
-        new_messages << "- [#{commit[:short]}](#{url}) #{changeset.bump} - " \
-          "#{changeset.message.lines.join("  ")}\n"
+        new_messages << build_changelog_entry(changeset)
       end
       changelog_path = File.join(package.path, "CHANGELOG.md")
       FileUtils.touch(changelog_path)
@@ -58,6 +55,20 @@ module Mono
       elsif bumps.include?("patch")
         "patch"
       end
+    end
+
+    private
+
+    def build_changelog_entry(changeset)
+      message = ["- "]
+      commit = changeset.commit
+      if commit
+        url = "#{config.repo}/commit/#{commit[:long]}"
+        message << "[#{commit[:short]}](#{url}) "
+      end
+      message << changeset.bump
+      message << " - #{changeset.message.lines.join("  ")}\n"
+      message.join
     end
   end
 end

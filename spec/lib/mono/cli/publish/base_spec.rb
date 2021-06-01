@@ -392,7 +392,7 @@ RSpec.describe Mono::Cli::Publish do
 
         changelog = File.read("CHANGELOG.md")
         expect_changelog_to_include_version_header(changelog, next_version)
-        expect_changelog_to_include_release_notes(changelog, :patch, "Package release.")
+        expect_changelog_to_include_message(changelog, :patch, "Package release.")
 
         expect(local_changes?).to be_falsy, local_changes.inspect
         expect(commited_files).to eql([
