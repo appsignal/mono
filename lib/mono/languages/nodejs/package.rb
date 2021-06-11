@@ -102,26 +102,28 @@ module Mono
           @package_json.fetch("scripts", {}).key?(command)
         end
 
-        def run_client_command(command)
-          run_command "#{npm_client} #{command}"
-        end
-
-        def run_client_command_in_package(command)
+        def run_client_command(command, _options = {})
           run_command_in_package "#{npm_client} #{command}"
         end
 
+        def run_client_command_in_package(command)
+          run_client_command command
+          # run_command_in_package "#{npm_client} #{command}"
+        end
+
         def run_client_command_for_package(command)
-          case npm_client
-          when "npm"
-            options = " --workspace=#{name}" if config.monorepo?
-            run_client_command "#{command}#{options}"
-          when "yarn"
-            if config.monorepo?
-              run_client_command "workspace #{name} #{command}"
-            else
-              run_client_command command
-            end
-          end
+          run_client_command command, :dir => path
+          # case npm_client
+          # when "npm"
+          #   # options = " --workspace=#{name}" if config.monorepo?
+          #   run_client_command command, :dir => path
+          # when "yarn"
+          #   if config.monorepo?
+          #     run_client_command "workspace #{name} #{command}"
+          #   else
+          #     run_client_command command
+          #   end
+          # end
         end
       end
     end
