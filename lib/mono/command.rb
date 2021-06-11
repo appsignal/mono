@@ -14,20 +14,9 @@ module Mono
       options = {}
       options[:chdir] = path if path
 
-      env = {}
-      ENV.each do |key, value|
-        env[key] =
-          if key.start_with?("npm_")
-            nil
-          else
-            value
-          end
-      end
-      puts "new_env:"
-      pp env
       puts command
       unless dry_run?
-        pid = spawn(env, command)
+        pid = spawn(command, options)
         _pid, status = Process.wait2(pid)
         unless status.exitstatus == 0
           puts "Error: Command failed with #{status.exitstatus}"
