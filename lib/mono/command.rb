@@ -10,18 +10,27 @@ module Mono
     end
 
     def execute
-      parts = []
       # Navigate to path if a path is specified
-      parts << "cd #{path} && " if path
-      parts << command
-      cmd = parts.join
+      options = {}
+      options[:chdir] = path if path
 
-      puts cmd
+      env = {}
+      ENV.each do |key, value|
+        env[key] =
+          if key.start_with?("npm_")
+            nil
+          else
+            value
+          end
+      end
+      puts "new_env:"
+      pp env
+      puts command
       unless dry_run?
-        system cmd
-        exitstatus = $?
-        unless exitstatus.success?
-          puts "Error: Command failed with #{exitstatus.exitstatus}"
+        pid = spawn(env, command)
+        _pid, status = Process.wait2(pid)
+        unless status.exitstatus == 0
+          puts "Error: Command failed with #{status.exitstatus}"
           exit 1
         end
       end
