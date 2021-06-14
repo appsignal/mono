@@ -143,7 +143,7 @@ module Mono
       # Helper class to update dependencies between packages in a mono project
       def package_promoter
         @package_promoter ||=
-          PackagePromoter.new(packages, :prerelease => prerelease)
+          PackagePromoter.new(dependency_tree, :prerelease => prerelease)
       end
     end
   end

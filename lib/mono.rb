@@ -14,6 +14,19 @@ module Mono
     end
   end
 
+  class CircularDependencyError < Error
+    def initialize(package_names)
+      @package_names = package_names
+      super()
+    end
+
+    def message
+      "Dependency loop detected! Two or more packages are configured in as " \
+        "circular dependencies of each other.\n" \
+        "Packages: #{@package_names.join(", ")}"
+    end
+  end
+
   class NoSuchCommandError < Error
     def initialize(command)
       @command = command
@@ -29,6 +42,7 @@ end
 require "mono/version"
 require "mono/version_object"
 require "mono/version_promoter"
+require "mono/dependency_tree"
 require "mono/package_promoter"
 require "mono/config"
 require "mono/command"

@@ -16,18 +16,18 @@ RSpec.describe Mono::PackagePromoter do
             :dependencies => { "nodejs-ext" => "=1.2.3" }
         end
       end
-      package_ext = Mono::Languages::Nodejs::Package.new(nil, package_path("nodejs-ext"), config)
-      package_node = Mono::Languages::Nodejs::Package.new(nil, package_path("nodejs"), config)
-      promoter = described_class.new([package_ext, package_node])
+      package_ext = nodejs_package("nodejs-ext")
+      package_node = nodejs_package("nodejs")
+      promoter = build_promoter([package_ext, package_node])
       expect(promoter.changed_packages).to contain_exactly(
         package_ext,
         package_node
       )
       update_packages(promoter.changed_packages)
 
-      package_ext = Mono::Languages::Nodejs::Package.new(nil, package_path("nodejs-ext"), config)
+      package_ext = nodejs_package("nodejs-ext")
       expect(package_ext.current_version.to_s).to eql("1.2.4")
-      package_node = Mono::Languages::Nodejs::Package.new(nil, package_path("nodejs"), config)
+      package_node = nodejs_package("nodejs")
       expect(package_node.current_version.to_s).to eql("2.0.1")
       expect(package_node.dependencies["nodejs-ext"]).to eql("=1.2.4")
     end
@@ -67,7 +67,7 @@ RSpec.describe Mono::PackagePromoter do
       package_phoenix = nodejs_package("phoenix")
       package_sinatra = nodejs_package("sinatra")
       package_absinthe = nodejs_package("absinthe")
-      promoter = described_class.new([
+      promoter = build_promoter([
         package_core,
         package_plug,
         package_sinatra,
@@ -113,7 +113,7 @@ RSpec.describe Mono::PackagePromoter do
       end
       package_one = nodejs_package("one")
       package_two = nodejs_package("two")
-      promoter = described_class.new([package_one, package_two])
+      promoter = build_promoter([package_one, package_two])
       expect(promoter.changed_packages).to contain_exactly(package_one)
       update_packages(promoter.changed_packages)
 
@@ -131,7 +131,7 @@ RSpec.describe Mono::PackagePromoter do
           end
         end
         package_one = nodejs_package("one")
-        promoter = described_class.new([package_one])
+        promoter = build_promoter([package_one])
         expect(promoter.changed_packages).to contain_exactly(package_one)
         update_packages(promoter.changed_packages)
 
@@ -154,7 +154,7 @@ RSpec.describe Mono::PackagePromoter do
         package_a = nodejs_package("a")
         package_b = nodejs_package("b")
         package_c = nodejs_package("c")
-        promoter = described_class.new([package_a, package_b, package_c])
+        promoter = build_promoter([package_a, package_b, package_c])
         expect(promoter.changed_packages).to contain_exactly(package_a, package_b, package_c)
         update_packages(promoter.changed_packages)
 
@@ -178,7 +178,7 @@ RSpec.describe Mono::PackagePromoter do
         end
         package_a = nodejs_package("a")
         package_b = nodejs_package("b")
-        promoter = described_class.new([package_a, package_b])
+        promoter = build_promoter([package_a, package_b])
         expect(promoter.changed_packages).to contain_exactly(package_a, package_b)
         update_packages(promoter.changed_packages)
 
@@ -200,7 +200,7 @@ RSpec.describe Mono::PackagePromoter do
         end
         package_a = nodejs_package("a")
         package_b = nodejs_package("b")
-        promoter = described_class.new([package_a, package_b])
+        promoter = build_promoter([package_a, package_b])
         expect(promoter.changed_packages).to contain_exactly(package_a, package_b)
         update_packages(promoter.changed_packages)
 
@@ -214,6 +214,11 @@ RSpec.describe Mono::PackagePromoter do
 
   def nodejs_package(path)
     Mono::Languages::Nodejs::Package.new(nil, package_path(path), config)
+  end
+
+  def build_promoter(packages)
+    tree = Mono::DependencyTree.new(packages)
+    described_class.new(tree)
   end
 
   def update_packages(packages)

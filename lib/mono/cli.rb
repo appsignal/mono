@@ -50,9 +50,17 @@ module Mono
         validate(options)
       end
 
+      def packages
+        dependency_tree.packages
+      end
+
+      def dependency_tree
+        @dependency_tree ||= DependencyTree.new(@packages)
+      end
+
       private
 
-      attr_reader :options, :config, :language, :packages
+      attr_reader :options, :config, :language
 
       def find_packages
         package_class = PackageBase.for(config.language)
