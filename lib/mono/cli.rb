@@ -320,7 +320,7 @@ module Mono
       def custom_options
         params = {}
         OptionParser.new do |opts|
-          opts.banner = "Usage: mono run [options]"
+          opts.banner = "Usage: mono run [options] -- <command>"
 
           opts.on "-p", "--package package1,package2,package3", Array,
             "Select packages to run command in" do |value|
