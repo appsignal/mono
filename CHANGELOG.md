@@ -1,5 +1,10 @@
 # Mono
 
+## 0.5.6
+
+- [dd2a62f](https://github.com/appsignal/mono//commit/dd2a62f347fa40aa705912aec198e83f50dec96f) patch - Remove commit info from some changeset entries made by mono. Changeset entries made by mono for dependency bumps do not have a commit, as they are part of the "publish" commit, which doesn't exist at time of changelog generation, so omit the information to reduce noise.
+- [2c54ba1](https://github.com/appsignal/mono//commit/2c54ba199bdd48201b4a1d1dd78a46005ba8983f) patch - Implement dependency tree, this accounts for package dependencies in compilation order. When package B depends on package A it will first compile package A and then package B. This prevents compilation errors.
+
 ## 0.5.5
 
 - [0a3f464](https://github.com/appsignal/mono//commit/0a3f464b63129d1eb0acf049a3f66cd31519b3de) patch - Support final releases from prereleases without changes. Run `mono publish` for a package with version `1.0.0-rc.4` and mono will publish it as `1.0.0` if no changesets are present. It's always possible to publish another prerelease, as long as there are changesets.
