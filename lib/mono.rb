@@ -21,8 +21,8 @@ module Mono
     end
 
     def message
-      "Dependency loop detected! Two or more packages are configured in as " \
-        "circular dependencies of each other.\n" \
+      "Circular dependencies detected! Two or more packages are configured " \
+        "as circular dependencies of each other.\n" \
         "Packages: #{@package_names.join(", ")}"
     end
   end
