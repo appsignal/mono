@@ -133,7 +133,7 @@ module Mono
       end
 
       def exit_with_status(status)
-        print "Exiting..."
+        puts "Exiting..."
         exit status
       end
     end
