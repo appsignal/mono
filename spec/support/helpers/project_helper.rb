@@ -4,6 +4,10 @@ module ProjectHelper
   EXAMPLES_DIR = "spec/support/examples/"
   EXAMPLES_TMP_DIR = "spec/tmp/examples/"
 
+  def mono_config(config = {})
+    Mono::Config.new(config)
+  end
+
   def current_project
     unless defined?(@current_project)
       raise "No project selected. Please call `prepare_project(:example_project)` first."
@@ -269,7 +273,7 @@ module ProjectHelper
   end
 
   def config_for(project)
-    Mono::Config.new(
+    mono_config(
       YAML.safe_load(File.read(File.join(ROOT_DIR, EXAMPLES_DIR, "#{project}_project", "mono.yml")))
     )
   end

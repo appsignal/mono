@@ -2,7 +2,7 @@
 
 RSpec.describe Mono::PackagePromoter do
   describe "#update" do
-    let(:config) { Mono::Config.new({}) } # Mock empty config
+    let(:config) { mono_config }
 
     it "updates direct dependent packages" do
       prepare_new_project do

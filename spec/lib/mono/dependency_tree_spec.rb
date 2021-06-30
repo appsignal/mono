@@ -2,7 +2,7 @@
 
 RSpec.describe Mono::DependencyTree do
   describe "#packages" do
-    let(:config) { Mono::Config.new({}) } # Mock empty config
+    let(:config) { mono_config }
 
     it "returns packages in dependency order" do
       prepare_new_project do

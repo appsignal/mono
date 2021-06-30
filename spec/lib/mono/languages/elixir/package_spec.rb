@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe Mono::Languages::Elixir::Package do
-  let(:config) { Mono::Config.new({}) }
+  let(:config) { mono_config }
 
   describe "#dependencies" do
     context "without dependencies" do
