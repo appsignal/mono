@@ -22,10 +22,14 @@ source ~/.zshrc
 ## Usage
 
 After installation the `mono` executable should be available in any directory.
+See the list of [commands](#commands) for which commands can be performed.
 
 ```
 mono <command> [options]
 ```
+
+Do you need a quick guide or refresher on how mono works? Read the [quick start
+guide](doc/quick-start-guide.md).
 
 ### Dry run
 
