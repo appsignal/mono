@@ -13,7 +13,7 @@ module Mono
         current_type = @current_prerelease_type
         new_type = @new_prerelease_type
         <<~MESSAGE
-          Unexpected downgrade for prelease. Can't downgrade from a
+          Unexpected downgrade for prerelease. Can't downgrade from a
           `#{current_type}` to a `#{new_type}`.
 
           - Current prerelease type: #{current_type}
@@ -134,7 +134,7 @@ module Mono
 
     def self.supported_prerelease_bump?(current, new)
       current_index = PRERELEASE_VERSIONS.index(current)
-      # When no current prelease is specified we support any level bump to a
+      # When no current prerelease is specified we support any level bump to a
       # prerelease type
       return true unless current_index
 

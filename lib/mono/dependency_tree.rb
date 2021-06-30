@@ -16,10 +16,10 @@ module Mono
 
     # Return list of packages in dependency order. The first item has the least
     # amount of dependencies on packages in the project (most likely none) and
-    # the last one the most depdendencies.
+    # the last one the most dependencies.
     #
     # @raise [CircularDependencyError] if the project packages have a circular
-    #   depdendency on one another.
+    #   dependency on one another.
     # @return [Array]
     def packages
       return @packages if defined?(@packages)
@@ -62,7 +62,7 @@ module Mono
       dep_checks.all?(true)
     end
 
-    # Build a dependency tree. Track which packages depent on other packages in
+    # Build a dependency tree. Track which packages depend on other packages in
     # this project. It creates a tree with dependencies going both ways:
     # dependencies and dependents.
     def build # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
@@ -91,7 +91,7 @@ module Mono
         end
         @tree[package.name][:dependencies] = package_deps
       end
-      # Loop through it again to figure out depenents from the dependencies
+      # Loop through it again to figure out dependents from the dependencies
       raw_packages.each do |package| # rubocop:disable Style/CombinableLoops
         @tree[package.name][:dependencies].each do |dep, _version_lock|
           # Only track packages in this project, not other ecosystem

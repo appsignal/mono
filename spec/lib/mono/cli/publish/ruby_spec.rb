@@ -315,7 +315,7 @@ RSpec.describe Mono::Cli::Publish do
       expect(exit_status).to eql(0), output
     end
 
-    it "publishes depenent packages" do
+    it "publishes dependent packages" do
       prepare_ruby_project "packages_dir" => "packages/" do
         create_package :package_a do
           create_ruby_package_files :name => "package_a", :version => "1.2.3"

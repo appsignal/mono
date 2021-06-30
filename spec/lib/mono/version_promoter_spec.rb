@@ -109,7 +109,7 @@ RSpec.describe Mono::VersionPromoter do
             end
 
             context "bump to rc" do
-              it "only bumps the prelease" do
+              it "only bumps the prerelease" do
                 expect(promote("2.0.0-beta.1", "major", "rc")).to eql("2.0.0-rc.1")
                 expect(promote("2.0.0-beta.2", "major", "rc")).to eql("2.0.0-rc.1")
               end
@@ -346,7 +346,7 @@ RSpec.describe Mono::VersionPromoter do
             end
 
             context "bump to rc" do
-              it "only bumps the prelease" do
+              it "only bumps the prerelease" do
                 expect(promote("2.0.0-beta.1", "minor", "rc")).to eql("2.0.0-rc.1")
                 expect(promote("2.0.0-beta.2", "minor", "rc")).to eql("2.0.0-rc.1")
               end
@@ -580,7 +580,7 @@ RSpec.describe Mono::VersionPromoter do
             end
 
             context "bump to rc" do
-              it "only bumps the prelease" do
+              it "only bumps the prerelease" do
                 expect(promote("2.0.0-beta.1", "patch", "rc")).to eql("2.0.0-rc.1")
                 expect(promote("2.0.0-beta.2", "patch", "rc")).to eql("2.0.0-rc.1")
               end
@@ -770,7 +770,7 @@ RSpec.describe Mono::VersionPromoter do
         current = "beta"
         new = "alpha"
         expect(described_class.new(current, new).message).to eql(<<~MESSAGE)
-          Unexpected downgrade for prelease. Can't downgrade from a
+          Unexpected downgrade for prerelease. Can't downgrade from a
           `#{current}` to a `#{new}`.
 
           - Current prerelease type: #{current}
