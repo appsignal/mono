@@ -21,7 +21,7 @@ module Mono
         system cmd
         exitstatus = $?
         unless exitstatus.success?
-          puts "Error: Command failed with #{exitstatus.exitstatus}"
+          puts "Error: Command failed with status `#{exitstatus.exitstatus}`"
           exit 1
         end
       end
