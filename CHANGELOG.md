@@ -1,5 +1,12 @@
 # Mono
 
+## 0.5.7
+
+- [3f06eec](https://github.com/appsignal/mono//commit/3f06eec9f4d43ad0dd4d177010cafd435acac00e) patch - Improve circular dependency error message.
+- [ac15342](https://github.com/appsignal/mono//commit/ac1534236933864ae412487c88eb674201d27593) patch - Print exit message with line break. This gives a more user friendly end stopping the publish process, rather than a message with a missing line break.
+- [54540cb](https://github.com/appsignal/mono//commit/54540cbcf195327390c775c38b15a1486c0a116b) patch - Improve command failure error message. Explain in more detail what the message is about.
+- [8a86a6e](https://github.com/appsignal/mono//commit/8a86a6edb4ea40515e3047d955fdbdc20d3a6591) patch - Require npm 7.12 at minimum, this should fix the issue with certain workspaces not being found on older npm versions.
+
 ## 0.5.6
 
 - [dd2a62f](https://github.com/appsignal/mono//commit/dd2a62f347fa40aa705912aec198e83f50dec96f) patch - Remove commit info from some changeset entries made by mono. Changeset entries made by mono for dependency bumps do not have a commit, as they are part of the "publish" commit, which doesn't exist at time of changelog generation, so omit the information to reduce noise.
