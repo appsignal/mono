@@ -19,7 +19,7 @@ module Mono
             # mock it in testing.
             output = `npm --version`.chomp
             if !$?.success? ||
-                Gem::Version.new(output) < Gem::Version.new("7.0.0")
+                Gem::Version.new(output) < Gem::Version.new("7.12.1")
               puts "npm is older than version 7. " \
                 "Updating npm for workspaces support."
               run_command "npm install --global npm"
