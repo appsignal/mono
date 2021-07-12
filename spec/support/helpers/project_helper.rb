@@ -216,17 +216,23 @@ module ProjectHelper
         custom_config.fetch(:dependencies, []).map do |dependency, version|
           %({:#{dependency}, "#{version}"})
         end
+
+      version = custom_config.fetch(:version)
+      version_in_module_attribute = custom_config.fetch(:version_in_module_attribute?, false)
+
+      module_attributes = ["@source_url \"https://github.com/appsignal/test-package\""]
+      module_attributes << "  @version \"#{version}\"" if version_in_module_attribute
+
       spec = <<~SPEC
         defmodule MyPackage.Mixfile do
           use Mix.Project
 
-          @source_url "https://github.com/appsignal/test-package"
-          @version "#{custom_config.fetch(:version)}"
+          #{module_attributes.join("\n")}
 
           def project do
             [
               app: :#{in_package? ? current_package : current_project},
-              version: @version,
+              version: #{version_in_module_attribute ? "@version" : "\"#{version}\""},
               name: "My Package",
               description: "Dummy package description",
               package: package(),

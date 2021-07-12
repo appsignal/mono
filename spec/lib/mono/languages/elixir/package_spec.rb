@@ -44,11 +44,12 @@ RSpec.describe Mono::Languages::Elixir::Package do
     end
   end
 
-  def create_package_with_dependencies(path, dependencies)
+  def create_package_with_dependencies(path, dependencies, version_in_module_attribute = true) # rubocop:disable Style/OptionalBooleanParameter
     prepare_new_project do
       create_package path do
         create_package_mix :version => "1.2.3",
-          :dependencies => dependencies
+          :dependencies => dependencies,
+          :version_in_module_attribute? => version_in_module_attribute
       end
     end
   end
