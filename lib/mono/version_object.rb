@@ -91,5 +91,9 @@ module Mono
         prerelease_version
       ].compact
     end
+
+    def eql?(other)
+      segments == other.segments
+    end
   end
 end

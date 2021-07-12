@@ -3,6 +3,18 @@
 RSpec.describe Mono::Languages::Elixir::Package do
   let(:config) { mono_config }
 
+  describe "#current_version" do
+    context "with a version set in the project block" do
+      it "extracts the current version" do
+        package_name = "test_package"
+        create_package_with_dependencies package_name, {}
+
+        package = package_for_path(package_name)
+        expect(package.current_version).to eql(Mono::Version.new(1, 2, 3))
+      end
+    end
+  end
+
   describe "#dependencies" do
     context "without dependencies" do
       it "returns empty hash" do
