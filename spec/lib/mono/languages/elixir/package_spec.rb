@@ -13,6 +13,16 @@ RSpec.describe Mono::Languages::Elixir::Package do
         expect(package.current_version).to eql(Mono::Version.new(1, 2, 3))
       end
     end
+
+    context "with a version set in a module attribute" do
+      it "extracts the current version" do
+        package_name = "test_package"
+        create_package_with_dependencies package_name, {}, true
+
+        package = package_for_path(package_name)
+        expect(package.current_version).to eql(Mono::Version.new(1, 2, 3))
+      end
+    end
   end
 
   describe "#dependencies" do
@@ -44,7 +54,7 @@ RSpec.describe Mono::Languages::Elixir::Package do
     end
   end
 
-  def create_package_with_dependencies(path, dependencies, version_in_module_attribute = true) # rubocop:disable Style/OptionalBooleanParameter
+  def create_package_with_dependencies(path, dependencies, version_in_module_attribute = false) # rubocop:disable Style/OptionalBooleanParameter
     prepare_new_project do
       create_package path do
         create_package_mix :version => "1.2.3",

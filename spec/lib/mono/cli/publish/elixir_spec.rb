@@ -30,7 +30,7 @@ RSpec.describe Mono::Cli::Publish do
       OUTPUT
 
       in_project do
-        expect(File.read("mix.exs")).to include(%(@version "#{next_version}"))
+        expect(File.read("mix.exs")).to include(%(version: "#{next_version}",))
         expect(current_package_changeset_files.length).to eql(0)
 
         changelog = File.read("CHANGELOG.md")
@@ -94,7 +94,7 @@ RSpec.describe Mono::Cli::Publish do
 
       in_project do
         in_package :package_a do
-          expect(File.read("mix.exs")).to include(%(@version "#{next_version_a}"))
+          expect(File.read("mix.exs")).to include(%(version: "#{next_version_a}",))
           expect(current_package_changeset_files.length).to eql(0)
 
           changelog = File.read("CHANGELOG.md")
@@ -166,7 +166,7 @@ RSpec.describe Mono::Cli::Publish do
 
       in_project do
         in_package :jason do
-          expect(File.read("mix.exs")).to include(%(@version "#{next_version_a}"))
+          expect(File.read("mix.exs")).to include(%(version: "#{next_version_a}",))
           expect(current_package_changeset_files.length).to eql(0)
 
           changelog = File.read("CHANGELOG.md")
@@ -175,7 +175,7 @@ RSpec.describe Mono::Cli::Publish do
         end
 
         in_package :package_b do
-          expect(File.read("mix.exs")).to include(%(@version "#{next_version_b}"))
+          expect(File.read("mix.exs")).to include(%(version: "#{next_version_b}",))
           expect(current_package_changeset_files.length).to eql(0)
 
           changelog = File.read("CHANGELOG.md")
