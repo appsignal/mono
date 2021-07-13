@@ -49,7 +49,7 @@ RSpec.describe Mono::Cli::Publish do
         [project_dir, "mix deps.get"],
         [project_dir, "mix compile"],
         [project_dir, "git add -A"],
-        [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- v#{next_version}'"],
+        [project_dir, "git commit -m 'Publish packages' -m '- v#{next_version}' -m '[ci skip]'"],
         [project_dir, "git tag v#{next_version}"],
         [project_dir, "mix hex.publish package --yes"],
         [project_dir, "git push origin main v#{next_version}"]
@@ -104,7 +104,7 @@ RSpec.describe Mono::Cli::Publish do
         [project_dir, "mix deps.get"],
         [project_dir, "mix compile"],
         [project_dir, "git add -A"],
-        [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- v#{next_version}'"],
+        [project_dir, "git commit -m 'Publish packages' -m '- v#{next_version}' -m '[ci skip]'"],
         [project_dir, "git tag v#{next_version}"],
         [project_dir, "mix hex.publish package --yes"],
         [project_dir, "git push origin main v#{next_version}"]
@@ -170,7 +170,7 @@ RSpec.describe Mono::Cli::Publish do
         [package_dir_b, "mix deps.get"],
         [package_dir_a, "mix compile"],
         [project_dir, "git add -A"],
-        [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- #{tag}'"],
+        [project_dir, "git commit -m 'Publish packages' -m '- #{tag}' -m '[ci skip]'"],
         [project_dir, "git tag #{tag}"],
         [package_dir_a, "mix hex.publish package --yes"],
         [project_dir, "git push origin main #{tag}"]
@@ -254,7 +254,8 @@ RSpec.describe Mono::Cli::Publish do
         [package_dir_a, "mix compile"],
         [package_dir_b, "mix compile"],
         [project_dir, "git add -A"],
-        [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- #{tag_a}\n- #{tag_b}'"],
+        [project_dir,
+         "git commit -m 'Publish packages' -m '- #{tag_a}\n- #{tag_b}' -m '[ci skip]'"],
         [project_dir, "git tag #{tag_a}"],
         [project_dir, "git tag #{tag_b}"],
         [package_dir_a, "mix hex.publish package --yes"],

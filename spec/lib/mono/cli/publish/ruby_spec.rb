@@ -49,7 +49,7 @@ RSpec.describe Mono::Cli::Publish do
       expect(performed_commands).to eql([
         [project_dir, "gem build"],
         [project_dir, "git add -A"],
-        [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- v#{next_version}'"],
+        [project_dir, "git commit -m 'Publish packages' -m '- v#{next_version}' -m '[ci skip]'"],
         [project_dir, "git tag v#{next_version}"],
         [project_dir, "gem push mygem-#{next_version}.gem"],
         [project_dir, "git push origin main v#{next_version}"]
@@ -103,7 +103,7 @@ RSpec.describe Mono::Cli::Publish do
         expect(performed_commands).to eql([
           [project_dir, "gem build"],
           [project_dir, "git add -A"],
-          [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- v#{next_version}'"],
+          [project_dir, "git commit -m 'Publish packages' -m '- v#{next_version}' -m '[ci skip]'"],
           [project_dir, "git tag v#{next_version}"],
           [project_dir, "gem push mygem-#{next_version}.gem"],
           [project_dir, "gem push mygem-#{next_version}-java.gem"],
@@ -159,7 +159,7 @@ RSpec.describe Mono::Cli::Publish do
       expect(performed_commands).to eql([
         [project_dir, "echo build"],
         [project_dir, "git add -A"],
-        [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- v#{next_version}'"],
+        [project_dir, "git commit -m 'Publish packages' -m '- v#{next_version}' -m '[ci skip]'"],
         [project_dir, "git tag v#{next_version}"],
         [project_dir, "echo push"],
         [project_dir, "git push origin main v#{next_version}"]
@@ -222,7 +222,7 @@ RSpec.describe Mono::Cli::Publish do
       expect(performed_commands).to eql([
         [package_dir_a, "gem build"],
         [project_dir, "git add -A"],
-        [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- #{tag_a}'"],
+        [project_dir, "git commit -m 'Publish packages' -m '- #{tag_a}' -m '[ci skip]'"],
         [project_dir, "git tag #{tag_a}"],
         [project_dir, "gem push packages/package_a/package_a-#{next_version_a}.gem"],
         [project_dir, "git push origin main #{tag_a}"]
@@ -305,7 +305,8 @@ RSpec.describe Mono::Cli::Publish do
         [package_dir_a, "gem build"],
         [package_dir_b, "gem build"],
         [project_dir, "git add -A"],
-        [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- #{tag_a}\n- #{tag_b}'"],
+        [project_dir,
+         "git commit -m 'Publish packages' -m '- #{tag_a}\n- #{tag_b}' -m '[ci skip]'"],
         [project_dir, "git tag #{tag_a}"],
         [project_dir, "git tag #{tag_b}"],
         [project_dir, "gem push packages/package_a/package_a-#{next_version_a}.gem"],
@@ -419,7 +420,7 @@ RSpec.describe Mono::Cli::Publish do
         [package_dir_b, "gem build"],
         [package_dir_c, "gem build"],
         [project_dir, "git add -A"],
-        [project_dir, "git commit -m 'Publish packages [ci skip]' -m '#{message}'"],
+        [project_dir, "git commit -m 'Publish packages' -m '#{message}' -m '[ci skip]'"],
         [project_dir, "git tag #{tag_a}"],
         [project_dir, "git tag #{tag_b}"],
         [project_dir, "git tag #{tag_c}"],
