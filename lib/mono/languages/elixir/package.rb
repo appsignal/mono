@@ -9,7 +9,7 @@ module Mono
             begin
               contents = read_mix_exs
               matches = VERSION_REGEX.match(contents)
-              Version.parse(matches[1])
+              Version.parse(matches[2])
             end
         end
 
@@ -28,7 +28,7 @@ module Mono
         def update_spec
           contents = read_mix_exs
           new_contents =
-            contents.sub(VERSION_REGEX, %(@version "#{next_version}"))
+            contents.sub(VERSION_REGEX, "\\1 \"#{next_version}\"\\3")
           File.open(mix_exs_path, "w+") do |file|
             file.write new_contents
           end
@@ -60,7 +60,7 @@ module Mono
 
         private
 
-        VERSION_REGEX = /@version "(.*)"$/.freeze
+        VERSION_REGEX = /(@version|version:) "(.*)"(,?)$/.freeze
         DEPENDENCY_REGEX = /^\s*{:(.*), "(.*)"}/.freeze
 
         def read_mix_exs
