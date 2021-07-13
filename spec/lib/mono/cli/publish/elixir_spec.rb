@@ -58,6 +58,61 @@ RSpec.describe Mono::Cli::Publish do
     end
   end
 
+  context "with single Elixir package that has the version number set in a module attribute" do
+    it "publishes the package" do
+      prepare_elixir_project do
+        create_package_mix :version => "1.2.3", :version_in_module_attribute? => true
+      end
+      confirm_publish_package
+      output = run_publish_process
+
+      project_dir = "/#{current_project}"
+      next_version = "1.2.4"
+
+      expect(output).to include(<<~OUTPUT), output
+        The following packages will be published (or not):
+        - #{current_project}:
+          Current version: v1.2.3
+          Next version:    v1.2.4 (patch)
+      OUTPUT
+      expect(output).to include(<<~OUTPUT), output
+        # Updating package versions
+        - #{current_project}:
+          Current version: v1.2.3
+          Next version:    v1.2.4 (patch)
+      OUTPUT
+
+      in_project do
+        contents = File.read("mix.exs")
+        expect(contents).to include(%(@version "#{next_version}"))
+        expect(contents).to include(%(version: @version,))
+        expect(current_package_changeset_files.length).to eql(0)
+
+        changelog = File.read("CHANGELOG.md")
+        expect_changelog_to_include_version_header(changelog, next_version)
+        expect_changelog_to_include_release_notes(changelog, :patch)
+
+        expect(local_changes?).to be_falsy, local_changes.inspect
+        expect(commited_files).to eql([
+          ".changesets/1_patch.md",
+          "CHANGELOG.md",
+          "mix.exs"
+        ])
+      end
+
+      expect(performed_commands).to eql([
+        [project_dir, "mix deps.get"],
+        [project_dir, "mix compile"],
+        [project_dir, "git add -A"],
+        [project_dir, "git commit -m 'Publish packages [ci skip]' -m '- v#{next_version}'"],
+        [project_dir, "git tag v#{next_version}"],
+        [project_dir, "mix hex.publish package --yes"],
+        [project_dir, "git push origin main v#{next_version}"]
+      ])
+      expect(exit_status).to eql(0), output
+    end
+  end
+
   context "with mono Elixir project" do
     it "publishes the package" do
       prepare_elixir_project "packages_dir" => "packages/" do
