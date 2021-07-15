@@ -22,7 +22,15 @@ global_job_config:
     commands:
       - checkout
 blocks:
-- name: Linters
+- name: Other Linters
+  dependencies: []
+  task:
+    jobs:
+    - name: Git Lint (Lintje)
+      commands:
+      - script/ci/install_lintje
+      - $HOME/bin/lintje $SEMAPHORE_GIT_COMMIT_RANGE
+- name: Ruby Linters
   dependencies: []
   task:
     prologue:
