@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -eu
+
+cache store $_BUNDLER_CACHE-bundler-$(checksum Gemfile) $_BUNDLER_PATH
+cache store $_GEMS_CACHE-gems-$(checksum Gemfile) $HOME/.gem

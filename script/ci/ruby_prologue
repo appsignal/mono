@@ -1,0 +1,23 @@
+#!/bin/bash
+
+set -e
+
+sem-version ruby 2.7.3
+sem-version erlang 23.3
+sem-version elixir 1.11.3
+
+set -u
+
+cache restore $_BUNDLER_CACHE-bundler-$(checksum Gemfile)
+cache restore $_GEMS_CACHE-gems-$(checksum Gemfile)
+
+npm install -g npm # TODO: temporary. Currently expected in the tests.
+bundle config set retry 3
+bundle config set jobs 3
+bundle config set path $_BUNDLER_PATH
+bundle config set clean 'true'
+bundle install
+
+git config --global init.defaultBranch main
+git config --global user.email "example@example.com"
+git config --global user.name "Example user"
