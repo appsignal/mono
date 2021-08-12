@@ -1,5 +1,11 @@
 # Mono
 
+## 0.5.8
+
+- [244ec4f](https://github.com/appsignal/mono//commit/244ec4f633754c9f1f85578fbc1fb00ce0843401) patch - Aside from working on Elixir projects with their version set in a module attribute (`@version "1.2.3"` and `version: @version`), add support for projects with their versions set directly in the `project` block (`version: "1.2.3"`).
+- [221dd5f](https://github.com/appsignal/mono//commit/221dd5f705b4aaec462b6fa500f3669b2def3c60) patch - Move the [ci-ckip] tag to commit message body instead of printing it in the subject.
+- [940b0ac](https://github.com/appsignal/mono//commit/940b0acac4580bada23ba2989f1413ce0e425db5) patch - Fix Node.js package publishing using yarn. Calling `yarn publish` prompted the user to enter a new version while Mono already knows what version to upgrade the package to. This prompt is now removed.
+
 ## 0.5.7
 
 - [3f06eec](https://github.com/appsignal/mono//commit/3f06eec9f4d43ad0dd4d177010cafd435acac00e) patch - Improve circular dependency error message.
