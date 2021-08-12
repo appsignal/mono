@@ -52,10 +52,12 @@ module Mono
         end
 
         def publish_package
+          options = []
           if next_version.prerelease?
-            options = " --tag #{next_version.prerelease_type}"
+            options << "--tag #{next_version.prerelease_type}"
           end
-          run_client_command_in_package "publish#{options}"
+          options << "--new-version #{next_version}" if npm_client == "yarn"
+          run_client_command_in_package "publish #{options.join(" ")}".strip
         end
 
         def build_package
