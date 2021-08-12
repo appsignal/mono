@@ -681,6 +681,63 @@ RSpec.describe Mono::Cli::Publish do
     end
   end
 
+  context "with yarn" do
+    context "with single Node.js package" do
+      it "publishes the updated package" do
+        prepare_nodejs_project "npm_client" => "yarn" do
+          create_package_json :name => "my_package", :version => "1.0.0"
+          add_changeset :patch
+        end
+        confirm_publish_package
+        output = run_publish_process
+
+        project_dir = "/#{current_project}"
+        next_version = "1.0.1"
+        tag = "v#{next_version}"
+
+        expect(output).to include(<<~OUTPUT), output
+          The following packages will be published (or not):
+          - my_package:
+            Current version: v1.0.0
+            Next version:    v1.0.1 (patch)
+        OUTPUT
+        expect(output).to include(<<~OUTPUT), output
+          # Updating package versions
+          - my_package:
+            Current version: v1.0.0
+            Next version:    v1.0.1 (patch)
+        OUTPUT
+
+        in_project do
+          expect(File.read("package.json")).to include(%("version": "#{next_version}"))
+
+          changelog = File.read("CHANGELOG.md")
+          expect_changelog_to_include_version_header(changelog, next_version)
+          expect_changelog_to_include_release_notes(changelog, :patch)
+
+          expect(local_changes?).to be_falsy, local_changes.inspect
+          expect(commited_files).to eql([
+            ".changesets/1_patch.md",
+            "CHANGELOG.md",
+            "package.json"
+          ])
+        end
+
+        expect(performed_commands).to eql([
+          [project_dir, "yarn install"],
+          [project_dir, "yarn link"],
+          [project_dir, "yarn run build"],
+          [project_dir, "git add -A"],
+          [project_dir, "git commit -m 'Publish packages' -m '- #{tag}' -m '[ci skip]'"],
+          [project_dir, "git tag #{tag}"],
+          [project_dir, "yarn publish --new-version #{next_version}"],
+          [project_dir, "git push origin main #{tag}"]
+        ])
+        expect(exit_status).to eql(0), output
+      end
+    end
+  end
+
   def prepare_nodejs_project(config = {})
     prepare_new_project do
       create_mono_config({ "language" => "nodejs" }.merge(config))
@@ -693,7 +750,7 @@ RSpec.describe Mono::Cli::Publish do
     capture_stdout do
       in_project do
         perform_commands do
-          stub_commands [/^npm publish/, /^git push/] do
+          stub_commands [/^(npm|yarn) publish/, /^git push/] do
             run_bootstrap
             run_publish(args)
           end
