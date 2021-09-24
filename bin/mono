@@ -1,6 +1,21 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+git_status = `git status -s`
+unless $?.success?
+  puts "ERROR: Unable to perform the mono production check. Is git installed?"
+  exit 1
+end
+
+unless git_status.empty?
+  puts "ERROR: The mono repository has been modified locally. " \
+    "You are using the `mono` executable which is only meant for " \
+    "'production' use."
+  puts "Please use the `mono-dev` executable if you want to use uncommitted " \
+    "changes to _test_ mono itself."
+  exit 1
+end
+
 $LOAD_PATH << File.expand_path(File.join(__dir__, "..", "lib"))
 
 require "mono"

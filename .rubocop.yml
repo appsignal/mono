@@ -15,6 +15,9 @@ AllCops:
   CacheRootDirectory: ./tmp
   NewCops: enable
 
+Style/SpecialGlobalVars:
+  Enabled: false
+
 Style/RescueStandardError:
   Enabled: false
 
