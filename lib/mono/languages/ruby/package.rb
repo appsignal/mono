@@ -56,7 +56,7 @@ module Mono
           gem_files = fetch_gem_files_paths
           if gem_files.any?
             gem_files.each do |gem_file|
-              run_command "gem push #{gem_file}"
+              run_command "gem push #{gem_file}", :retry => true
             end
           else
             raise "No gemfiles found in `#{gem_files_dir || "."}`"

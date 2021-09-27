@@ -113,7 +113,7 @@ module Mono
     def publish_next_version
       if config.command?("publish")
         # Custom command configured
-        run_command_in_package config.command("publish")
+        run_command_in_package config.command("publish"), :retry => true
       else
         publish_package
       end
@@ -180,8 +180,8 @@ module Mono
     end
     # :nocov:
 
-    def run_command_in_package(command)
-      run_command command, :dir => path
+    def run_command_in_package(command, options = {})
+      run_command command, { :dir => path }.merge(options)
     end
 
     def build_tag(version)

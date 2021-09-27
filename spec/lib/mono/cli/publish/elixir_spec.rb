@@ -111,6 +111,42 @@ RSpec.describe Mono::Cli::Publish do
       ])
       expect(exit_status).to eql(0), output
     end
+
+    context "with failing publish command" do
+      it "retries to publish" do
+        fail_command = "exit 1"
+        prepare_elixir_project do
+          create_package_mix :version => "1.2.3"
+          add_changeset :patch
+        end
+        confirm_publish_package
+        add_cli_input "y" # Retry command
+        add_cli_input "n" # Don't retry command
+        output = run_publish_process(
+          :stubbed_commands => [/^git push/],
+          :failed_commands => [/^mix hex.publish package --yes/]
+        )
+
+        project_dir = "/#{current_project}"
+        next_version = "1.2.4"
+
+        expect(output).to include(<<~OUTPUT), output
+          #{fail_command}
+          Error: Command failed. Do you want to retry? (Y/n): #{fail_command}
+          Error: Command failed. Do you want to retry? (Y/n): Error: Command failed with status `1`
+        OUTPUT
+
+        expect(performed_commands).to eql([
+          [project_dir, "mix deps.get"],
+          [project_dir, "mix compile"],
+          [project_dir, "git add -A"],
+          [project_dir, "git commit -m 'Publish packages' -m '- v#{next_version}' -m '[ci skip]'"],
+          [project_dir, "git tag v#{next_version}"],
+          [project_dir, "mix hex.publish package --yes"]
+        ])
+        expect(exit_status).to eql(1), output
+      end
+    end
   end
 
   context "with mono Elixir project" do
@@ -278,15 +314,18 @@ RSpec.describe Mono::Cli::Publish do
     end
   end
 
-  def run_publish_process
+  def run_publish_process(failed_commands: [], stubbed_commands: nil)
+    stubbed_commands ||= [/^mix hex.publish package --yes/, /^git push/]
     capture_stdout do
       in_project do
         add_changeset(:patch)
 
         perform_commands do
-          stub_commands [/^mix hex.publish package --yes/, /^git push/] do
-            run_bootstrap
-            run_publish
+          fail_commands failed_commands do
+            stub_commands stubbed_commands do
+              run_bootstrap
+              run_publish
+            end
           end
         end
       end

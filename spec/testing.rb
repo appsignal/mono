@@ -36,6 +36,10 @@ module Testing
     def stubbed_commands
       @stubbed_commands ||= []
     end
+
+    def failed_commands
+      @failed_commands ||= []
+    end
   end
 
   module Command
@@ -53,6 +57,10 @@ module Testing
 
       return unless Testing.perform_commands?
       return if Testing.stubbed_commands.find { |matcher| matcher.match?(command) }
+
+      # Overwrite deliberatly failing commands with `exit 1` to force the
+      # failure
+      @command = "exit 1" if Testing.failed_commands.find { |matcher| matcher.match?(command) }
 
       super
     end

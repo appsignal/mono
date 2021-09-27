@@ -16,21 +16,37 @@ module Mono
       parts << command
       cmd = parts.join
 
-      puts cmd
-      unless dry_run?
-        system cmd
-        exitstatus = $?
-        unless exitstatus.success?
-          puts "Error: Command failed with status `#{exitstatus.exitstatus}`"
-          exit 1
-        end
-      end
+      execute_command cmd unless dry_run?
     end
 
     private
 
+    def execute_command(cmd)
+      loop do
+        puts cmd
+        system cmd
+        exitstatus = $?
+        break if exitstatus.success?
+
+        if retry?
+          answer = Shell.yes_or_no(
+            "Error: Command failed. Do you want to retry? (Y/n): ",
+            :default => "Y"
+          )
+          next if answer
+        end
+
+        puts "Error: Command failed with status `#{exitstatus.exitstatus}`"
+        exit 1
+      end
+    end
+
     def dry_run?
       ENV["DRY_RUN"] == "true"
+    end
+
+    def retry?
+      options[:retry]
     end
 
     def path
