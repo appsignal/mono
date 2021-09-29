@@ -39,6 +39,7 @@ module Mono
   end
 end
 
+require "mono/shell"
 require "mono/version"
 require "mono/version_object"
 require "mono/version_promoter"

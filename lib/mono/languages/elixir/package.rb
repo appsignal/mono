@@ -39,7 +39,7 @@ module Mono
         end
 
         def publish_package
-          run_command_in_package "mix hex.publish --yes"
+          run_command_in_package "mix hex.publish --yes", :retry => true
         end
 
         def build_package

@@ -21,6 +21,14 @@ module CommandHelper
     yield
   end
 
+  # When a command is wrapped with {perform_commands} they are actually
+  # executed. If you want cause one to fail deliberatly (to test the error
+  # handling), use this helper.
+  def fail_commands(command_matchers)
+    command_matchers.each { |matcher| Testing.failed_commands << matcher }
+    yield
+  end
+
   def exit_status
     Testing.exit_status || 0
   end

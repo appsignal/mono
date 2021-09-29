@@ -57,7 +57,8 @@ module Mono
             options << "--tag #{next_version.prerelease_type}"
           end
           options << "--new-version #{next_version}" if npm_client == "yarn"
-          run_client_command_in_package "publish #{options.join(" ")}".strip
+          run_client_command_in_package "publish #{options.join(" ")}".strip,
+            :retry => true
         end
 
         def build_package
@@ -108,8 +109,8 @@ module Mono
           run_command "#{npm_client} #{command}"
         end
 
-        def run_client_command_in_package(command)
-          run_command_in_package "#{npm_client} #{command}"
+        def run_client_command_in_package(command, options = {})
+          run_command_in_package "#{npm_client} #{command}", options
         end
 
         def run_client_command_for_package(command)

@@ -3,7 +3,7 @@
 module Mono
   module Cli
     class Init
-      include Helpers
+      include Shell
 
       def execute
         config = {}
