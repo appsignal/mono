@@ -1,7 +1,19 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-git_status = `git status -s`
+module MonoCheck
+  def self.run(command)
+    read, write = IO.pipe
+    pid = spawn command,
+      [:out, :err] => write,
+      :chdir => __dir__
+    Process.wait pid
+    write.close
+    read.read
+  end
+end
+
+git_status = MonoCheck.run("git status -s")
 if $?.success?
   unless git_status.empty?
     puts "ERROR: The mono repository has been modified locally. " \
@@ -12,7 +24,7 @@ if $?.success?
     exit 1
   end
 
-  current_branch = `git rev-parse --abbrev-ref HEAD`.chomp
+  current_branch = MonoCheck.run("git rev-parse --abbrev-ref HEAD").chomp
   unless current_branch == "main"
     puts "ERROR: The mono repository is not on the `main` branch. " \
       "Please switch to the main branch to ensure you're using a released " \
