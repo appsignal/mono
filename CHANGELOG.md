@@ -1,5 +1,13 @@
 # Mono
 
+## 0.5.9
+
+- [616571e](https://github.com/appsignal/mono//commit/616571e8aebb77ab2aa9240ae803e0636aeb9bf1) patch - Add `mono-dev` executable to allow for testing mono. The `mono` executable will not allow usage of mono with uncommitted changes. This will prevent accidental usage of mono with uncommitted changes that would cause mono to crash unexpectedly.
+- [43cc5fc](https://github.com/appsignal/mono//commit/43cc5fc133afd6faccecc1e6c966a5c0bb0bd279) patch - Retry failed publish commands. When a publish command like `gem push` fails, prompt the user to retry it rather than fail the entire publish process.
+- [709caa4](https://github.com/appsignal/mono//commit/709caa41acba2a1e2f352db885570680b48f46ae) patch - Fix mono production check directory. It would perform the check in the current directory, not the mono install directory.
+- [f70a877](https://github.com/appsignal/mono//commit/f70a877adb7f36e30a63acf104bb119da4e8d588) patch - Check Git branch for mono to prevent accidental usage of mono on an unmerged branch.
+- [e89e57c](https://github.com/appsignal/mono//commit/e89e57c88f7df7281531da6fdb37010e67fa7461) patch - Skip Git check if Git command fails. If `git status` fails in the `mono` directory, skip the check. It's probably a production download.
+
 ## 0.5.8
 
 - [244ec4f](https://github.com/appsignal/mono//commit/244ec4f633754c9f1f85578fbc1fb00ce0843401) patch - Aside from working on Elixir projects with their version set in a module attribute (`@version "1.2.3"` and `version: @version`), add support for projects with their versions set directly in the `project` block (`version: "1.2.3"`).
