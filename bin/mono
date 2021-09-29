@@ -2,28 +2,25 @@
 # frozen_string_literal: true
 
 git_status = `git status -s`
-unless $?.success?
-  puts "ERROR: Unable to perform the mono production check. Is git installed?"
-  exit 1
-end
+if $?.success?
+  unless git_status.empty?
+    puts "ERROR: The mono repository has been modified locally. " \
+      "You are using the `mono` executable which is only meant for " \
+      "'production' use."
+    puts "Please use the `mono-dev` executable if you want to use " \
+      "uncommitted changes to _test_ mono itself."
+    exit 1
+  end
 
-unless git_status.empty?
-  puts "ERROR: The mono repository has been modified locally. " \
-    "You are using the `mono` executable which is only meant for " \
-    "'production' use."
-  puts "Please use the `mono-dev` executable if you want to use uncommitted " \
-    "changes to _test_ mono itself."
-  exit 1
-end
-
-current_branch = `git rev-parse --abbrev-ref HEAD`.chomp
-unless current_branch == "main"
-  puts "ERROR: The mono repository is not on the `main` branch. " \
-    "Please switch to the main branch to ensure you're using a released " \
-    "version."
-  puts "Please use the `mono-dev` executable if you want to use uncommitted " \
-    "changes to _test_ mono itself."
-  exit 1
+  current_branch = `git rev-parse --abbrev-ref HEAD`.chomp
+  unless current_branch == "main"
+    puts "ERROR: The mono repository is not on the `main` branch. " \
+      "Please switch to the main branch to ensure you're using a released " \
+      "version."
+    puts "Please use the `mono-dev` executable if you want to use " \
+      "uncommitted changes to _test_ mono itself."
+    exit 1
+  end
 end
 
 $LOAD_PATH << File.expand_path(File.join(__dir__, "..", "lib"))
