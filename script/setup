@@ -2,18 +2,35 @@
 
 set -eu
 
-if [[ -f $HOME/.zshrc ]]; then
-  echo "export PATH=\"$PWD/bin:\$PATH\"" >> $HOME/.zshrc
-  echo "Configured mono path in $HOME/.zshrc"
-  exit 0
+status=1
+
+configure_path() {
+  file="$1"
+  line="export PATH=\"$PWD/bin:\$PATH\""
+
+  if [[ -f "$file" ]]; then
+    if ! grep -c "$line" "$file" > /dev/null; then
+      echo "$line" >> "$file"
+    fi
+    echo "Configured mono path in $file"
+    status=0
+  fi
+}
+
+configure_path "$HOME/.zshrc"
+configure_path "$HOME/.bashrc"
+
+fish_config_dir="${XDG_CONFIG_HOME:-"$HOME/.config"}/fish"
+if [[ -d "$fish_config_dir" ]]; then
+  mkdir -p "$fish_config_dir/conf.d"
+  echo "set PATH \"$PWD/bin\" \"\$PATH\"" > "$fish_config_dir/conf.d/mono.fish"
+  echo "Configured mono path in $fish_config_dir/conf.d/mono.fish"
+  status=0
 fi
 
-if [[ -f $HOME/.bashrc ]]; then
-  echo "export PATH=\"$PWD/bin:\$PATH\"" >> $HOME/.bashrc
-  echo "Configured mono path in $HOME/.bashrc"
-  exit 0
+if [[ $status == 1 ]]; then
+  echo "Error: No shell detected. Please add the following line to your Shell setup."
+  echo 'export PATH="$PWD/bin:$PATH"'
 fi
 
-echo "Error: No shell detected. Please add the following line to your Shell setup."
-echo 'export PATH="$PWD/bin:$PATH"'
-exit 1
+exit $status
