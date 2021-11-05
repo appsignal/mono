@@ -51,6 +51,18 @@ module ProjectHelper
     end
   end
 
+  def prepare_elixir_project(config = {})
+    prepare_new_project do
+      create_mono_config(
+        {
+          "language" => "elixir",
+          "publish" => { "command" => "mix hex.publish package --yes" }
+        }.merge(config)
+      )
+      yield
+    end
+  end
+
   def in_project(&block)
     # Execute block in test dir
     Dir.chdir(current_project_dir, &block)
