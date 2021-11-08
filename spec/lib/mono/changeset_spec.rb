@@ -72,34 +72,47 @@ RSpec.describe Mono::Changeset do
         "Message"
       )
     end
-    subject { changeset.bump }
 
     describe "with major" do
       let(:bump) { "major" }
-      it { is_expected.to eql("major") }
+
+      it "return major" do
+        expect(changeset.bump).to eql("major")
+        expect(changeset.bump_index).to eql(0)
+      end
     end
 
     describe "with minor" do
       let(:bump) { "minor" }
-      it { is_expected.to eql("minor") }
+
+      it "returns minor" do
+        expect(changeset.bump).to eql("minor")
+        expect(changeset.bump_index).to eql(1)
+      end
     end
 
     describe "with patch" do
       let(:bump) { "patch" }
-      it { is_expected.to eql("patch") }
+
+      it "returns patch" do
+        expect(changeset.bump).to eql("patch")
+        expect(changeset.bump_index).to eql(2)
+      end
     end
 
     describe "with other" do
       let(:bump) { "random" }
       it "raises an UnknownBumpTypeError" do
-        expect { subject }.to raise_error(Mono::Changeset::UnknownBumpTypeError)
+        expect { changeset.bump }.to raise_error(Mono::Changeset::UnknownBumpTypeError)
+        expect { changeset.bump_index }.to raise_error(Mono::Changeset::UnknownBumpTypeError)
       end
     end
 
     describe "without bump" do
       let(:bump) { "" }
       it "raises an UnknownBumpTypeError" do
-        expect { subject }.to raise_error(Mono::Changeset::UnknownBumpTypeError)
+        expect { changeset.bump }.to raise_error(Mono::Changeset::UnknownBumpTypeError)
+        expect { changeset.bump_index }.to raise_error(Mono::Changeset::UnknownBumpTypeError)
       end
     end
   end

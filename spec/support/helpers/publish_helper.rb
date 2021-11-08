@@ -37,4 +37,24 @@ module PublishHelper
   def run_bootstrap(args = [])
     Mono::Cli::Wrapper.new(["bootstrap"] + args).execute
   end
+
+  # Strip all changeset summary output from the output string.
+  # Useful when only testing version changes, and not the summary itself.
+  def strip_changeset_output(output)
+    new_output = []
+    changesets = false
+    output.lines do |line|
+      # When a line doesn't start with space, it means we're not printing
+      # changesets from a package anymore
+      changesets = false unless line.start_with?(" ")
+      next if changesets # Skip all changeset lines
+
+      if line == "  Changesets:\n" # Changeset summary detected, skipping
+        changesets = true
+        next
+      end
+      new_output << line
+    end
+    new_output.join
+  end
 end

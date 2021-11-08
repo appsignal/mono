@@ -65,6 +65,104 @@ RSpec.describe Mono::Cli::Publish do
     end
   end
 
+  describe "changeset preview" do
+    context "with single package project" do
+      it "prints changeset previews in the package summary" do
+        prepare_elixir_project do
+          create_package_mix :version => "1.2.3"
+          add_changeset(:patch, "a" * 101) # Limits to 100 characters in preview
+          add_changeset(:major, "This is a major changeset bump.\nLine 2.\nLine 3.")
+          add_changeset(:minor)
+        end
+        do_not_publish_package
+        output =
+          capture_stdout do
+            in_project do
+              perform_commands do
+                stub_commands [/^mix hex.publish package --yes/, /^git push/] do
+                  run_publish
+                end
+              end
+            end
+          end
+
+        # Sorts changesets by highest version bump first
+        expect(output).to include(<<~OUTPUT), output
+          The following packages will be published (or not):
+          - custom_project_project:
+            Current version: v1.2.3
+            Next version:    v2.0.0 (major)
+            Changesets:
+            - major: ./.changesets/2_major.md
+                This is a major changeset bump. Line 2. Line 3.
+            - minor: ./.changesets/3_minor.md
+                This is a minor changeset bump.
+            - patch: ./.changesets/1_patch.md
+                #{"a" * 100}...
+        OUTPUT
+
+        expect(performed_commands).to eql([])
+        expect(exit_status).to eql(1), output
+      end
+    end
+
+    context "with multi package project" do
+      it "prints changeset previews in the package summary" do
+        prepare_elixir_project "packages_dir" => "packages/" do
+          create_package :package_a do
+            create_package_mix :version => "1.2.3"
+            add_changeset(:patch, "a" * 101) # Limits to 100 characters in preview
+            add_changeset(:major, "This is a major changeset bump.\nLine 2.\nLine 3.")
+            add_changeset(:minor)
+          end
+          create_package :package_b do
+            create_package_mix :version => "1.2.3"
+            add_changeset(:patch, "Changeset with indenting.\n  - item 1\n  - item 2")
+          end
+          create_package :package_c do
+            create_package_mix :version => "1.2.3"
+          end
+        end
+        do_not_publish_package
+        output =
+          capture_stdout do
+            in_project do
+              perform_commands do
+                stub_commands [/^mix hex.publish package --yes/, /^git push/] do
+                  run_publish
+                end
+              end
+            end
+          end
+
+        # Sorts changesets by highest version bump first
+        expect(output).to include(<<~OUTPUT), output
+          The following packages will be published (or not):
+          - package_a:
+            Current version: package_a@1.2.3
+            Next version:    package_a@2.0.0 (major)
+            Changesets:
+            - major: packages/package_a/.changesets/2_major.md
+                This is a major changeset bump. Line 2. Line 3.
+            - minor: packages/package_a/.changesets/3_minor.md
+                This is a minor changeset bump.
+            - patch: packages/package_a/.changesets/1_patch.md
+                #{"a" * 100}...
+          - package_b:
+            Current version: package_b@1.2.3
+            Next version:    package_b@1.2.4 (patch)
+            Changesets:
+            - patch: packages/package_b/.changesets/4_patch.md
+                Changeset with indenting. - item 1 - item 2
+          - package_c: (Will not publish)
+        OUTPUT
+
+        expect(performed_commands).to eql([])
+        expect(exit_status).to eql(1), output
+      end
+    end
+  end
+
   context "when not confirming publishing" do
     it "exits without making changes" do
       prepare_project :ruby_single

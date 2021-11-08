@@ -6,6 +6,8 @@ module Mono
   class Changeset
     attr_reader :path, :message
 
+    # Supported changeset version bumps, sorted by biggest change. The "major"
+    # change being the largest, index 0, and patch being the lowest, index 2.
     SUPPORTED_BUMPS = %w[major minor patch].freeze
     YAML_FRONT_MATTER_REGEXP =
       /\A(---\s*\n.*?\n?)^((---|\.\.\.)\s*$\n?)/m.freeze
@@ -56,6 +58,15 @@ module Mono
 
     def bump
       @metadata["bump"]
+    end
+
+    # Returns the number equivilant of the version bump string. A lower number
+    # is a higher change.
+    # - major == 0
+    # - minor == 1
+    # - patch == 2
+    def bump_index
+      SUPPORTED_BUMPS.index @metadata["bump"]
     end
 
     def date

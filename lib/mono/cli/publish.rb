@@ -74,6 +74,7 @@ module Mono
         packages.each do |package|
           if package.will_update?
             print_package_summary(package)
+            print_package_changesets(package)
           else
             puts "- #{package.name}: (Will not publish)"
           end
@@ -92,6 +93,23 @@ module Mono
         puts "- #{package.name}:"
         puts "  Current version: #{package.current_tag}"
         puts "  Next version:    #{package.next_tag} (#{package.next_bump})"
+      end
+
+      def print_package_changesets(package)
+        puts "  Changesets:"
+        # Sort by biggest version bump at the top
+        changesets = package.changesets.changesets.sort_by(&:bump_index)
+        changesets.each do |changeset|
+          # Clean up the description from indenting and new lines so the
+          # formatting doesn't break
+          description = changeset.message
+            .gsub(/\n\s+/, " ") # Strip out any indenting in new lines
+            .tr("\n", " ") # Strip out any remaining new lines
+          # Trim long changeset messages
+          description = "#{description[0...100]}..." if description.length > 100
+          puts "  - #{changeset.bump}: #{changeset.path}"
+          puts "      #{description}"
+        end
       end
 
       def update_changelog(packages)
