@@ -302,33 +302,23 @@ RSpec.describe Mono::Cli::Publish do
     end
   end
 
-  def prepare_elixir_project(config = {})
-    prepare_new_project do
-      create_mono_config(
-        {
-          "language" => "elixir",
-          "publish" => { "command" => "mix hex.publish package --yes" }
-        }.merge(config)
-      )
-      yield
-    end
-  end
-
   def run_publish_process(failed_commands: [], stubbed_commands: nil)
     stubbed_commands ||= [/^mix hex.publish package --yes/, /^git push/]
-    capture_stdout do
-      in_project do
-        add_changeset(:patch)
+    output =
+      capture_stdout do
+        in_project do
+          add_changeset(:patch)
 
-        perform_commands do
-          fail_commands failed_commands do
-            stub_commands stubbed_commands do
-              run_bootstrap
-              run_publish
+          perform_commands do
+            fail_commands failed_commands do
+              stub_commands stubbed_commands do
+                run_bootstrap
+                run_publish
+              end
             end
           end
         end
       end
-    end
+    strip_changeset_output output
   end
 end

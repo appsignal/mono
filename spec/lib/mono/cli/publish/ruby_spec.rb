@@ -476,16 +476,18 @@ RSpec.describe Mono::Cli::Publish do
   end
 
   def run_publish_process(failed_commands: [], stubbed_commands: [/^gem push/, /^git push/])
-    capture_stdout do
-      in_project do
-        perform_commands do
-          fail_commands failed_commands do
-            stub_commands stubbed_commands do
-              run_publish
+    output =
+      capture_stdout do
+        in_project do
+          perform_commands do
+            fail_commands failed_commands do
+              stub_commands stubbed_commands do
+                run_publish
+              end
             end
           end
         end
       end
-    end
+    strip_changeset_output output
   end
 end

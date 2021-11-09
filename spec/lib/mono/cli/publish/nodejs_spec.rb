@@ -786,17 +786,19 @@ RSpec.describe Mono::Cli::Publish do
 
   def run_publish_process(args = [], failed_commands: [], stubbed_commands: nil)
     stubbed_commands ||= [/^(npm|yarn) publish/, /^git push/]
-    capture_stdout do
-      in_project do
-        perform_commands do
-          fail_commands failed_commands do
-            stub_commands stubbed_commands do
-              run_bootstrap
-              run_publish(args)
+    output =
+      capture_stdout do
+        in_project do
+          perform_commands do
+            fail_commands failed_commands do
+              stub_commands stubbed_commands do
+                run_bootstrap
+                run_publish(args)
+              end
             end
           end
         end
       end
-    end
+    strip_changeset_output output
   end
 end
