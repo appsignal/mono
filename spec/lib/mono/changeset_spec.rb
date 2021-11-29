@@ -25,7 +25,7 @@ RSpec.describe Mono::Changeset do
             "- List item 2\n" \
             "- List item 3\n" \
             "- List item 4"
-          path = add_changeset :patch, message
+          path = add_changeset :patch, :message => message
           changeset = described_class.parse(path)
           expect(changeset.path).to eql(path)
           expect(changeset.bump).to eql("patch")
@@ -43,7 +43,7 @@ RSpec.describe Mono::Changeset do
             "- List item 2\n" \
             "- List item 3\n" \
             "- List item 4"
-          path = add_changeset :none, message
+          path = add_changeset :none, :message => message
           expect do
             described_class.parse(path)
           end.to raise_error(described_class::MetadataError)
@@ -55,7 +55,7 @@ RSpec.describe Mono::Changeset do
       it "raises a EmptyMessageError" do
         prepare_project :nodejs_npm_single
         in_project do
-          path = add_changeset :patch, ""
+          path = add_changeset :patch, :message => ""
           expect do
             described_class.parse(path)
           end.to raise_error(described_class::EmptyMessageError)

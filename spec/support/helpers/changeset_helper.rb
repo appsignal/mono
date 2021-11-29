@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module ChangesetHelper
-  def add_changeset(bump, message = nil)
+  def add_changeset(bump, message: nil)
     @changeset_count ||= 0
     @changeset_count += 1
     FileUtils.mkdir_p(".changesets")
