@@ -103,5 +103,102 @@ RSpec.describe Mono::ChangesetCollection do
     end
   end
 
-  pending "Test different version bumps as written to changelog file"
+  describe "#write_changesets_to_changelog" do
+    let(:test_project) { :nodejs_npm_single }
+    let(:config) { config_for(test_project) }
+    let(:package) { Mono::Languages::Elixir::Package.new("my-package", ".", config) }
+    let(:collection) { described_class.new(config, package) }
+
+    it "writes all changesets to the changelog in order of bump size" do
+      prepare_elixir_project do
+        create_package_mix :version => "1.2.3"
+        create_changelog
+        add_changeset :patch, :type => :fix
+
+        add_changeset :patch, :type => :add
+        add_changeset :major, :type => :add
+        add_changeset :minor, :type => :add
+
+        add_changeset :patch, :type => :change
+        add_changeset :minor, :type => :change
+        add_changeset :major, :type => :change
+
+        add_changeset :patch, :type => :deprecate
+
+        add_changeset :patch, :type => :remove
+        add_changeset :major, :type => :remove
+
+        add_changeset :patch, :type => :security
+      end
+
+      in_project do
+        collection.write_changesets_to_changelog
+        changelog = normalize_changelog(File.read("CHANGELOG.md"))
+        expect(changelog).to include(<<~CHANGELOG)
+          ## 2.0.0
+
+          ### Added
+
+          - [LINK] major - This is a major changeset bump.
+          - [LINK] minor - This is a minor changeset bump.
+          - [LINK] patch - This is a patch changeset bump.
+
+          ### Changed
+
+          - [LINK] major - This is a major changeset bump.
+          - [LINK] minor - This is a minor changeset bump.
+          - [LINK] patch - This is a patch changeset bump.
+
+          ### Deprecated
+
+          - [LINK] patch - This is a patch changeset bump.
+
+          ### Removed
+
+          - [LINK] major - This is a major changeset bump.
+          - [LINK] patch - This is a patch changeset bump.
+
+          ### Fixed
+
+          - [LINK] patch - This is a patch changeset bump.
+
+          ### Security
+
+          - [LINK] patch - This is a patch changeset bump.
+        CHANGELOG
+      end
+    end
+
+    it "only writes about types the release includes" do
+      prepare_elixir_project do
+        create_package_mix :version => "1.2.3"
+        create_changelog
+        add_changeset :patch, :type => :deprecate
+        add_changeset :patch, :type => :remove
+        add_changeset :major, :type => :remove
+      end
+
+      in_project do
+        collection.write_changesets_to_changelog
+        changelog = normalize_changelog(File.read("CHANGELOG.md"))
+        expect(changelog).to include(<<~CHANGELOG)
+          ## 2.0.0
+
+          ### Deprecated
+
+          - [LINK] patch - This is a patch changeset bump.
+
+          ### Removed
+
+          - [LINK] major - This is a major changeset bump.
+          - [LINK] patch - This is a patch changeset bump.
+        CHANGELOG
+      end
+    end
+  end
+
+  def normalize_changelog(content)
+    # Remove links so we don't have to try and match against every instance
+    content.gsub(/\[[a-z0-9]{7}\]\(.+\)/, "[LINK]")
+  end
 end

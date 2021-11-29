@@ -23,11 +23,22 @@ module Mono
     end
 
     def write_changesets_to_changelog
-      new_messages = []
-      sets = changesets.sort_by { |set| [set.bump, set.date] }
+      new_messages = Hash.new { |hash, key| hash[key] = [] }
+      sets = changesets.sort_by { |set| [set.bump_index, set.date] }
       sets.each do |changeset|
-        new_messages << build_changelog_entry(changeset)
+        new_messages[changeset.type] << build_changelog_entry(changeset)
       end
+      content = []
+      Changeset::SUPPORTED_TYPES.each do |label, value|
+        messages_for_type = new_messages[value]
+        next if messages_for_type.empty?
+
+        content << "\n### #{label}\n\n"
+        messages_for_type.each do |message|
+          content << message
+        end
+      end
+
       changelog_path = File.join(package.path, "CHANGELOG.md")
       FileUtils.touch(changelog_path)
       contents = File.read(changelog_path)
@@ -38,9 +49,9 @@ module Mono
           #{heading}
           ## #{package.next_version}
 
-          #{new_messages.join("").chomp}
+          #{content.join.strip}
 
-          #{lines.join("").strip}
+          #{lines.join.strip}
         CHANGELOG
       end
       changesets.each(&:remove)

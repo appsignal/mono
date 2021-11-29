@@ -21,12 +21,14 @@ module Mono
             required_input("Summarize the change (for changeset filename): ")
           filename = change_description.downcase.tr(". /\\", "-")
           filepath = File.join(dir, "#{filename}.md")
+          type = prompt_for_type
           bump = prompt_for_bump
 
           File.open(filepath, "w+") do |file|
             file.write(<<~CONTENTS)
               ---
               bump: "#{bump}"
+              type: "#{type}"
               ---
 
               #{change_description}
@@ -60,6 +62,28 @@ module Mono
             end
 
             puts "Unknown package selected. Please select package."
+          end
+        end
+
+        def prompt_for_type
+          types = Mono::Changeset::SUPPORTED_TYPES.keys
+          loop do
+            puts "What type of change is this: "
+
+            types.each_with_index do |label, index|
+              puts "#{index + 1}: #{label}"
+            end
+            type_index = required_input("Select type 1-#{types.length}: ")
+            type_index = parse_number(type_index)
+            if type_index&.positive?
+              type_key = types[type_index - 1]
+              if type_key
+                type = Mono::Changeset::SUPPORTED_TYPES[type_key]
+                break type if type
+              end
+            end
+
+            puts "Unknown type selected. Please select a type."
           end
         end
 

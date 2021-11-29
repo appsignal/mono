@@ -146,7 +146,7 @@ module ProjectHelper
   def create_changelog
     File.open "CHANGELOG.md", "w" do |file|
       file.write <<~IGNORE
-        # #{current_package} Changelog
+        # #{in_package? ? current_package : "Project"} Changelog
 
         ## 0.0.0
 
