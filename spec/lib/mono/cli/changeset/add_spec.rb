@@ -143,6 +143,8 @@ RSpec.describe Mono::Cli::Changeset do
       prepare_project :elixir_mono
 
       add_cli_input "" # User presses enter without input
+      add_cli_input "x" # Invalid value
+      add_cli_input "0" # Invalid index, no zero package
       add_cli_input "3" # Invalid index, only 2 packages
       add_cli_input "1" # First package
       add_cli_input "My Awes/o\\me patch"
@@ -162,7 +164,7 @@ RSpec.describe Mono::Cli::Changeset do
         "Changeset file created at #{changeset_path}",
         "Do you want to open this file to add more information? (y/N):"
       ), output
-      expect(output.scan(/Select package 1-2/).length).to eql(3)
+      expect(output.scan(/Select package 1-2/).length).to eql(5)
       in_project do
         in_package :package_one do
           expect(current_package_changeset_files.length).to eql(1)

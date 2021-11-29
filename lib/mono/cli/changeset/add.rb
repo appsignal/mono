@@ -53,13 +53,13 @@ module Mono
             end
             package_index =
               required_input("Select package 1-#{packages.length}: ").to_i
-
-            package = packages[package_index - 1]
-            if package
-              break package
-            else
-              puts "Unknown package selected. Please select package."
+            package_index = parse_number(package_index)
+            if package_index&.positive?
+              package = packages[package_index - 1]
+              break package if package
             end
+
+            puts "Unknown package selected. Please select package."
           end
         end
 
@@ -74,6 +74,12 @@ module Mono
                 "Please specify supported bump type."
             end
           end
+        end
+
+        def parse_number(string)
+          Integer(string)
+        rescue ArgumentError
+          # Do nothing, invalid value
         end
       end
     end
