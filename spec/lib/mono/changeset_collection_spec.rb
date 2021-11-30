@@ -104,7 +104,7 @@ RSpec.describe Mono::ChangesetCollection do
   end
 
   describe "#write_changesets_to_changelog" do
-    let(:test_project) { :nodejs_npm_single }
+    let(:test_project) { :elixir_single }
     let(:config) { config_for(test_project) }
     let(:package) { Mono::Languages::Elixir::Package.new("my-package", ".", config) }
     let(:collection) { described_class.new(config, package) }

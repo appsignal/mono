@@ -66,21 +66,18 @@ module Mono
         end
 
         def prompt_for_type
-          types = Mono::Changeset::SUPPORTED_TYPES.keys
+          types = Mono::Changeset::SUPPORTED_TYPES.to_a
           loop do
             puts "What type of change is this: "
 
-            types.each_with_index do |label, index|
+            types.each_with_index do |(_value, label), index|
               puts "#{index + 1}: #{label}"
             end
             type_index = required_input("Select type 1-#{types.length}: ")
             type_index = parse_number(type_index)
             if type_index&.positive?
-              type_key = types[type_index - 1]
-              if type_key
-                type = Mono::Changeset::SUPPORTED_TYPES[type_key]
-                break type if type
-              end
+              type = types[type_index - 1]&.first
+              break type if type
             end
 
             puts "Unknown type selected. Please select a type."

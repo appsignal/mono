@@ -8,12 +8,12 @@ module Mono
 
     # Sorted Hash of supported types in the changelog
     SUPPORTED_TYPES = {
-      "Added" => "add",
-      "Changed" => "change",
-      "Deprecated" => "deprecate",
-      "Removed" => "remove",
-      "Fixed" => "fix",
-      "Security" => "security"
+      "add" => "Added",
+      "change" => "Changed",
+      "deprecate" => "Deprecated",
+      "remove" => "Removed",
+      "fix" => "Fixed",
+      "security" => "Security"
     }.freeze
     # Supported changeset version bumps, sorted by biggest change. The "major"
     # change being the largest, index 0, and patch being the lowest, index 2.
@@ -49,7 +49,7 @@ module Mono
     end
 
     def self.supported_type?(type)
-      SUPPORTED_TYPES.values.include?(type)
+      SUPPORTED_TYPES.include?(type)
     end
 
     def self.parse(file)
