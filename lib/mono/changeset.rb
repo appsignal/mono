@@ -101,6 +101,22 @@ module Mono
       @metadata["type"]
     end
 
+    def type_label
+      SUPPORTED_TYPES.fetch(type)
+    end
+
+    # Returns the number equivilant of the change type string. A lower number
+    # is a higher change.
+    # - add == 0
+    # - change == 1
+    # - deprecate == 2
+    # - remove == 3
+    # - fix == 4
+    # - security == 5
+    def type_index
+      SUPPORTED_TYPES.keys.index type
+    end
+
     def bump
       @metadata["bump"]
     end

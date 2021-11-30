@@ -70,9 +70,20 @@ RSpec.describe Mono::Cli::Publish do
       it "prints changeset previews in the package summary" do
         prepare_elixir_project do
           create_package_mix :version => "1.2.3"
-          add_changeset(:patch, :message => "a" * 101) # Limits to 100 characters in preview
-          add_changeset(:major, :message => "This is a major changeset bump.\nLine 2.\nLine 3.")
-          add_changeset(:minor)
+          add_changeset :patch,
+            :type => :change,
+            :message => "a" * 101 # Limits to 100 characters in preview
+          add_changeset :major,
+            :type => :change,
+            :message => "This is a major changeset bump.\nLine 2.\nLine 3."
+          add_changeset :minor, :type => :change
+          add_changeset :patch,
+            :type => :add,
+            :message => "a" * 101 # Limits to 100 characters in preview
+          add_changeset :major,
+            :type => :add,
+            :message => "This is a major changeset bump.\nLine 2.\nLine 3."
+          add_changeset :minor, :type => :add
         end
         do_not_publish_package
         output =
@@ -93,11 +104,17 @@ RSpec.describe Mono::Cli::Publish do
             Current version: v1.2.3
             Next version:    v2.0.0 (major)
             Changesets:
-            - major: ./.changesets/2_major.md
+            - Added - major: ./.changesets/5_major.md
                 This is a major changeset bump. Line 2. Line 3.
-            - minor: ./.changesets/3_minor.md
+            - Added - minor: ./.changesets/6_minor.md
                 This is a minor changeset bump.
-            - patch: ./.changesets/1_patch.md
+            - Added - patch: ./.changesets/4_patch.md
+                #{"a" * 100}...
+            - Changed - major: ./.changesets/2_major.md
+                This is a major changeset bump. Line 2. Line 3.
+            - Changed - minor: ./.changesets/3_minor.md
+                This is a minor changeset bump.
+            - Changed - patch: ./.changesets/1_patch.md
                 #{"a" * 100}...
         OUTPUT
 
@@ -142,17 +159,17 @@ RSpec.describe Mono::Cli::Publish do
             Current version: package_a@1.2.3
             Next version:    package_a@2.0.0 (major)
             Changesets:
-            - major: packages/package_a/.changesets/2_major.md
+            - Added - major: packages/package_a/.changesets/2_major.md
                 This is a major changeset bump. Line 2. Line 3.
-            - minor: packages/package_a/.changesets/3_minor.md
+            - Added - minor: packages/package_a/.changesets/3_minor.md
                 This is a minor changeset bump.
-            - patch: packages/package_a/.changesets/1_patch.md
+            - Added - patch: packages/package_a/.changesets/1_patch.md
                 #{"a" * 100}...
           - package_b:
             Current version: package_b@1.2.3
             Next version:    package_b@1.2.4 (patch)
             Changesets:
-            - patch: packages/package_b/.changesets/4_patch.md
+            - Added - patch: packages/package_b/.changesets/4_patch.md
                 Changeset with indenting. - item 1 - item 2
           - package_c: (Will not publish)
         OUTPUT

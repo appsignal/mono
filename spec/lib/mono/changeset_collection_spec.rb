@@ -103,6 +103,98 @@ RSpec.describe Mono::ChangesetCollection do
     end
   end
 
+  describe "#changesets_by_types_sorted_by_bump" do
+    let(:test_project) { :elixir_single }
+    let(:config) { config_for(test_project) }
+    let(:package) { Mono::Languages::Elixir::Package.new("my-package", ".", config) }
+    let(:collection) { described_class.new(config, package) }
+
+    it "returns changesets in a hash per type sorted by version bump" do
+      prepare_elixir_project do
+        create_package_mix :version => "1.2.3"
+        create_changelog
+        add_changeset :patch, :type => :fix
+
+        add_changeset :patch, :type => :add
+        add_changeset :major, :type => :add
+        add_changeset :minor, :type => :add
+
+        add_changeset :patch, :type => :change
+        add_changeset :minor, :type => :change
+        add_changeset :major, :type => :change
+
+        add_changeset :patch, :type => :deprecate
+
+        add_changeset :patch, :type => :remove
+        add_changeset :major, :type => :remove
+
+        add_changeset :patch, :type => :security
+      end
+
+      in_project do
+        changesets = collection.changesets_by_types_sorted_by_bump
+        expect(changesets.keys)
+          .to eql(["add", "change", "deprecate", "remove", "fix", "security"])
+        expect(map_changesets(changesets["add"])).to eq([
+          ["add", "major"],
+          ["add", "minor"],
+          ["add", "patch"]
+        ])
+        expect(map_changesets(changesets["change"])).to eq([
+          ["change", "major"],
+          ["change", "minor"],
+          ["change", "patch"]
+        ])
+        expect(map_changesets(changesets["deprecate"])).to eq([
+          ["deprecate", "patch"]
+        ])
+        expect(map_changesets(changesets["remove"])).to eq([
+          ["remove", "major"],
+          ["remove", "patch"]
+        ])
+        expect(map_changesets(changesets["fix"])).to eq([
+          ["fix", "patch"]
+        ])
+        expect(map_changesets(changesets["security"])).to eq([
+          ["security", "patch"]
+        ])
+      end
+    end
+
+    it "only returns present type changesets in a hash per type sorted by version bump" do
+      prepare_elixir_project do
+        create_package_mix :version => "1.2.3"
+        create_changelog
+        add_changeset :patch, :type => :fix
+
+        add_changeset :minor, :type => :change
+        add_changeset :major, :type => :change
+
+        add_changeset :patch, :type => :security
+      end
+
+      in_project do
+        changesets = collection.changesets_by_types_sorted_by_bump
+        expect(changesets.keys)
+          .to eql(["change", "fix", "security"])
+        expect(map_changesets(changesets["change"])).to eq([
+          ["change", "major"],
+          ["change", "minor"]
+        ])
+        expect(map_changesets(changesets["fix"])).to eq([
+          ["fix", "patch"]
+        ])
+        expect(map_changesets(changesets["security"])).to eq([
+          ["security", "patch"]
+        ])
+      end
+    end
+
+    def map_changesets(changesets)
+      changesets.map { |changeset| [changeset.type, changeset.bump] }
+    end
+  end
+
   describe "#write_changesets_to_changelog" do
     let(:test_project) { :elixir_single }
     let(:config) { config_for(test_project) }

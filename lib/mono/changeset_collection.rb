@@ -22,20 +22,24 @@ module Mono
         end
     end
 
+    def changesets_by_types_sorted_by_bump
+      collection = Hash.new { |hash, key| hash[key] = [] }
+      changesets
+        .sort_by { |set| [set.type_index, set.bump_index, set.date] }
+        .each { |changeset| collection[changeset.type] << changeset }
+      collection
+    end
+
     def write_changesets_to_changelog
-      new_messages = Hash.new { |hash, key| hash[key] = [] }
-      sets = changesets.sort_by { |set| [set.bump_index, set.date] }
-      sets.each do |changeset|
-        new_messages[changeset.type] << build_changelog_entry(changeset)
-      end
+      changesets_by_type = changesets_by_types_sorted_by_bump
       content = []
       Changeset::SUPPORTED_TYPES.each do |key, label|
-        messages_for_type = new_messages[key]
+        messages_for_type = changesets_by_type[key]
         next if messages_for_type.empty?
 
         content << "\n### #{label}\n\n"
-        messages_for_type.each do |message|
-          content << message
+        messages_for_type.each do |changeset|
+          content << build_changelog_entry(changeset)
         end
       end
 

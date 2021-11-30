@@ -153,11 +153,81 @@ RSpec.describe Mono::Changeset do
     end
   end
 
+  describe "#type" do
+    let(:changeset) do
+      described_class.new(
+        ".changesets/1_patch.md",
+        { "bump" => "patch", "type" => type },
+        "Message"
+      )
+    end
+
+    describe "with add" do
+      let(:type) { "add" }
+
+      it "return add" do
+        expect(changeset.type).to eql("add")
+        expect(changeset.type_index).to eql(0)
+        expect(changeset.type_label).to eql("Added")
+      end
+    end
+
+    describe "with change" do
+      let(:type) { "change" }
+
+      it "returns change" do
+        expect(changeset.type).to eql("change")
+        expect(changeset.type_index).to eql(1)
+        expect(changeset.type_label).to eql("Changed")
+      end
+    end
+
+    describe "with deprecate" do
+      let(:type) { "deprecate" }
+
+      it "returns deprecate" do
+        expect(changeset.type).to eql("deprecate")
+        expect(changeset.type_index).to eql(2)
+        expect(changeset.type_label).to eql("Deprecated")
+      end
+    end
+
+    describe "with remove" do
+      let(:type) { "remove" }
+
+      it "returns remove" do
+        expect(changeset.type).to eql("remove")
+        expect(changeset.type_index).to eql(3)
+        expect(changeset.type_label).to eql("Removed")
+      end
+    end
+
+    describe "with fix" do
+      let(:type) { "fix" }
+
+      it "returns fix" do
+        expect(changeset.type).to eql("fix")
+        expect(changeset.type_index).to eql(4)
+        expect(changeset.type_label).to eql("Fixed")
+      end
+    end
+
+    describe "with security" do
+      let(:type) { "security" }
+
+      it "returns security" do
+        expect(changeset.type).to eql("security")
+        expect(changeset.type_index).to eql(5)
+        expect(changeset.type_label).to eql("Security")
+      end
+    end
+  end
+
   describe "#bump" do
     let(:changeset) do
       described_class.new(
         ".changesets/1_patch.md",
-        { "bump" => bump },
+        { "bump" => bump, "type" => "add" },
         "Message"
       )
     end
