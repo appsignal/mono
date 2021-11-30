@@ -29,8 +29,8 @@ module Mono
         new_messages[changeset.type] << build_changelog_entry(changeset)
       end
       content = []
-      Changeset::SUPPORTED_TYPES.each do |label, value|
-        messages_for_type = new_messages[value]
+      Changeset::SUPPORTED_TYPES.each do |key, label|
+        messages_for_type = new_messages[key]
         next if messages_for_type.empty?
 
         content << "\n### #{label}\n\n"
