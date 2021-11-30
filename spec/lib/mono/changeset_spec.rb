@@ -1,6 +1,23 @@
 # frozen_string_literal: true
 
 RSpec.describe Mono::Changeset do
+  describe ".supported_type?" do
+    def supported_type?(type)
+      described_class.supported_type?(type)
+    end
+
+    it "only returns true for supported types" do
+      expect(supported_type?("add")).to be_truthy
+      expect(supported_type?("change")).to be_truthy
+      expect(supported_type?("deprecate")).to be_truthy
+      expect(supported_type?("remove")).to be_truthy
+      expect(supported_type?("fix")).to be_truthy
+      expect(supported_type?("security")).to be_truthy
+      expect(supported_type?("unknown")).to be_falsy
+      expect(supported_type?("")).to be_falsy
+    end
+  end
+
   describe ".supported_bump?" do
     def supported_bump?(bump)
       described_class.supported_bump?(bump)
@@ -51,8 +68,80 @@ RSpec.describe Mono::Changeset do
       end
     end
 
+    context "without change type" do
+      it "raises an InvalidChangeset" do
+        prepare_project :nodejs_npm_single
+        in_project do
+          message = "Changeset message"
+          path = add_changeset :patch, :type => "", :message => message
+          message = <<~MESSAGE
+            Invalid changeset detected: `.changesets/1_patch.md`
+            Violations:
+            - Unknown `type` metadata: ``
+          MESSAGE
+          expect do
+            described_class.parse(path)
+          end.to raise_error(described_class::InvalidChangeset, message)
+        end
+      end
+    end
+
+    context "with unknown change type" do
+      it "raises an InvalidChangeset" do
+        prepare_project :nodejs_npm_single
+        in_project do
+          message = "Changeset message"
+          path = add_changeset :patch, :type => "unknown", :message => message
+          message = <<~MESSAGE
+            Invalid changeset detected: `.changesets/1_patch.md`
+            Violations:
+            - Unknown `type` metadata: `unknown`
+          MESSAGE
+          expect do
+            described_class.parse(path)
+          end.to raise_error(described_class::InvalidChangeset, message)
+        end
+      end
+    end
+
+    context "without version bump" do
+      it "raises an InvalidChangeset" do
+        prepare_project :nodejs_npm_single
+        in_project do
+          message = "Changeset message"
+          path = add_changeset "", :type => "add", :message => message
+          message = <<~MESSAGE
+            Invalid changeset detected: `.changesets/1_.md`
+            Violations:
+            - Unknown `bump` metadata: ``
+          MESSAGE
+          expect do
+            described_class.parse(path)
+          end.to raise_error(described_class::InvalidChangeset, message)
+        end
+      end
+    end
+
+    context "with unknown version bump" do
+      it "raises an InvalidChangeset" do
+        prepare_project :nodejs_npm_single
+        in_project do
+          message = "Changeset message"
+          path = add_changeset :unknown, :type => "add", :message => message
+          message = <<~MESSAGE
+            Invalid changeset detected: `.changesets/1_unknown.md`
+            Violations:
+            - Unknown `bump` metadata: `unknown`
+          MESSAGE
+          expect do
+            described_class.parse(path)
+          end.to raise_error(described_class::InvalidChangeset, message)
+        end
+      end
+    end
+
     context "without message" do
-      it "raises a EmptyMessageError" do
+      it "raises an EmptyMessageError" do
         prepare_project :nodejs_npm_single
         in_project do
           path = add_changeset :patch, :message => ""

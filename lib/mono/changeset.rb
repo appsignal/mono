@@ -27,8 +27,29 @@ module Mono
 
     class UnknownBumpTypeError < Mono::Error; end
 
+    class InvalidChangeset < Mono::Error
+      def initialize(file, violations)
+        @file = file
+        @violations = violations
+        super()
+      end
+
+      def message
+        formatted_violations = @violations.map { |violation| "- #{violation}" }
+        <<~MESSAGE
+          Invalid changeset detected: `#{@file}`
+          Violations:
+          #{formatted_violations.join("\n")}
+        MESSAGE
+      end
+    end
+
     def self.supported_bump?(bump)
       SUPPORTED_BUMPS.include?(bump)
+    end
+
+    def self.supported_type?(type)
+      SUPPORTED_TYPES.values.include?(type)
     end
 
     def self.parse(file)
@@ -41,6 +62,17 @@ module Mono
           raise MetadataError, "No metadata found for changeset: `#{file}`. " \
             "Please specify either a major, minor or patch version bump."
         end
+      violations = []
+      bump = metadata["bump"]
+      unless supported_bump?(bump)
+        violations << "Unknown `bump` metadata: `#{bump}`"
+      end
+      type = metadata["type"]
+      unless supported_type?(type)
+        violations << "Unknown `type` metadata: `#{type}`"
+      end
+      raise InvalidChangeset.new(file, violations) if violations.any?
+
       message = contents.sub(frontmatter_matches[0], "").strip
       if message.strip.empty?
         raise EmptyMessageError,
