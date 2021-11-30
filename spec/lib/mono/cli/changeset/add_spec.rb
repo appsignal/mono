@@ -11,6 +11,7 @@ RSpec.describe Mono::Cli::Changeset do
         prepare_project :elixir_single
 
         add_cli_input "My Awes/o\\me pa.tch"
+        add_cli_input "1"
         add_cli_input "patch"
         add_cli_input "n"
         output =
@@ -31,6 +32,7 @@ RSpec.describe Mono::Cli::Changeset do
           expect(contents).to eql(<<~CHANGESET)
             ---
             bump: "patch"
+            type: "add"
             ---
 
             My Awes/o\\me pa.tch
@@ -46,6 +48,7 @@ RSpec.describe Mono::Cli::Changeset do
         prepare_project :elixir_single
 
         add_cli_input "My Awes/o\\me pa.tch"
+        add_cli_input "1" # Type: "add"
         add_cli_input "minor"
         add_cli_input "n"
         output =
@@ -69,9 +72,45 @@ RSpec.describe Mono::Cli::Changeset do
           expect(contents).to eql(<<~CHANGESET)
             ---
             bump: "minor"
+            type: "add"
             ---
 
             My Awes/o\\me pa.tch
+          CHANGESET
+        end
+        expect(performed_commands).to eql([])
+        expect(exit_status).to eql(0), output
+      end
+    end
+
+    context "with unknown type" do
+      it "repeats the type prompt" do
+        prepare_project :elixir_single
+
+        add_cli_input "My Awes/o\\me patch"
+        add_cli_input "" # User presses enter without input
+        add_cli_input "unknown" # Unsupported type
+        add_cli_input "2" # Type: "change"
+        add_cli_input "patch" # Supported bump type
+        add_cli_input "n"
+        output =
+          capture_stdout do
+            in_project { run_changeset_add }
+          end
+
+        changeset_path = ".changesets/my-awes-o-me-patch.md"
+        expect(output).to include("Unknown type selected. Please select a type.")
+        expect(output.scan(/Select type /).length).to eql(3)
+        in_project do
+          expect(current_package_changeset_files.length).to eql(1)
+          contents = File.read(changeset_path)
+          expect(contents).to eql(<<~CHANGESET)
+            ---
+            bump: "patch"
+            type: "change"
+            ---
+
+            My Awes/o\\me patch
           CHANGESET
         end
         expect(performed_commands).to eql([])
@@ -84,6 +123,7 @@ RSpec.describe Mono::Cli::Changeset do
         prepare_project :elixir_single
 
         add_cli_input "My Awes/o\\me patch"
+        add_cli_input "1" # Type: "add"
         add_cli_input "" # User presses enter without input
         add_cli_input "unknown" # Unsupported bump type
         add_cli_input "patch" # Supported bump type
@@ -104,6 +144,7 @@ RSpec.describe Mono::Cli::Changeset do
           expect(contents).to eql(<<~CHANGESET)
             ---
             bump: "patch"
+            type: "add"
             ---
 
             My Awes/o\\me patch
@@ -119,6 +160,7 @@ RSpec.describe Mono::Cli::Changeset do
         prepare_project :elixir_single
 
         add_cli_input "My Awes/o\\me patch"
+        add_cli_input "1" # Type: "add"
         add_cli_input "patch"
         add_cli_input "y"
         output =
@@ -148,6 +190,7 @@ RSpec.describe Mono::Cli::Changeset do
       add_cli_input "3" # Invalid index, only 2 packages
       add_cli_input "1" # First package
       add_cli_input "My Awes/o\\me patch"
+      add_cli_input "1" # Type: "add"
       add_cli_input "major"
       add_cli_input "n"
       output =
@@ -173,6 +216,7 @@ RSpec.describe Mono::Cli::Changeset do
         expect(contents).to eql(<<~CHANGESET)
           ---
           bump: "major"
+          type: "add"
           ---
 
           My Awes/o\\me patch

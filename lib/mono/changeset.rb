@@ -6,6 +6,15 @@ module Mono
   class Changeset
     attr_reader :path, :message
 
+    # Sorted Hash of supported types in the changelog
+    SUPPORTED_TYPES = {
+      "Added" => "add",
+      "Changed" => "change",
+      "Deprecated" => "deprecate",
+      "Removed" => "remove",
+      "Fixed" => "fix",
+      "Security" => "security"
+    }.freeze
     # Supported changeset version bumps, sorted by biggest change. The "major"
     # change being the largest, index 0, and patch being the lowest, index 2.
     SUPPORTED_BUMPS = %w[major minor patch].freeze
@@ -54,6 +63,10 @@ module Mono
           "Unknown bump type specified for changeset: `#{path}`. " \
           "Please specify either major, minor or patch."
       end
+    end
+
+    def type
+      @metadata["type"]
     end
 
     def bump

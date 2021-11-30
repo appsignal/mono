@@ -70,8 +70,8 @@ RSpec.describe Mono::Cli::Publish do
       it "prints changeset previews in the package summary" do
         prepare_elixir_project do
           create_package_mix :version => "1.2.3"
-          add_changeset(:patch, "a" * 101) # Limits to 100 characters in preview
-          add_changeset(:major, "This is a major changeset bump.\nLine 2.\nLine 3.")
+          add_changeset(:patch, :message => "a" * 101) # Limits to 100 characters in preview
+          add_changeset(:major, :message => "This is a major changeset bump.\nLine 2.\nLine 3.")
           add_changeset(:minor)
         end
         do_not_publish_package
@@ -111,13 +111,13 @@ RSpec.describe Mono::Cli::Publish do
         prepare_elixir_project "packages_dir" => "packages/" do
           create_package :package_a do
             create_package_mix :version => "1.2.3"
-            add_changeset(:patch, "a" * 101) # Limits to 100 characters in preview
-            add_changeset(:major, "This is a major changeset bump.\nLine 2.\nLine 3.")
+            add_changeset(:patch, :message => "a" * 101) # Limits to 100 characters in preview
+            add_changeset(:major, :message => "This is a major changeset bump.\nLine 2.\nLine 3.")
             add_changeset(:minor)
           end
           create_package :package_b do
             create_package_mix :version => "1.2.3"
-            add_changeset(:patch, "Changeset with indenting.\n  - item 1\n  - item 2")
+            add_changeset(:patch, :message => "Changeset with indenting.\n  - item 1\n  - item 2")
           end
           create_package :package_c do
             create_package_mix :version => "1.2.3"
