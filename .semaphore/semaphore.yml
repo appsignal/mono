@@ -28,8 +28,7 @@ blocks:
     jobs:
     - name: Git Lint (Lintje)
       commands:
-      - script/ci/install_lintje
-      - $HOME/bin/lintje $SEMAPHORE_GIT_COMMIT_RANGE
+      - script/ci/lint_git
 - name: Ruby Linters
   dependencies: []
   task:
