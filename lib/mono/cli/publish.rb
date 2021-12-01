@@ -97,18 +97,24 @@ module Mono
 
       def print_package_changesets(package)
         puts "  Changesets:"
-        # Sort by biggest version bump at the top
-        changesets = package.changesets.changesets.sort_by(&:bump_index)
-        changesets.each do |changeset|
-          # Clean up the description from indenting and new lines so the
-          # formatting doesn't break
-          description = changeset.message
-            .gsub(/\n\s+/, " ") # Strip out any indenting in new lines
-            .tr("\n", " ") # Strip out any remaining new lines
-          # Trim long changeset messages
-          description = "#{description[0...100]}..." if description.length > 100
-          puts "  - #{changeset.bump}: #{changeset.path}"
-          puts "      #{description}"
+        # Sort by output the same way as the changelog result
+        changesets_by_type =
+          package.changesets.changesets_by_types_sorted_by_bump
+        changesets_by_type.each do |_, changesets|
+          changesets.each do |changeset|
+            # Clean up the description from indenting and new lines so the
+            # formatting doesn't break
+            description = changeset.message
+              .gsub(/\n\s+/, " ") # Strip out any indenting in new lines
+              .tr("\n", " ") # Strip out any remaining new lines
+            # Trim long changeset messages
+            if description.length > 100
+              description = "#{description[0...100]}..."
+            end
+            puts "  - #{changeset.type_label} - " \
+              "#{changeset.bump}: #{changeset.path}"
+            puts "      #{description}"
+          end
         end
       end
 
