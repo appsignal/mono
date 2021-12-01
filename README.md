@@ -370,6 +370,16 @@ bundle exec rspec
 COV=1 bundle exec rspec
 ```
 
+### Manual testing
+
+To manually test the changes in mono you'll run into the production check when
+running `mono`. The `mono` executable won't run unless the repository is on the
+`main` branch and has no uncommitted file changes.
+
+To skip these checks, use the `mono-dev` executable. __Only use this for
+testing__! Do not use this at all times. The production checks are there to
+avoid any operations (such as publishing) with unreviewed changes.
+
 ### Linting
 
 This project uses RuboCop to enforce a code style. Run RuboCop with the
