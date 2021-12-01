@@ -1,5 +1,19 @@
 # Mono
 
+## 0.6.0
+
+### Added
+
+- [d81182b](https://github.com/appsignal/mono//commit/d81182b0921e09d0b02a514b11000c1cce5b24e3) minor - Add types to changesets. The following types are supported: add, change, deprecate, remove, fix and security. Use the appropriate one for the change and the changelog will include sections for every present type of change. This will make it easier for readers to understand the impact of a new release's changes.
+- [dd19f67](https://github.com/appsignal/mono//commit/dd19f67c7cedc2d472e3950fe59860473d625d8a) minor - Add support for the `fish` shell in the `script/setup` installation script.
+- [dd19f67](https://github.com/appsignal/mono//commit/dd19f67c7cedc2d472e3950fe59860473d625d8a) patch - Print changeset summaries on publish. This makes it easier to tell which changes are about to be published for every package.
+- [dd19f67](https://github.com/appsignal/mono//commit/dd19f67c7cedc2d472e3950fe59860473d625d8a) patch - Print changeset type on publish preview.
+
+### Fixed
+
+- [81b0614](https://github.com/appsignal/mono//commit/81b06140acd7ab8823627b28a8cb6d18546d7cd1) patch - Validate changesets when parsing. With the addition of changeset types, make sure that the changesets have a version bump and type specified and that they are known values. Otherwise, these changesets would not be picked up by mono.
+- [dd19f67](https://github.com/appsignal/mono//commit/dd19f67c7cedc2d472e3950fe59860473d625d8a) patch - Validate user input of the package number for changesets in mono repositories better. Non number characters and other invalid strings will prompt the user again to enter a valid package number.
+
 ## 0.5.9
 
 - [616571e](https://github.com/appsignal/mono//commit/616571e8aebb77ab2aa9240ae803e0636aeb9bf1) patch - Add `mono-dev` executable to allow for testing mono. The `mono` executable will not allow usage of mono with uncommitted changes. This will prevent accidental usage of mono with uncommitted changes that would cause mono to crash unexpectedly.
