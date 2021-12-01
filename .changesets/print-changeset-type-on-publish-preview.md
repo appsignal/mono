@@ -1,6 +1,6 @@
 ---
 bump: "patch"
-type: "change"
+type: "add"
 ---
 
 Print changeset type on publish preview.
