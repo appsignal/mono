@@ -202,6 +202,11 @@ Prompts:
 1. Summarize the change:
     - Create a small one line summary of the change. This will be used as the
       changeset filename.
+1. Choose the changeset type.
+    - Choose which bump level the changeset is about. This is one of these
+      types: add/change/deprecate/remove/fix/security. This helps categorize
+      the types of changes per release in the updated changelog in
+      `mono publish`.
 1. Choose the bump level.
     - Choose which bump level the changeset is about. This is one of the bump
       levels specified below. This level affects how mono will determine the
