@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
 module ChangesetHelper
-  def add_changeset(bump, type: :add, message: nil)
+  def add_changeset(bump, type: :add, message: nil, filename: nil)
     @changeset_count ||= 0
     @changeset_count += 1
     FileUtils.mkdir_p(".changesets")
-    path = ".changesets/#{@changeset_count}_#{bump}.md"
+    filename ||= "#{@changeset_count}_#{bump}"
+    path = ".changesets/#{filename}.md"
     unless bump == :none
       metadata = <<~METADATA
         ---
