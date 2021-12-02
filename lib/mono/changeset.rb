@@ -137,7 +137,9 @@ module Mono
     def commit
       @commit ||=
         begin
-          git_log = `git log -n 1 --pretty="format:%h %H %cI" -- #{path}`
+          escaped_path = path.gsub('"', '\"')
+          git_log =
+            `git log -n 1 --pretty="format:%h %H %cI" -- "#{escaped_path}"`
           short, long, date = git_log.split(" ")
           {
             :short => short,
