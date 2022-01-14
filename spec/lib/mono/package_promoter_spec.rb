@@ -34,8 +34,14 @@ RSpec.describe Mono::PackagePromoter do
 
     it "updates transient dependent packages" do
       prepare_new_project do
+        create_package "types" do
+          create_package_json :name => "types", :version => "1.2.3"
+          add_changeset :patch
+        end
         create_package "core" do
-          create_package_json :name => "core", :version => "1.2.3"
+          create_package_json :name => "core",
+            :version => "1.2.3",
+            :dependencies => { "types" => "=1.2.3" }
           add_changeset :patch
         end
         create_package "plug" do
@@ -62,12 +68,14 @@ RSpec.describe Mono::PackagePromoter do
           create_package_json :name => "no-update", :version => "5.0.0"
         end
       end
+      package_types = nodejs_package("types")
       package_core = nodejs_package("core")
       package_plug = nodejs_package("plug")
       package_phoenix = nodejs_package("phoenix")
       package_sinatra = nodejs_package("sinatra")
       package_absinthe = nodejs_package("absinthe")
       promoter = build_promoter([
+        package_types,
         package_core,
         package_plug,
         package_sinatra,
@@ -75,14 +83,21 @@ RSpec.describe Mono::PackagePromoter do
         package_absinthe
       ])
       expect(promoter.changed_packages).to contain_exactly(
+        package_types,
         package_core,
         package_plug,
         package_sinatra,
         package_phoenix,
         package_absinthe
       )
+      # Assert that the dependency was only updated once
+      expect(package_plug.changesets.changesets.map(&:message))
+        .to eq(["Update core dependency to 1.2.4."])
       update_packages(promoter.changed_packages)
 
+      # Double check the results stored on the file system
+      package_types = nodejs_package("types")
+      expect(package_types.current_version.to_s).to eql("1.2.4")
       package_core = nodejs_package("core")
       expect(package_core.current_version.to_s).to eql("1.2.4")
       package_plug = nodejs_package("plug")

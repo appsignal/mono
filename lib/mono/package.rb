@@ -60,14 +60,20 @@ module Mono
       dependencies.key?(package.name)
     end
 
+    def dependency_updated_already?(package)
+      changesets.changesets.any? do |changeset|
+        next unless changeset.respond_to? :dependency_name
+
+        changeset.dependency_name == package.name
+      end
+    end
+
     def update_dependency(package)
       return unless dependency?(package)
+      return if dependency_updated_already?(package)
 
       @updated_dependencies[package.name] = package.next_version.to_s
-      changesets.changesets << MemoryChangeset.new(
-        { "bump" => "patch", "type" => "change" },
-        "Update #{package.name} dependency to #{package.next_version}."
-      )
+      changesets.changesets << DependencyBumpMemoryChangeset.new(package)
     end
 
     # :nocov:
