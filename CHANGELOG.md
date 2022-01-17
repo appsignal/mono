@@ -1,5 +1,12 @@
 # Mono
 
+## 0.6.1
+
+### Fixed
+
+- [393d60d](https://github.com/appsignal/mono//commit/393d60de44fce6ad54c3c652f8e58fa9c333cdf3) patch - Fix publishing with changeset filenames containing unescaped symbols.
+- [3eb2f57](https://github.com/appsignal/mono//commit/3eb2f5726a82732cc21f3cdce83b3fc621c02a31) patch - Prevent duplicate dependency bump changesets. Previously, if a package's dependency had a dependency that was also updated, the final package in the tree would track multiple changesets for the same dependency update.
+
 ## 0.6.0
 
 ### Added
