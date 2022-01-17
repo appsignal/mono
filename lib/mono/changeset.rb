@@ -171,4 +171,15 @@ module Mono
       # noop
     end
   end
+
+  class DependencyBumpMemoryChangeset < MemoryChangeset
+    attr_reader :dependency_name
+
+    def initialize(dependency)
+      @dependency_name = dependency.name
+      message = "Update #{dependency.name} dependency to " \
+        "#{dependency.next_version}."
+      super({ "bump" => "patch", "type" => "change" }, message)
+    end
+  end
 end
