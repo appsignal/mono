@@ -32,13 +32,54 @@ RSpec.describe Mono::Languages::Nodejs::Package do
         )
       end
     end
+
+    context "with optionalDependencies" do
+      it "returns dependencies hash" do
+        package_name = "test_package"
+        create_package_with_dependencies package_name,
+          :dependencies => {
+            "lodash" => "4.17.21"
+          },
+          :optionalDependencies => {
+            "tslib" => "2.2.1"
+          }
+
+        package = package_for_path(package_name)
+        expect(package.dependencies).to eql(
+          "lodash" => "4.17.21",
+          "tslib" => "2.2.1"
+        )
+      end
+    end
+
+    context "with devDependencies" do
+      it "returns dependencies hash" do
+        package_name = "test_package"
+        create_package_with_dependencies package_name,
+          :dependencies => {
+            "lodash" => "4.17.21"
+          },
+          :devDependencies => {
+            "tslib" => "2.2.2"
+          }
+
+        package = package_for_path(package_name)
+        expect(package.dependencies).to eql(
+          "lodash" => "4.17.21",
+          "tslib" => "2.2.2"
+        )
+      end
+    end
   end
 
-  def create_package_with_dependencies(path, version: "1.2.3", dependencies: {})
+  def create_package_with_dependencies(
+    path,
+    version: "1.2.3",
+    **options
+  )
     prepare_new_project do
       create_package path do
-        create_package_json :version => version,
-          :dependencies => dependencies
+        create_package_json({ :version => version }.merge(options))
       end
     end
   end
