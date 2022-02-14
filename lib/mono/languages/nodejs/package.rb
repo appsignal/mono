@@ -43,7 +43,8 @@ module Mono
             begin
               deps = @package_json.fetch("dependencies", {})
               optional_deps = @package_json.fetch("optionalDependencies", {})
-              deps.merge(optional_deps)
+              dev_deps = @package_json.fetch("devDependencies", {})
+              deps.merge(optional_deps).merge(dev_deps)
             end
         end
 
