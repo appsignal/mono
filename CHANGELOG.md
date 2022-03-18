@@ -1,5 +1,15 @@
 # Mono
 
+## 0.6.2
+
+### Added
+
+- [bdbbcf5](https://github.com/appsignal/mono//commit/bdbbcf5463e496ebb2537842af8a14ac1ada16cd) patch - Support Node.js package.json `devDependencies`. Any package in the workspace that's specified as a dev dependency by other packages are also updated upon publish.
+
+### Fixed
+
+- [546b81a](https://github.com/appsignal/mono//commit/546b81af8b5facf8a044d73b712e43566c9e66e6) patch - Strip out colons from changeset filenames. The colon and semicolon symbols are now replaced with a dash symbol.
+
 ## 0.6.1
 
 ### Fixed
