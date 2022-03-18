@@ -10,7 +10,7 @@ RSpec.describe Mono::Cli::Changeset do
       it "creates the .changeset directory and a changeset file" do
         prepare_project :elixir_single
 
-        add_cli_input "My Awes/o\\me pa.tch"
+        add_cli_input "My:; Awes/o\\me pa.tch"
         add_cli_input "1"
         add_cli_input "patch"
         add_cli_input "n"
@@ -19,7 +19,7 @@ RSpec.describe Mono::Cli::Changeset do
             in_project { run_changeset_add }
           end
 
-        changeset_path = ".changesets/my-awes-o-me-pa-tch.md"
+        changeset_path = ".changesets/my---awes-o-me-pa-tch.md"
         expect(output).to include(
           "Summarize the change (for changeset filename):",
           "What type of semver bump is this (major/minor/patch): ",
@@ -35,7 +35,7 @@ RSpec.describe Mono::Cli::Changeset do
             type: "add"
             ---
 
-            My Awes/o\\me pa.tch
+            My:; Awes/o\\me pa.tch
           CHANGESET
         end
         expect(performed_commands).to eql([])
