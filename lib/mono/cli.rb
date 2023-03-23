@@ -281,6 +281,10 @@ module Mono
           opts.on "--rc", "Release a rc prerelease" do
             params[:prerelease] = "rc"
           end
+          opts.on "--tag TAG",
+            "Set the tag for the package release (Node.js only)" do |tag|
+            params[:tag] = tag
+          end
         end.parse(@options)
         params
       end

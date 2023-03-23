@@ -3,23 +3,24 @@
 module Mono
   module Cli
     class Publish < Base
-      attr_reader :prerelease
+      attr_reader :prerelease, :tag
       alias prerelease? prerelease
+      alias tag? tag
 
       def initialize(options = {})
         @prerelease = options[:prerelease]
+        @tag = options[:tag]
         super(options)
       end
 
       def execute
         exit_cli "No packages found in this directory!" unless packages.any?
 
-        if prerelease?
+        packages.each do |package|
           # Tell to-be-published packages that they should update to a
           # prerelease
-          packages.each do |package|
-            package.prerelease = prerelease
-          end
+          package.prerelease = prerelease if prerelease?
+          package.tag = tag if tag?
         end
 
         changed_packages = package_promoter.changed_packages
