@@ -144,6 +144,49 @@ RSpec.describe Mono::Cli::Publish do
         expect(exit_status).to eql(0), output
       end
 
+      it "publishes the updated package with a custom tag" do
+        prepare_nodejs_project do
+          create_package_json :name => "my_package", :version => "2.3.1"
+          add_changeset :patch
+        end
+        confirm_publish_package
+        package_tag = "2.x-stable"
+        output = run_publish_process(["--tag", package_tag])
+
+        project_dir = "/#{current_project}"
+        next_version = "2.3.2"
+        tag = "v#{next_version}"
+
+        expect(output).to include(<<~OUTPUT), output
+          The following packages will be published (or not):
+          - my_package:
+            Current version: v2.3.1
+            Next version:    v2.3.2 (patch)
+        OUTPUT
+        expect(output).to include(<<~OUTPUT), output
+          # Updating package versions
+          - my_package:
+            Current version: v2.3.1
+            Next version:    v2.3.2 (patch)
+        OUTPUT
+
+        in_project do
+          expect(File.read("package.json")).to include(%("version": "#{next_version}"))
+        end
+
+        expect(performed_commands).to eql([
+          [project_dir, "npm install"],
+          [project_dir, "npm link"],
+          [project_dir, "npm run build"],
+          [project_dir, "git add -A"],
+          [project_dir, "git commit -m 'Publish packages' -m '- #{tag}' -m '[ci skip]'"],
+          [project_dir, "git tag #{tag}"],
+          [project_dir, "npm publish --tag #{package_tag}"],
+          [project_dir, "git push origin main #{tag}"]
+        ])
+        expect(exit_status).to eql(0), output
+      end
+
       it "publishes the updated package as a rc release" do
         prepare_nodejs_project do
           create_package_json :name => "my_package", :version => "1.0.0"

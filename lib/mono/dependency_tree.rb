@@ -65,7 +65,7 @@ module Mono
     # Build a dependency tree. Track which packages depend on other packages in
     # this project. It creates a tree with dependencies going both ways:
     # dependencies and dependents.
-    def build # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+    def build
       @tree =
         Hash.new do |hash, key|
           hash[key] = {

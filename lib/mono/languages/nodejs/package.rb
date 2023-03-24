@@ -54,7 +54,9 @@ module Mono
 
         def publish_package
           options = []
-          if next_version.prerelease?
+          if tag?
+            options << "--tag #{tag}"
+          elsif next_version.prerelease?
             options << "--tag #{next_version.prerelease_type}"
           end
           options << "--new-version #{next_version}" if npm_client == "yarn"

@@ -116,7 +116,7 @@ module Mono
         execute_command
       end
 
-      def execute_command # rubocop:disable Metrics/CyclomaticComplexity
+      def execute_command
         command = @options.shift
         case command
         when "init"
@@ -280,6 +280,10 @@ module Mono
           end
           opts.on "--rc", "Release a rc prerelease" do
             params[:prerelease] = "rc"
+          end
+          opts.on "--tag TAG",
+            "Set the tag for the package release (Node.js only)" do |tag|
+            params[:tag] = tag
           end
         end.parse(@options)
         params

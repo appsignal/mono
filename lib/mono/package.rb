@@ -18,7 +18,8 @@ module Mono
     include Command::Helper
 
     attr_reader :path, :name
-    attr_accessor :prerelease
+    attr_accessor :prerelease, :tag
+    alias tag? tag
 
     def initialize(name, path, config)
       @path = path
