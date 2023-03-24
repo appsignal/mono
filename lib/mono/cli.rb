@@ -116,7 +116,7 @@ module Mono
         execute_command
       end
 
-      def execute_command # rubocop:disable Metrics/CyclomaticComplexity
+      def execute_command
         command = @options.shift
         case command
         when "init"

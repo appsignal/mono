@@ -12,7 +12,7 @@ module Mono
 
     # Find packages that will be updated, and update packages that depend on
     # those packages to use the updated version of that package.
-    def changed_packages # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+    def changed_packages
       @changed_packages ||=
         begin
           # Track which packages have registered changes and require an update

@@ -14,6 +14,12 @@ module Mono
       end
 
       def execute
+        if prerelease? && tag?
+          exit_cli "Error: Both a prerelease flag (--alpha, --beta, --rc) " \
+            "and --tag options are set. Only one can be used at a time to " \
+            "tag a release. Exiting."
+        end
+
         exit_cli "No packages found in this directory!" unless packages.any?
 
         packages.each do |package|

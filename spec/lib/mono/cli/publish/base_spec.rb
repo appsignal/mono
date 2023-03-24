@@ -550,6 +550,31 @@ RSpec.describe Mono::Cli::Publish do
     end
   end
 
+  context "with a prerelease flag and tag option" do
+    it "exits with an error" do
+      prepare_new_project do
+        create_mono_config "language" => "ruby"
+        create_ruby_package_files :name => "package_a", :version => "1.2.3"
+      end
+      confirm_publish_package
+      output =
+        capture_stdout do
+          in_project do
+            perform_commands do
+              run_publish(["--alpha", "--tag", "beta"])
+            end
+          end
+        end
+
+      expect(output).to include(
+        "Mono::Error: Error: Both a prerelease flag (--alpha, --beta, --rc) and " \
+          "--tag options are set."
+      )
+      expect(performed_commands).to eql([])
+      expect(exit_status).to eql(1), output
+    end
+  end
+
   context "with hooks" do
     it "runs hooks around command" do
       prepare_project :ruby_single
