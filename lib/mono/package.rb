@@ -10,6 +10,8 @@ module Mono
         Languages::Elixir::Package
       when "ruby"
         Languages::Ruby::Package
+      when "custom"
+        Languages::Custom::Package
       else
         raise "Unknown language. Please configure `mono.yml` with a `language`."
       end

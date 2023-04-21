@@ -24,7 +24,7 @@ module Mono
           read, write = IO.pipe
           cmd_options[[:out, :err]] = write
         end
-        puts cmd
+        puts cmd if options.fetch(:print_command, true)
         pid = Process.spawn(
           options.fetch(:env, {}),
           cmd,

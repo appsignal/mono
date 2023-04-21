@@ -22,6 +22,8 @@ module Mono
         Languages::Elixir::Language
       when "ruby"
         Languages::Ruby::Language
+      when "custom"
+        Languages::Custom::Language
       else
         raise UnknownLanguageError, language
       end
