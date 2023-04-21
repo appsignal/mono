@@ -17,9 +17,7 @@ module ChangesetHelper
       METADATA
     end
     message ||= "This is a #{bump} changeset bump."
-    File.open(path, "w+") do |file|
-      file.write("#{metadata}#{message}")
-    end
+    File.write(path, "#{metadata}#{message}")
     commit_changeset("Changeset #{@changeset_count} #{bump}")
     path
   end

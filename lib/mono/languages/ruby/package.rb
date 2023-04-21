@@ -31,9 +31,7 @@ module Mono
           contents = read_version
           new_contents =
             contents.sub(VERSION_REGEX, %(VERSION = "#{next_version}"))
-          File.open(version_path, "w+") do |file|
-            file.write new_contents
-          end
+          File.write(version_path, new_contents)
 
           return unless spec_path
 
@@ -43,9 +41,7 @@ module Mono
               contents.sub(/.add_dependency (["'].*["']), (["'])(.*)["']/,
                 ".add_dependency \\1, \\2#{version}\\2")
           end
-          File.open(spec_path, "w+") do |file|
-            file.write contents
-          end
+          File.write(spec_path, contents)
         end
 
         def bootstrap_package(_options = {})
@@ -89,8 +85,8 @@ module Mono
 
         private
 
-        VERSION_REGEX = /VERSION = "(.*)"/.freeze
-        DEPENDENCY_REGEX = /.*.add_dependency ["'](.*)["'], ["'](.*)["']/.freeze
+        VERSION_REGEX = /VERSION = "(.*)"/
+        DEPENDENCY_REGEX = /.*.add_dependency ["'](.*)["'], ["'](.*)["']/
 
         def read_version
           File.read(version_path)

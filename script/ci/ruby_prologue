@@ -2,7 +2,7 @@
 
 set -e
 
-sem-version ruby 2.7.3
+sem-version ruby 3.2.2
 sem-version erlang 23.3
 sem-version elixir 1.11.3
 

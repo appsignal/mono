@@ -24,16 +24,14 @@ module Mono
           type = prompt_for_type
           bump = prompt_for_bump
 
-          File.open(filepath, "w+") do |file|
-            file.write(<<~CONTENTS)
-              ---
-              bump: "#{bump}"
-              type: "#{type}"
-              ---
+          File.write(filepath, <<~CONTENTS)
+            ---
+            bump: "#{bump}"
+            type: "#{type}"
+            ---
 
-              #{change_description}
-            CONTENTS
-          end
+            #{change_description}
+          CONTENTS
           puts "Changeset file created at #{filepath}"
           open_editor = yes_or_no(
             "Do you want to open this file to add more information? (y/N): ",
@@ -86,8 +84,9 @@ module Mono
 
         def prompt_for_bump
           loop do
-            input = required_input \
+            input = required_input(
               "What type of semver bump is this (major/minor/patch): "
+            )
             if Mono::Changeset.supported_bump?(input)
               break input
             else

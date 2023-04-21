@@ -33,9 +33,7 @@ module Mono
                 %("#{dep}": "=#{version}")
               )
           end
-          File.open(package_json_path, "w+") do |file|
-            file.write contents
-          end
+          File.write(package_json_path, contents)
         end
 
         def dependencies
@@ -88,7 +86,7 @@ module Mono
 
         private
 
-        VERSION_REGEX = /"version": "(.*)"/.freeze
+        VERSION_REGEX = /"version": "(.*)"/
 
         def read_package_json
           File.read(package_json_path)

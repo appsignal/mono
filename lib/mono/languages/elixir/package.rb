@@ -29,9 +29,7 @@ module Mono
           contents = read_mix_exs
           new_contents =
             contents.sub(VERSION_REGEX, "\\1 \"#{next_version}\"\\3")
-          File.open(mix_exs_path, "w+") do |file|
-            file.write new_contents
-          end
+          File.write(mix_exs_path, new_contents)
         end
 
         def bootstrap_package(_options = {})
@@ -60,8 +58,8 @@ module Mono
 
         private
 
-        VERSION_REGEX = /(@version|version:) "(.*)"(,?)$/.freeze
-        DEPENDENCY_REGEX = /^\s*{:(.*), "(.*)"}/.freeze
+        VERSION_REGEX = /(@version|version:) "(.*)"(,?)$/
+        DEPENDENCY_REGEX = /^\s*{:(.*), "(.*)"}/
 
         def read_mix_exs
           File.read(mix_exs_path)
