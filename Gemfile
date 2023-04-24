@@ -3,7 +3,7 @@
 source "https://rubygems.org"
 
 group :development do
-  gem "rubocop", "1.16.0"
+  gem "rubocop", "1.50.2"
   gem "simplecov"
 end
 

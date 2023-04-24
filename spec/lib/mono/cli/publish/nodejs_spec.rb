@@ -425,7 +425,7 @@ RSpec.describe Mono::Cli::Publish do
       it "publishes the updated package with build artifacts" do
         prepare_nodejs_project "packages_dir" => "packages/" do
           create_package :package_a do
-            File.open("constants.js", "w") { |file| file.write("000") }
+            File.write("constants.js", "000")
             create_package_json :version => "1.0.0",
               :scripts => {
                 :prebuild => "echo 123 > constants.js"

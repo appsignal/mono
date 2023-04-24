@@ -84,26 +84,24 @@ module ProjectHelper
   def init_project
     in_project do
       git_init_directory
-      File.open ".gitignore", "w" do |file|
-        file.write <<~IGNORE
-          # Multiple languages
-          *.lock
-          tmp
+      File.write(".gitignore", <<~IGNORE)
+        # Multiple languages
+        *.lock
+        tmp
 
-          # Ruby
-          *.gem
-          .bundle
-          vendor
+        # Ruby
+        *.gem
+        .bundle
+        vendor
 
-          # Node.js
-          package-lock.json
-          node_modules/
+        # Node.js
+        package-lock.json
+        node_modules/
 
-          # Elixir
-          deps
-          _build
-        IGNORE
-      end
+        # Elixir
+        deps
+        _build
+      IGNORE
       commit_changes "Initial commit"
     end
   end
@@ -144,17 +142,15 @@ module ProjectHelper
   end
 
   def create_changelog
-    File.open "CHANGELOG.md", "w" do |file|
-      file.write <<~IGNORE
-        # #{in_package? ? current_package : "Project"} Changelog
+    File.write("CHANGELOG.md", <<~IGNORE)
+      # #{in_package? ? current_package : "Project"} Changelog
 
-        ## 0.0.0
+      ## 0.0.0
 
-        - Change 1
-        - Change 2
-        - Change 3
-      IGNORE
-    end
+      - Change 1
+      - Change 2
+      - Change 3
+    IGNORE
   end
 
   def create_package_json(custom_config)
@@ -327,9 +323,7 @@ module ProjectHelper
 
   def update_config(new_config)
     config_file = File.join(ROOT_DIR, EXAMPLES_TMP_DIR, current_project, "mono.yml")
-    File.open(config_file, "w") do |file|
-      file.write(YAML.dump(new_config))
-    end
+    File.write(config_file, YAML.dump(new_config))
   end
 
   def package_for(package, config)
@@ -344,8 +338,6 @@ module ProjectHelper
 
   def update_package_json(new_config)
     package_json = File.join(Dir.pwd, "package.json")
-    File.open(package_json, "w") do |file|
-      file.write(JSON.dump(new_config))
-    end
+    File.write(package_json, JSON.dump(new_config))
   end
 end

@@ -48,16 +48,14 @@ module Mono
       contents = File.read(changelog_path)
       lines = contents.lines # Keep original contents to add to the bottom
       heading = lines.shift # Keep original heading
-      File.open(changelog_path, "w+") do |file|
-        file.write(<<~CHANGELOG)
-          #{heading}
-          ## #{package.next_version}
+      File.write(changelog_path, <<~CHANGELOG)
+        #{heading}
+        ## #{package.next_version}
 
-          #{content.join.strip}
+        #{content.join.strip}
 
-          #{lines.join.strip}
-        CHANGELOG
-      end
+        #{lines.join.strip}
+      CHANGELOG
       changesets.each(&:remove)
     end
 

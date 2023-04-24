@@ -14,6 +14,7 @@ AllCops:
   UseCache: true
   CacheRootDirectory: ./tmp
   NewCops: enable
+  TargetRubyVersion: 3.0
 
 Style/SpecialGlobalVars:
   Enabled: false
@@ -68,6 +69,9 @@ Layout/FirstArrayElementIndentation:
 
 Layout/ArgumentAlignment:
   EnforcedStyle: with_fixed_indentation
+
+Layout/LineEndStringConcatenationIndentation:
+  EnforcedStyle: indented
 
 Layout/LineLength:
   Max: 80

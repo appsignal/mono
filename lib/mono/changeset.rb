@@ -19,7 +19,7 @@ module Mono
     # change being the largest, index 0, and patch being the lowest, index 2.
     SUPPORTED_BUMPS = %w[major minor patch].freeze
     YAML_FRONT_MATTER_REGEXP =
-      /\A(---\s*\n.*?\n?)^((---|\.\.\.)\s*$\n?)/m.freeze
+      /\A(---\s*\n.*?\n?)^((---|\.\.\.)\s*$\n?)/m
 
     class MetadataError < Mono::Error; end
 
@@ -77,7 +77,7 @@ module Mono
       if message.strip.empty?
         raise EmptyMessageError,
           "No changeset message found for changeset: `#{file}`. " \
-          "Please add a description of the change."
+            "Please add a description of the change."
       end
       new(file, metadata, message)
     end
@@ -93,7 +93,7 @@ module Mono
       unless SUPPORTED_BUMPS.include?(@metadata["bump"])
         raise UnknownBumpTypeError,
           "Unknown bump type specified for changeset: `#{path}`. " \
-          "Please specify either major, minor or patch."
+            "Please specify either major, minor or patch."
       end
     end
 

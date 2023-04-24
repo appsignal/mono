@@ -27,9 +27,7 @@ module Mono
           config["packages_dir"] = packages_dir
         end
         puts "Writing config file."
-        File.open(File.join(Dir.pwd, "mono.yml"), "w+") do |file|
-          file.write YAML.dump(config)
-        end
+        File.write(File.join(Dir.pwd, "mono.yml"), YAML.dump(config))
         puts "Mono config file created!"
         puts "Please see the mono project README for additional config options."
       end
