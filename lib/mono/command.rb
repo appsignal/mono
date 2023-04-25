@@ -10,25 +10,24 @@ module Mono
     end
 
     def execute
-      opts = {}
-      opts[:chdir] = path if path
-      execute_command command, opts unless dry_run?
+      execute_command command unless dry_run?
     end
 
     private
 
-    def execute_command(cmd, cmd_opts = {})
+    def execute_command(cmd)
       loop do
-        cmd_options = {}
+        opts = {}
+        opts[:chdir] = path if path
         if options[:capture]
           read, write = IO.pipe
-          cmd_options[[:out, :err]] = write
+          opts[[:out, :err]] = write
         end
         puts cmd if options.fetch(:print_command, true)
         pid = Process.spawn(
           options.fetch(:env, {}),
           cmd,
-          cmd_options.merge(cmd_opts)
+          opts
         )
         _pid, exitstatus = Process.wait2(pid)
         break read_output(read, write) if exitstatus.success?
