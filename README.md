@@ -69,6 +69,8 @@ test:
 - `language`
     - Required.
     - Supported values:
+        - `custom`, requires each step to be manually configured with a
+          [custom command](#customize-commands).
         - `elixir`
         - `nodejs`
         - `ruby`
@@ -120,6 +122,29 @@ before (`pre`) and after (`post`) the configured command.
 build:
   pre:  echo I am run _before_ the build command
   post: echo I am run _after_ the build command
+```
+
+### Customize version updater
+
+If the built-in version updater does not work for your project, or you're using
+a "custom" language, you can customize the reading and updating of the package
+version.
+
+Specify the `read_version` and `write_version` config options to point to
+scripts to execute.
+
+- `read_version`: Executes a script that returns the current package version
+  via standard output.
+  - Example: `script/read_package_version`, is run as
+    `script/read_package_version` and returns `1.0.0`.
+- `write_version`: Executes a script with the new version as the first
+  argument, that updates the version for the package.
+  - Example: `script/update_package_version`, is run as
+    `script/update_package_version 1.0.1`.
+
+```yaml
+read_version:  script/read_package_version
+write_version: script/update_package_version
 ```
 
 ## Commands

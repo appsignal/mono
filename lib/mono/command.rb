@@ -10,23 +10,27 @@ module Mono
     end
 
     def execute
-      parts = []
-      # Navigate to path if a path is specified
-      parts << "cd #{path} && " if path
-      parts << command
-      cmd = parts.join
-
-      execute_command cmd unless dry_run?
+      execute_command command unless dry_run?
     end
 
     private
 
     def execute_command(cmd)
       loop do
-        puts cmd
-        system cmd
-        exitstatus = $?
-        break if exitstatus.success?
+        opts = {}
+        opts[:chdir] = path if path
+        if options[:capture]
+          read, write = IO.pipe
+          opts[[:out, :err]] = write
+        end
+        puts cmd if options.fetch(:print_command, true)
+        pid = Process.spawn(
+          options.fetch(:env, {}),
+          cmd,
+          opts
+        )
+        _pid, exitstatus = Process.wait2(pid)
+        break read_output(read, write) if exitstatus.success?
 
         if retry?
           answer = Shell.yes_or_no(
@@ -38,6 +42,18 @@ module Mono
 
         puts "Error: Command failed with status `#{exitstatus.exitstatus}`"
         exit 1
+      end
+    end
+
+    def read_output(read, write)
+      return unless read
+
+      begin
+        write.close
+        read.read
+      rescue IOError # rubocop:disable Lint/SuppressedException
+      ensure
+        read.close
       end
     end
 
