@@ -52,7 +52,7 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, "npm link"],
           [project_dir, "npm run build"],
           [project_dir, "git add -A"],
-          [project_dir, "git commit -m 'Publish packages' -m '- #{tag}' -m '[ci skip]'"],
+          [project_dir, "git commit -m 'Publish packages' -m '- #{tag}'"],
           [project_dir, "git tag #{tag}"],
           [project_dir, "npm publish"],
           [project_dir, "git push origin main #{tag}"]
@@ -94,7 +94,7 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, "npm link"],
           [project_dir, "npm run build"],
           [project_dir, "git add -A"],
-          [project_dir, "git commit -m 'Publish packages' -m '- #{tag}' -m '[ci skip]'"],
+          [project_dir, "git commit -m 'Publish packages' -m '- #{tag}'"],
           [project_dir, "git tag #{tag}"],
           [project_dir, "npm publish --tag alpha"],
           [project_dir, "git push origin main #{tag}"]
@@ -136,7 +136,7 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, "npm link"],
           [project_dir, "npm run build"],
           [project_dir, "git add -A"],
-          [project_dir, "git commit -m 'Publish packages' -m '- #{tag}' -m '[ci skip]'"],
+          [project_dir, "git commit -m 'Publish packages' -m '- #{tag}'"],
           [project_dir, "git tag #{tag}"],
           [project_dir, "npm publish --tag beta"],
           [project_dir, "git push origin main #{tag}"]
@@ -179,7 +179,7 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, "npm link"],
           [project_dir, "npm run build"],
           [project_dir, "git add -A"],
-          [project_dir, "git commit -m 'Publish packages' -m '- #{tag}' -m '[ci skip]'"],
+          [project_dir, "git commit -m 'Publish packages' -m '- #{tag}'"],
           [project_dir, "git tag #{tag}"],
           [project_dir, "npm publish --tag #{package_tag}"],
           [project_dir, "git push origin main #{tag}"]
@@ -221,7 +221,7 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, "npm link"],
           [project_dir, "npm run build"],
           [project_dir, "git add -A"],
-          [project_dir, "git commit -m 'Publish packages' -m '- #{tag}' -m '[ci skip]'"],
+          [project_dir, "git commit -m 'Publish packages' -m '- #{tag}'"],
           [project_dir, "git tag #{tag}"],
           [project_dir, "npm publish --tag rc"],
           [project_dir, "git push origin main #{tag}"]
@@ -259,7 +259,7 @@ RSpec.describe Mono::Cli::Publish do
             [project_dir, "npm run build"],
             [project_dir, "git add -A"],
             [project_dir,
-             "git commit -m 'Publish packages' -m '- v#{next_version}' -m '[ci skip]'"],
+             "git commit -m 'Publish packages' -m '- v#{next_version}'"],
             [project_dir, "git tag v#{next_version}"],
             [project_dir, "npm publish"]
           ])
@@ -325,7 +325,7 @@ RSpec.describe Mono::Cli::Publish do
           [package_two_dir, "npm link"],
           [project_dir, "npm run build --workspace=package_one"],
           [project_dir, "git add -A"],
-          [project_dir, "git commit -m 'Publish packages' -m '- #{tag}' -m '[ci skip]'"],
+          [project_dir, "git commit -m 'Publish packages' -m '- #{tag}'"],
           [project_dir, "git tag #{tag}"],
           [package_one_dir, "npm publish"],
           [project_dir, "git push origin main #{tag}"]
@@ -412,7 +412,7 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, "npm run build --workspace=package_one"],
           [project_dir, "npm run build --workspace=package_two"],
           [project_dir, "git add -A"],
-          [project_dir, "git commit -m 'Publish packages' -m '#{commit_message}' -m '[ci skip]'"],
+          [project_dir, "git commit -m 'Publish packages' -m '#{commit_message}'"],
           [project_dir, "git tag #{package_one_tag}"],
           [project_dir, "git tag #{package_two_tag}"],
           [package_one_dir, "npm publish"],
@@ -568,7 +568,7 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, "npm run build --workspace=package_b"],
           [project_dir, "npm run build --workspace=package_c"],
           [project_dir, "git add -A"],
-          [project_dir, "git commit -m 'Publish packages' -m '#{commit_message}' -m '[ci skip]'"],
+          [project_dir, "git commit -m 'Publish packages' -m '#{commit_message}'"],
           [project_dir, "git tag #{package_tag_a}"],
           [project_dir, "git tag #{package_tag_b}"],
           [project_dir, "git tag #{package_tag_c}"],
@@ -659,7 +659,7 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, "npm run build --workspace=package_a"],
           [project_dir, "npm run build --workspace=package_b"],
           [project_dir, "git add -A"],
-          [project_dir, "git commit -m 'Publish packages' -m '#{commit_message}' -m '[ci skip]'"],
+          [project_dir, "git commit -m 'Publish packages' -m '#{commit_message}'"],
           [project_dir, "git tag #{package_tag_a}"],
           [project_dir, "git tag #{package_tag_b}"],
           [package_dir_a, "npm publish --tag alpha"],
@@ -750,7 +750,7 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, "npm run build --workspace=package_a"],
           [project_dir, "npm run build --workspace=package_b"],
           [project_dir, "git add -A"],
-          [project_dir, "git commit -m 'Publish packages' -m '#{commit_message}' -m '[ci skip]'"],
+          [project_dir, "git commit -m 'Publish packages' -m '#{commit_message}'"],
           [project_dir, "git tag #{package_tag_a}"],
           [project_dir, "git tag #{package_tag_b}"],
           [package_dir_a, "npm publish"],
@@ -809,7 +809,7 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, "yarn link"],
           [project_dir, "yarn run build"],
           [project_dir, "git add -A"],
-          [project_dir, "git commit -m 'Publish packages' -m '- #{tag}' -m '[ci skip]'"],
+          [project_dir, "git commit -m 'Publish packages' -m '- #{tag}'"],
           [project_dir, "git tag #{tag}"],
           [project_dir, "yarn publish --new-version #{next_version}"],
           [project_dir, "git push origin main #{tag}"]
