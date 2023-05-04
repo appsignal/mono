@@ -57,7 +57,11 @@ RSpec.describe Mono::Cli::Publish do
       [project_dir, "ruby write_version_file.rb #{next_version}"],
       [project_dir, "echo build"],
       [project_dir, "git add -A"],
-      [project_dir, "git commit -m 'Publish packages' -m '- v#{next_version}'"],
+      [
+        project_dir,
+        "git commit -m 'Publish package v#{next_version}' " \
+          "-m 'Update version number and CHANGELOG.md.'"
+      ],
       [project_dir, "git tag v#{next_version}"],
       [project_dir, "echo publish"],
       [project_dir, "git push origin main v#{next_version}"]

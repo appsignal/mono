@@ -147,14 +147,21 @@ module Mono
         run_hooks("git-commit", "pre")
         puts "# Publishing to git"
         puts "## Creating release commit"
-        packages_list =
-          packages.map do |package|
-            "- #{package.next_tag}"
-          end.join("\n")
+        standard_message =
+          "Update version number and CHANGELOG.md."
+        commit_subject, commit_message =
+          if packages.length > 1
+            message =
+              packages.map do |package|
+                "- #{package.next_tag}"
+              end.join("\n")
+            ["Publish packages", "#{standard_message}\n\n#{message}"]
+          else
+            only_package = packages.first
+            ["Publish package #{only_package.next_tag}", standard_message]
+          end
         run_command "git add -A"
-        run_command "git commit " \
-          "-m 'Publish packages' " \
-          "-m '#{packages_list}'"
+        run_command "git commit -m '#{commit_subject}' -m '#{commit_message}'"
 
         packages.each do |package|
           puts "## Tag package #{package.next_tag}"
