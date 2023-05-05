@@ -12,7 +12,7 @@ module Mono
                 :capture => true,
                 :print_command => false
               ).strip
-              Version.parse(version)
+              config.version_scheme.parse(version)
             else
               raise NotImplementedError,
                 "Please add `read_version` config to `mono.yml` file."

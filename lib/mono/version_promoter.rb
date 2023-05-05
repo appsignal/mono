@@ -89,7 +89,7 @@ module Mono
           base
         end
 
-      Version.new(*segments, :separator => version.separator)
+      version.with(*segments)
     end
 
     def self.promote_base(version, bump)

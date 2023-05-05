@@ -18,7 +18,7 @@ module Mono
             begin
               contents = read_package_json
               matches = VERSION_REGEX.match(contents)
-              Version.parse(matches[1])
+              Version::Semver.parse(matches[1])
             end
         end
 
