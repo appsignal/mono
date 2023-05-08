@@ -10,7 +10,7 @@ RSpec.describe Mono::Languages::Elixir::Package do
         create_package_with_dependencies package_name, {}
 
         package = package_for_path(package_name)
-        expect(package.current_version).to eql(Mono::Version.new(1, 2, 3))
+        expect(package.current_version).to eql(Mono::Version::Semver.new(1, 2, 3))
       end
     end
 
@@ -20,7 +20,7 @@ RSpec.describe Mono::Languages::Elixir::Package do
         create_package_with_dependencies package_name, {}, true
 
         package = package_for_path(package_name)
-        expect(package.current_version).to eql(Mono::Version.new(1, 2, 3))
+        expect(package.current_version).to eql(Mono::Version::Semver.new(1, 2, 3))
       end
     end
   end

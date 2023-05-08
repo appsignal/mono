@@ -2,7 +2,7 @@
 
 RSpec.describe Mono::VersionPromoter do
   def promote(version, bump, prerelease = nil)
-    version_object = Mono::Version.parse(version)
+    version_object = Mono::Version::Semver.parse(version)
     described_class.promote(version_object, bump, prerelease).to_s
   end
 

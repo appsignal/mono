@@ -47,5 +47,13 @@ module Mono
     def config(key)
       @config.fetch(key) { raise "No config found for key '#{key}'" }
     end
+
+    def version_scheme
+      Version::VERSION_SCHEMES[@config["version_scheme"]] || Version::Semver
+    end
+
+    def inspect
+      @config.inspect
+    end
   end
 end

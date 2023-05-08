@@ -10,10 +10,11 @@ RSpec.describe Mono::Cli::Publish do
       "build" => { "command" => "echo build" },
       "publish" => { "command" => "echo publish" },
       "read_version" => "cat version.py",
-      "write_version" => "ruby write_version_file.rb"
+      "write_version" => "ruby write_version_file.rb",
+      "version_scheme" => "python"
     }
     prepare_custom_project mono_config do
-      create_version_file "1.2.3"
+      create_version_file "1.2.3a1"
       File.write("write_version_file.rb", %(File.write("version.py", ARGV[0])))
       add_changeset :patch
     end
@@ -21,19 +22,19 @@ RSpec.describe Mono::Cli::Publish do
     output = run_publish_process
 
     project_dir = "/#{current_project}"
-    next_version = "1.2.4"
+    next_version = "1.2.3a2"
 
     expect(output).to include(<<~OUTPUT), output
       The following packages will be published (or not):
       - #{current_project}:
-        Current version: v1.2.3
-        Next version:    v1.2.4 (patch)
+        Current version: v1.2.3a1
+        Next version:    v1.2.3a2 (patch)
     OUTPUT
     expect(output).to include(<<~OUTPUT), output
       # Updating package versions
       - #{current_project}:
-        Current version: v1.2.3
-        Next version:    v1.2.4 (patch)
+        Current version: v1.2.3a1
+        Next version:    v1.2.3a2 (patch)
     OUTPUT
 
     in_project do
@@ -87,7 +88,7 @@ RSpec.describe Mono::Cli::Publish do
           perform_commands do
             fail_commands failed_commands do
               stub_commands stubbed_commands do
-                run_publish
+                run_publish(["--alpha"])
               end
             end
           end
