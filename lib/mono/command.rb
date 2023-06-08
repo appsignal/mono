@@ -40,8 +40,8 @@ module Mono
           next if answer
         end
 
-        puts "Error: Command failed with status `#{exitstatus.exitstatus}`"
-        exit 1
+        raise Mono::Error,
+          "Command failed with status `#{exitstatus.exitstatus}`"
       end
     end
 
