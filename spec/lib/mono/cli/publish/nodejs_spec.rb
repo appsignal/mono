@@ -50,6 +50,7 @@ RSpec.describe Mono::Cli::Publish do
         expect(performed_commands).to eql([
           [project_dir, "npm install"],
           [project_dir, "npm link"],
+          [project_dir, "git tag --list #{tag}"],
           [project_dir, "npm run build"],
           [project_dir, "git add -A"],
           [
@@ -95,6 +96,7 @@ RSpec.describe Mono::Cli::Publish do
         expect(performed_commands).to eql([
           [project_dir, "npm install"],
           [project_dir, "npm link"],
+          [project_dir, "git tag --list #{tag}"],
           [project_dir, "npm run build"],
           [project_dir, "git add -A"],
           [
@@ -140,6 +142,7 @@ RSpec.describe Mono::Cli::Publish do
         expect(performed_commands).to eql([
           [project_dir, "npm install"],
           [project_dir, "npm link"],
+          [project_dir, "git tag --list #{tag}"],
           [project_dir, "npm run build"],
           [project_dir, "git add -A"],
           [
@@ -186,6 +189,7 @@ RSpec.describe Mono::Cli::Publish do
         expect(performed_commands).to eql([
           [project_dir, "npm install"],
           [project_dir, "npm link"],
+          [project_dir, "git tag --list #{tag}"],
           [project_dir, "npm run build"],
           [project_dir, "git add -A"],
           [
@@ -231,6 +235,7 @@ RSpec.describe Mono::Cli::Publish do
         expect(performed_commands).to eql([
           [project_dir, "npm install"],
           [project_dir, "npm link"],
+          [project_dir, "git tag --list #{tag}"],
           [project_dir, "npm run build"],
           [project_dir, "git add -A"],
           [
@@ -271,6 +276,7 @@ RSpec.describe Mono::Cli::Publish do
           expect(performed_commands).to eql([
             [project_dir, "npm install"],
             [project_dir, "npm link"],
+            [project_dir, "git tag --list v#{next_version}"],
             [project_dir, "npm run build"],
             [project_dir, "git add -A"],
             [
@@ -341,6 +347,7 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, "npm install"],
           [package_one_dir, "npm link"],
           [package_two_dir, "npm link"],
+          [project_dir, "git tag --list #{tag}"],
           [project_dir, "npm run build --workspace=package_one"],
           [project_dir, "git add -A"],
           [
@@ -429,6 +436,7 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, "npm install"],
           [package_one_dir, "npm link"],
           [package_two_dir, "npm link"],
+          [project_dir, "git tag --list #{package_one_tag} #{package_two_tag}"],
           [project_dir, "npm run build --workspace=package_one"],
           [project_dir, "npm run build --workspace=package_two"],
           [project_dir, "git add -A"],
@@ -587,6 +595,7 @@ RSpec.describe Mono::Cli::Publish do
           [package_dir_a, "npm link"],
           [package_dir_b, "npm link"],
           [package_dir_c, "npm link"],
+          [project_dir, "git tag --list #{package_tag_a} #{package_tag_b} #{package_tag_c}"],
           [project_dir, "npm run build --workspace=package_a"],
           [project_dir, "npm run build --workspace=package_b"],
           [project_dir, "npm run build --workspace=package_c"],
@@ -682,6 +691,7 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, "npm install"],
           [package_dir_a, "npm link"],
           [package_dir_b, "npm link"],
+          [project_dir, "git tag --list #{package_tag_a} #{package_tag_b}"],
           [project_dir, "npm run build --workspace=package_a"],
           [project_dir, "npm run build --workspace=package_b"],
           [project_dir, "git add -A"],
@@ -776,6 +786,7 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, "npm install"],
           [package_dir_a, "npm link"],
           [package_dir_b, "npm link"],
+          [project_dir, "git tag --list #{package_tag_a} #{package_tag_b}"],
           [project_dir, "npm run build --workspace=package_a"],
           [project_dir, "npm run build --workspace=package_b"],
           [project_dir, "git add -A"],
@@ -840,6 +851,7 @@ RSpec.describe Mono::Cli::Publish do
         expect(performed_commands).to eql([
           [project_dir, "yarn install"],
           [project_dir, "yarn link"],
+          [project_dir, "git tag --list #{tag}"],
           [project_dir, "yarn run build"],
           [project_dir, "git add -A"],
           [
