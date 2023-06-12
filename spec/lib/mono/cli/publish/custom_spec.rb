@@ -55,6 +55,7 @@ RSpec.describe Mono::Cli::Publish do
 
     expect(performed_commands).to eql([
       [project_dir, "cat version.py"],
+      [project_dir, "git tag --list v#{next_version}"],
       [project_dir, "ruby write_version_file.rb #{next_version}"],
       [project_dir, "echo build"],
       [project_dir, "git add -A"],

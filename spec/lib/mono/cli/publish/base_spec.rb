@@ -65,6 +65,30 @@ RSpec.describe Mono::Cli::Publish do
     end
   end
 
+  context "when the version tag already exists" do
+    it "exits with an error" do
+      prepare_project :ruby_single
+      output =
+        capture_stdout do
+          in_project do
+            add_changeset(:patch)
+            File.write(".git/refs/tags/v1.2.4", "0123456789abcdef0123456789abcdef01234567")
+
+            perform_commands do
+              run_publish
+            end
+          end
+        end
+
+      expect(performed_commands).to eq([
+        ["/ruby_single_project", "git tag --list v1.2.4"]
+      ])
+      expect(output).to include("Error: The git tags for packages to be published " \
+        'already exist: "v1.2.4"')
+      expect(exit_status).to eql(1), output
+    end
+  end
+
   describe "changeset preview" do
     context "with single package project" do
       it "prints changeset previews in the package summary" do
@@ -118,7 +142,9 @@ RSpec.describe Mono::Cli::Publish do
                 #{"a" * 100}...
         OUTPUT
 
-        expect(performed_commands).to eql([])
+        expect(performed_commands).to eql([
+          ["/custom_project_project", "git tag --list v2.0.0"]
+        ])
         expect(exit_status).to eql(1), output
       end
     end
@@ -174,7 +200,9 @@ RSpec.describe Mono::Cli::Publish do
           - package_c: (Will not publish)
         OUTPUT
 
-        expect(performed_commands).to eql([])
+        expect(performed_commands).to eql([
+          ["/custom_project_project", "git tag --list package_a@2.0.0 package_b@1.2.4"]
+        ])
         expect(exit_status).to eql(1), output
       end
     end
@@ -219,7 +247,9 @@ RSpec.describe Mono::Cli::Publish do
         expect(local_changes?).to be_falsy, local_changes.inspect
       end
 
-      expect(performed_commands).to eql([])
+      expect(performed_commands).to eql([
+        ["/ruby_single_project", "git tag --list v1.2.4"]
+      ])
       expect(exit_status).to eql(1), output
     end
   end
@@ -273,6 +303,7 @@ RSpec.describe Mono::Cli::Publish do
       end
 
       expect(performed_commands).to eql([
+        [project_dir, "git tag --list v#{next_version}"],
         [project_dir, "gem build"],
         [project_dir, "git add -A"],
         [
@@ -338,6 +369,7 @@ RSpec.describe Mono::Cli::Publish do
       end
 
       expect(performed_commands).to eql([
+        [project_dir, "git tag --list v#{next_version}"],
         [project_dir, "gem build"],
         [project_dir, "git add -A"],
         [
@@ -403,6 +435,7 @@ RSpec.describe Mono::Cli::Publish do
       end
 
       expect(performed_commands).to eql([
+        [project_dir, "git tag --list v#{next_version}"],
         [project_dir, "gem build"],
         [project_dir, "git add -A"],
         [
@@ -470,6 +503,7 @@ RSpec.describe Mono::Cli::Publish do
       end
 
       expect(performed_commands).to eql([
+        [project_dir, "git tag --list v#{next_version}"],
         [project_dir, "gem build"],
         [project_dir, "git add -A"],
         [
@@ -533,6 +567,7 @@ RSpec.describe Mono::Cli::Publish do
       end
 
       expect(performed_commands).to eql([
+        [project_dir, "git tag --list v#{next_version}"],
         [project_dir, "gem build"],
         [project_dir, "git add -A"],
         [
@@ -619,6 +654,7 @@ RSpec.describe Mono::Cli::Publish do
       project_dir = "/ruby_single_project"
       next_version = "1.2.4"
       expect(performed_commands).to eql([
+        [project_dir, "git tag --list v#{next_version}"],
         [project_dir, "echo before build"],
         [project_dir, "gem build"],
         [project_dir, "echo after build"],
@@ -639,7 +675,7 @@ RSpec.describe Mono::Cli::Publish do
   end
 
   context "with only one package selected in a mono repo" do
-    it "only publishes only the selected package" do
+    it "publishes only the selected package" do
       prepare_project :elixir_mono
       confirm_publish_package
       output =
@@ -670,6 +706,7 @@ RSpec.describe Mono::Cli::Publish do
       expect(performed_commands).to eql([
         [package_one_dir, "mix deps.get"],
         [package_two_dir, "mix deps.get"],
+        [project_dir, "git tag --list #{tag}"],
         [package_one_dir, "mix compile"],
         [project_dir, "git add -A"],
         [
@@ -685,8 +722,8 @@ RSpec.describe Mono::Cli::Publish do
     end
   end
 
-  context "with multiple package selected in a mono repo" do
-    it "only publishes only the selected packages" do
+  context "with multiple packages selected in a mono repo" do
+    it "publishes only the selected packages" do
       prepare_project :elixir_mono
       confirm_publish_package
       output =
@@ -718,6 +755,7 @@ RSpec.describe Mono::Cli::Publish do
       expect(performed_commands).to eql([
         [package_one_dir, "mix deps.get"],
         [package_two_dir, "mix deps.get"],
+        [project_dir, "git tag --list #{tag1} #{tag2}"],
         [package_one_dir, "mix compile"],
         [package_two_dir, "mix compile"],
         [project_dir, "git add -A"],

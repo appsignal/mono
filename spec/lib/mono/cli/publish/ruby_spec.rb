@@ -47,6 +47,7 @@ RSpec.describe Mono::Cli::Publish do
       end
 
       expect(performed_commands).to eql([
+        [project_dir, "git tag --list v#{next_version}"],
         [project_dir, "gem build"],
         [project_dir, "git add -A"],
         [
@@ -105,6 +106,7 @@ RSpec.describe Mono::Cli::Publish do
         end
 
         expect(performed_commands).to eql([
+          [project_dir, "git tag --list v#{next_version}"],
           [project_dir, "gem build"],
           [project_dir, "git add -A"],
           [
@@ -165,6 +167,7 @@ RSpec.describe Mono::Cli::Publish do
       end
 
       expect(performed_commands).to eql([
+        [project_dir, "git tag --list v#{next_version}"],
         [project_dir, "echo build"],
         [project_dir, "git add -A"],
         [
@@ -204,6 +207,7 @@ RSpec.describe Mono::Cli::Publish do
         OUTPUT
 
         expect(performed_commands).to eql([
+          [project_dir, "git tag --list v#{next_version}"],
           [project_dir, "gem build"],
           [project_dir, "git add -A"],
           [
@@ -271,6 +275,7 @@ RSpec.describe Mono::Cli::Publish do
       end
 
       expect(performed_commands).to eql([
+        [project_dir, "git tag --list #{tag_a}"],
         [package_dir_a, "gem build"],
         [project_dir, "git add -A"],
         [
@@ -357,6 +362,7 @@ RSpec.describe Mono::Cli::Publish do
       end
 
       expect(performed_commands).to eql([
+        [project_dir, "git tag --list #{tag_a} #{tag_b}"],
         [package_dir_a, "gem build"],
         [package_dir_b, "gem build"],
         [project_dir, "git add -A"],
@@ -473,6 +479,7 @@ RSpec.describe Mono::Cli::Publish do
       end
 
       expect(performed_commands).to eql([
+        [project_dir, "git tag --list #{tag_a} #{tag_b} #{tag_c}"],
         [package_dir_a, "gem build"],
         [package_dir_b, "gem build"],
         [package_dir_c, "gem build"],

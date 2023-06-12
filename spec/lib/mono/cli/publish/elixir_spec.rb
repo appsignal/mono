@@ -47,6 +47,7 @@ RSpec.describe Mono::Cli::Publish do
 
       expect(performed_commands).to eql([
         [project_dir, "mix deps.get"],
+        [project_dir, "git tag --list v#{next_version}"],
         [project_dir, "mix compile"],
         [project_dir, "git add -A"],
         [
@@ -106,6 +107,7 @@ RSpec.describe Mono::Cli::Publish do
 
       expect(performed_commands).to eql([
         [project_dir, "mix deps.get"],
+        [project_dir, "git tag --list v#{next_version}"],
         [project_dir, "mix compile"],
         [project_dir, "git add -A"],
         [
@@ -146,6 +148,7 @@ RSpec.describe Mono::Cli::Publish do
 
         expect(performed_commands).to eql([
           [project_dir, "mix deps.get"],
+          [project_dir, "git tag --list v#{next_version}"],
           [project_dir, "mix compile"],
           [project_dir, "git add -A"],
           [
@@ -216,6 +219,7 @@ RSpec.describe Mono::Cli::Publish do
       expect(performed_commands).to eql([
         [package_dir_a, "mix deps.get"],
         [package_dir_b, "mix deps.get"],
+        [project_dir, "git tag --list #{tag}"],
         [package_dir_a, "mix compile"],
         [project_dir, "git add -A"],
         [
@@ -303,6 +307,7 @@ RSpec.describe Mono::Cli::Publish do
       expect(performed_commands).to eql([
         [package_dir_a, "mix deps.get"],
         [package_dir_b, "mix deps.get"],
+        [project_dir, "git tag --list #{tag_a} #{tag_b}"],
         [package_dir_a, "mix compile"],
         [package_dir_b, "mix compile"],
         [project_dir, "git add -A"],

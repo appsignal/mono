@@ -39,6 +39,15 @@ module Mono
             "Commit or discard them and try again. Exiting."
         end
 
+        existing_tags = existing_tags(changed_packages)
+        unless existing_tags.empty?
+          message = "Error: The git tags for packages to be published " \
+            "already exist: "
+          message += existing_tags.map(&:inspect).join(",")
+          message += ". Delete them and try again. Exiting."
+          exit_cli message
+        end
+
         print_summary(packages)
         puts
         ask_for_confirmation
@@ -183,6 +192,15 @@ module Mono
       def package_promoter
         @package_promoter ||=
           PackagePromoter.new(dependency_tree, :prerelease => prerelease)
+      end
+
+      def existing_tags(changed_packages)
+        next_tags = changed_packages.map(&:next_tag).join(" ")
+        run_command(
+          "git tag --list #{next_tags}",
+          :capture => true,
+          :print_command => false
+        ).strip.split("\n")
       end
     end
   end
