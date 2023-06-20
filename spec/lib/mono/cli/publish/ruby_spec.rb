@@ -192,6 +192,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         add_cli_input "y" # Retry command
         add_cli_input "n" # Don't retry command
+        add_cli_input "n" # Don't rollback changes
         output = run_publish_process(
           :stubbed_commands => [/^git push/],
           :failed_commands => [/^gem push/]
@@ -203,7 +204,10 @@ RSpec.describe Mono::Cli::Publish do
         expect(output).to include(<<~OUTPUT), output
           #{fail_command}
           Error: Command failed. Do you want to retry? (Y/n): #{fail_command}
-          Error: Command failed. Do you want to retry? (Y/n): Error: Command failed with status `1`
+          Error: Command failed. Do you want to retry? (Y/n):#{" "}
+          A Mono error was encountered during the `mono publish` command. Stopping operation.
+
+          Mono::Error: Command failed with status `1`
         OUTPUT
 
         expect(performed_commands).to eql([
