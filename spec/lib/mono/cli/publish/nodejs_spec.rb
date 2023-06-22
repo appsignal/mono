@@ -259,6 +259,7 @@ RSpec.describe Mono::Cli::Publish do
           confirm_publish_package
           add_cli_input "y" # Retry command
           add_cli_input "n" # Don't retry command
+          add_cli_input "n" # Don't rollback changes
           output = run_publish_process(
             :stubbed_commands => [/^git push/],
             :failed_commands => [/^npm publish/]
@@ -270,7 +271,10 @@ RSpec.describe Mono::Cli::Publish do
           expect(output).to include(<<~OUTPUT), output
             #{fail_command}
             Error: Command failed. Do you want to retry? (Y/n): #{fail_command}
-            Error: Command failed. Do you want to retry? (Y/n): Error: Command failed with status `1`
+            Error: Command failed. Do you want to retry? (Y/n):#{" "}
+            A Mono error was encountered during the `mono publish` command. Stopping operation.
+
+            Mono::Error: Command failed with status `1`
           OUTPUT
 
           expect(performed_commands).to eql([
@@ -286,6 +290,68 @@ RSpec.describe Mono::Cli::Publish do
             ],
             [project_dir, "git tag v#{next_version}"],
             [project_dir, "npm publish"]
+          ])
+          expect(exit_status).to eql(1), output
+        end
+
+        it "rolls back changes" do
+          fail_command = "exit 1"
+          prepare_nodejs_project do
+            create_package_json :version => "1.2.3"
+            add_changeset :patch
+          end
+          confirm_publish_package
+          add_cli_input "n" # Don't retry command
+          add_cli_input "y" # Rollback changes
+          output = run_publish_process(
+            :stubbed_commands => [
+              /^git push/,
+              # Happens after `## Untag package v1.2.4` in output,
+              # stubbed because output contains commit hash
+              /^git tag -d/
+            ],
+            :failed_commands => [/^npm publish/]
+          )
+
+          project_dir = "/#{current_project}"
+          next_version = "1.2.4"
+
+          expect(output).to include(<<~OUTPUT), output
+            #{fail_command}
+            Error: Command failed. Do you want to retry? (Y/n):#{" "}
+            A Mono error was encountered during the `mono publish` command. Stopping operation.
+
+            Mono::Error: Command failed with status `1`
+
+            Do you want to rollback the above changes? (Y/n)#{" "}
+            # Rolling back changes
+            ## Untag package v1.2.4
+            ## Removing release commit
+            git reset --soft HEAD^
+            git restore --staged :/
+            ## Restoring changelogs
+            git restore :/
+            ## Restoring package versions
+          OUTPUT
+
+          expect(performed_commands).to eql([
+            [project_dir, "npm install"],
+            [project_dir, "npm link"],
+            [project_dir, "git tag --list v#{next_version}"],
+            [project_dir, "npm run build"],
+            [project_dir, "git add -A"],
+            [
+              project_dir,
+              "git commit -m 'Publish package v#{next_version}' " \
+                "-m 'Update version number and CHANGELOG.md.'"
+            ],
+            [project_dir, "git tag v#{next_version}"],
+            [project_dir, "npm publish"],
+            [project_dir, "git tag -d v1.2.4"],
+            [project_dir, "git reset --soft HEAD^"],
+            [project_dir, "git restore --staged :/"],
+            [project_dir, "git restore :/"]
+
           ])
           expect(exit_status).to eql(1), output
         end

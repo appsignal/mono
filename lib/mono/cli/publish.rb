@@ -2,6 +2,7 @@
 
 module Mono
   module Cli
+    # rubocop:disable Metrics/ClassLength
     class Publish < Base
       attr_reader :prerelease, :tag
       alias prerelease? prerelease
@@ -50,27 +51,58 @@ module Mono
 
         print_summary(packages)
         puts
-        ask_for_confirmation
+        ask_for_publish_confirmation
         puts
-        update_packages(changed_packages)
-        puts
-        update_changelog(changed_packages)
-        puts
-        build(changed_packages)
-        puts
-        commit_changes(changed_packages)
-        puts
-        publish_package_manager(changed_packages)
+
+        rollback = []
+
+        begin
+          update_packages(changed_packages, rollback)
+          puts
+          update_changelog(changed_packages, rollback)
+          puts
+          build(changed_packages)
+          puts
+          commit_changes(changed_packages, rollback)
+          puts
+          publish_package_manager(changed_packages)
+        rescue => error
+          puts
+          ask_for_rollback_confirmation(error)
+          puts
+          rollback_changes(rollback)
+          exit_with_status 1
+        end
+
         puts
         publish_git(changed_packages)
       end
 
       private
 
-      def ask_for_confirmation
+      def ask_for_publish_confirmation
         publish = yes_or_no "Do you want to publish the above changes? (Y/n) ",
           :default => "y"
         return if publish
+
+        exit_with_status 1
+      end
+
+      def ask_for_rollback_confirmation(error)
+        puts(
+          "A Mono error was encountered during the `mono publish` command. " \
+            "Stopping operation."
+        )
+        puts
+        puts "#{error.class}: #{error.message}"
+        puts
+
+        rollback = yes_or_no(
+          "Do you want to rollback the above changes? " \
+            "(Y/n) ",
+          :default => "y"
+        )
+        return if rollback
 
         exit_with_status 1
       end
@@ -97,12 +129,16 @@ module Mono
         end
       end
 
-      def update_packages(packages)
+      def update_packages(packages, rollback)
         puts "# Updating package versions"
         packages.each do |package|
           print_package_summary(package)
           package.update_spec
         end
+        rollback << [
+          "## Restoring package versions",
+          "git restore :/"
+        ]
       end
 
       def print_package_summary(package)
@@ -134,12 +170,16 @@ module Mono
         end
       end
 
-      def update_changelog(packages)
+      def update_changelog(packages, rollback)
         puts "# Updating changelogs"
         packages.each do |package|
           puts "# Updating changelog: #{package.name} (#{package.path})"
           package.changesets.write_changesets_to_changelog
         end
+        rollback << [
+          "## Restoring changelogs",
+          "git restore :/"
+        ]
       end
 
       def publish_package_manager(packages)
@@ -152,7 +192,7 @@ module Mono
         run_hooks("publish", "post")
       end
 
-      def commit_changes(packages)
+      def commit_changes(packages, rollback)
         run_hooks("git-commit", "pre")
         puts "# Publishing to git"
         puts "## Creating release commit"
@@ -170,11 +210,23 @@ module Mono
             ["Publish package #{only_package.next_tag}", standard_message]
           end
         run_command "git add -A"
+        rollback << [
+          "## Removing release commit",
+          "git restore --staged :/"
+        ]
         run_command "git commit -m '#{commit_subject}' -m '#{commit_message}'"
+        rollback << [
+          "## Removing release commit",
+          "git reset --soft HEAD^"
+        ]
 
         packages.each do |package|
           puts "## Tag package #{package.next_tag}"
           run_command "git tag #{package.next_tag}"
+          rollback << [
+            "## Untag package #{package.next_tag}",
+            "git tag -d #{package.next_tag}"
+          ]
         end
         run_hooks("git-commit", "post")
       end
@@ -202,6 +254,23 @@ module Mono
           :print_command => false
         ).strip.split("\n")
       end
+
+      def rollback_changes(rollback)
+        puts "# Rolling back changes"
+        last_message = nil
+        last_command = nil
+        rollback.reverse.each do |rollback_entry|
+          message = rollback_entry.first
+          command = rollback_entry.last
+
+          puts message unless message == last_message
+          run_command(command) unless command == last_command
+
+          last_message = message
+          last_command = command
+        end
+      end
     end
+    # rubocop:enable Metrics/ClassLength
   end
 end
