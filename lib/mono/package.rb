@@ -12,6 +12,8 @@ module Mono
         Languages::Ruby::Package
       when "custom"
         Languages::Custom::Package
+      when "git"
+        Languages::Git::Package
       else
         raise "Unknown language. Please configure `mono.yml` with a `language`."
       end

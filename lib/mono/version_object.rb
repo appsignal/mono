@@ -2,6 +2,25 @@
 
 module Mono
   class Version
+    # A custom version, to be managed by custom language scripts.
+    # It stores an opaque value, while providing a version-like object
+    # consistent with Mono's expectations
+    class Custom < Version
+      attr_writer :value
+
+      def self.parse(string)
+        new(0, 0, 0).tap { |version| version.value = string }
+      end
+
+      def to_s
+        @value.to_s
+      end
+
+      def with(*args)
+        self.class.new(*args).tap { |version| version.value = @value }
+      end
+    end
+
     # The Elixir and Node.js package versions follow the semantic
     # versioning standard, which uses a dash (-) between the version
     # number and the pre-release, e.g. "1.2.3-alpha.1".
@@ -115,6 +134,7 @@ module Mono
     end
 
     VERSION_SCHEMES = {
+      "custom" => Version::Custom,
       "semver" => Version::Semver,
       "ruby" => Version::Ruby,
       "python" => Version::Python

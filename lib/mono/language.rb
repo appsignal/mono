@@ -24,6 +24,8 @@ module Mono
         Languages::Ruby::Language
       when "custom"
         Languages::Custom::Language
+      when "git"
+        Languages::Git::Language
       else
         raise UnknownLanguageError, language
       end
