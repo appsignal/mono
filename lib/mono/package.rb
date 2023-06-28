@@ -196,11 +196,10 @@ module Mono
     end
 
     def build_tag(version)
-      if config.monorepo?
-        "#{name}@#{version}"
-      else # Single repo
-        "v#{version}"
-      end
+      return "#{name}@#{version}" if config.monorepo?
+      return version.to_s if config.custom_version?
+
+      "v#{version}" # Single repo
     end
   end
 end

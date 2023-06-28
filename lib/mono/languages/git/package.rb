@@ -5,13 +5,7 @@ module Mono
     module Git
       class Package < PackageBase
         def current_version
-          version = run_command_in_package(
-            "git rev-parse --short=7 HEAD",
-            :capture => true,
-            :print_command => false
-          ).strip
-
-          @current_version ||= Version::Custom.parse(version)
+          "n/a"
         end
 
         # Not supported
@@ -21,6 +15,16 @@ module Mono
 
         def update_spec
           # noop
+        end
+
+        def next_version
+          version = run_command_in_package(
+            "git rev-parse --short=7 HEAD",
+            :capture => true,
+            :print_command => false
+          ).strip
+
+          @current_version ||= Version::Custom.parse(version)
         end
       end
     end

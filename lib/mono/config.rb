@@ -22,6 +22,12 @@ module Mono
       @config.key?("packages_dir")
     end
 
+    def custom_version?
+      (
+        (language == "custom" && version_scheme == Version::Custom) ||
+        language == "git"
+      )
+
     def command?(cmd)
       @config.fetch(cmd, {}).key?("command")
     end
