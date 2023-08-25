@@ -19,7 +19,7 @@ module Mono
           FileUtils.touch(File.join(dir, ".gitkeep"))
           change_description =
             required_input("Summarize the change (for changeset filename): ")
-          filename = change_description.downcase.tr(":;.,'\" /\\", "-")
+          filename = change_description.downcase.tr(":;.,'\"` /\\", "-")
           filepath = File.join(dir, "#{filename}.md")
           type = prompt_for_type
           bump = prompt_for_bump
