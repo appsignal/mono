@@ -229,6 +229,8 @@ RSpec.describe Mono::ChangesetCollection do
         expect(changelog).to include(<<~CHANGELOG)
           ## 2.0.0
 
+          _Published on #{date_label}._
+
           ### Added
 
           - [LINK] major - This is a major changeset bump.
@@ -276,6 +278,8 @@ RSpec.describe Mono::ChangesetCollection do
         expect(changelog).to include(<<~CHANGELOG)
           ## 2.0.0
 
+          _Published on #{date_label}._
+
           ### Deprecated
 
           - [LINK] patch - This is a patch changeset bump.
@@ -292,5 +296,9 @@ RSpec.describe Mono::ChangesetCollection do
   def normalize_changelog(content)
     # Remove links so we don't have to try and match against every instance
     content.gsub(/\[[a-z0-9]{7}\]\(.+\)/, "[LINK]")
+  end
+
+  def date_label
+    Time.now.utc.strftime("%Y-%m-%d")
   end
 end
