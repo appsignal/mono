@@ -42,7 +42,7 @@ module Mono
 
         existing_tags = existing_tags(changed_packages)
         unless existing_tags.empty?
-          message = "Error: The git tags for packages to be published " \
+          message = "Error: The Git tags for packages to be published " \
             "already exist: "
           message += existing_tags.map(&:inspect).join(",")
           message += ". Delete them and try again. Exiting."
@@ -194,7 +194,7 @@ module Mono
 
       def commit_changes(packages, rollback)
         run_hooks("git-commit", "pre")
-        puts "# Publishing to git"
+        puts "# Committing changes to Git"
         puts "## Creating release commit"
         standard_message =
           "Update version number and CHANGELOG.md."
@@ -233,8 +233,8 @@ module Mono
 
       def publish_git(packages)
         run_hooks("git-publish", "pre")
-        puts "# Publishing to git"
-        puts "## Pushing to git remote origin"
+        puts "# Publishing to Git"
+        puts "## Pushing to Git remote origin"
         package_versions = packages.map(&:next_tag).join(" ")
         run_command "git push origin #{current_branch} #{package_versions}"
         run_hooks("git-publish", "post")

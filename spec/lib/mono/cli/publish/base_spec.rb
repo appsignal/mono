@@ -83,7 +83,7 @@ RSpec.describe Mono::Cli::Publish do
       expect(performed_commands).to eq([
         ["/ruby_single_project", "git tag --list v1.2.4"]
       ])
-      expect(output).to include("Error: The git tags for packages to be published " \
+      expect(output).to include("Error: The Git tags for packages to be published " \
         'already exist: "v1.2.4"')
       expect(exit_status).to eql(1), output
     end
