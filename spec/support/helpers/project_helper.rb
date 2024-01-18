@@ -51,6 +51,13 @@ module ProjectHelper
     end
   end
 
+  def prepare_ruby_project(config = {})
+    prepare_new_project do
+      create_mono_config({ "language" => "ruby" }.merge(config))
+      yield
+    end
+  end
+
   def prepare_elixir_project(config = {})
     prepare_new_project do
       create_mono_config(
@@ -59,6 +66,14 @@ module ProjectHelper
           "publish" => { "command" => "mix hex.publish package --yes" }
         }.merge(config)
       )
+      yield
+    end
+  end
+
+  def prepare_nodejs_project(config = {})
+    prepare_new_project do
+      create_mono_config({ "language" => "nodejs" }.merge(config))
+      create_package_json :name => "root", :private => true, :workspaces => ["packages/*"]
       yield
     end
   end

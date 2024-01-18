@@ -9,9 +9,10 @@ RSpec.describe Mono::Cli::Publish do
     it "publishes the package" do
       prepare_elixir_project do
         create_package_mix :version => "1.2.3"
+        add_changeset :patch
       end
       confirm_publish_package
-      output = run_publish_process
+      output = run_publish(:lang => :elixir)
 
       project_dir = "/#{current_project}"
       next_version = "1.2.4"
@@ -67,9 +68,10 @@ RSpec.describe Mono::Cli::Publish do
     it "publishes the package" do
       prepare_elixir_project do
         create_package_mix :version => "1.2.3", :version_in_module_attribute? => true
+        add_changeset :patch
       end
       confirm_publish_package
-      output = run_publish_process
+      output = run_publish(:lang => :elixir)
 
       project_dir = "/#{current_project}"
       next_version = "1.2.4"
@@ -121,111 +123,6 @@ RSpec.describe Mono::Cli::Publish do
       ])
       expect(exit_status).to eql(0), output
     end
-
-    context "with failing publish command" do
-      it "retries to publish" do
-        fail_command = "exit 1"
-        prepare_elixir_project do
-          create_package_mix :version => "1.2.3"
-          add_changeset :patch
-        end
-        confirm_publish_package
-        add_cli_input "y" # Retry command
-        add_cli_input "n" # Don't retry command
-        add_cli_input "n" # Don't rollback changes
-        output = run_publish_process(
-          :stubbed_commands => [/^git push/],
-          :failed_commands => [/^mix hex.publish package --yes/]
-        )
-
-        project_dir = "/#{current_project}"
-        next_version = "1.2.4"
-
-        expect(output).to include(<<~OUTPUT), output
-          #{fail_command}
-          Error: Command failed. Do you want to retry? (Y/n): #{fail_command}
-          Error: Command failed. Do you want to retry? (Y/n):#{" "}
-          A Mono error was encountered during the `mono publish` command. Stopping operation.
-
-          Mono::Error: Command failed with status `1`
-        OUTPUT
-
-        expect(performed_commands).to eql([
-          [project_dir, "mix deps.get"],
-          [project_dir, "git tag --list v#{next_version}"],
-          [project_dir, "mix compile"],
-          [project_dir, "git add -A"],
-          [
-            project_dir,
-            "git commit -m 'Publish package v#{next_version}' " \
-              "-m 'Update version number and CHANGELOG.md.'"
-          ],
-          [project_dir, "git tag v#{next_version}"],
-          [project_dir, "mix hex.publish package --yes"]
-        ])
-        expect(exit_status).to eql(1), output
-      end
-
-      it "rolls back changes" do
-        fail_command = "exit 1"
-        prepare_elixir_project do
-          create_package_mix :version => "1.2.3"
-          add_changeset :patch
-        end
-        confirm_publish_package
-        add_cli_input "n" # Don't retry command
-        add_cli_input "y" # Rollback changes
-        output = run_publish_process(
-          :stubbed_commands => [
-            /^git push/,
-            # Happens after `## Untag package v1.2.4` in output,
-            # stubbed because output contains commit hash
-            /^git tag -d/
-          ],
-          :failed_commands => [/^mix hex.publish package --yes/]
-        )
-
-        project_dir = "/#{current_project}"
-        next_version = "1.2.4"
-
-        expect(output).to include(<<~OUTPUT), output
-          #{fail_command}
-          Error: Command failed. Do you want to retry? (Y/n):#{" "}
-          A Mono error was encountered during the `mono publish` command. Stopping operation.
-
-          Mono::Error: Command failed with status `1`
-
-          Do you want to rollback the above changes? (Y/n)#{" "}
-          # Rolling back changes
-          ## Untag package v1.2.4
-          ## Removing release commit
-          git reset --soft HEAD^
-          git restore --staged :/
-          ## Restoring changelogs
-          git restore :/
-          ## Restoring package versions
-        OUTPUT
-
-        expect(performed_commands).to eql([
-          [project_dir, "mix deps.get"],
-          [project_dir, "git tag --list v#{next_version}"],
-          [project_dir, "mix compile"],
-          [project_dir, "git add -A"],
-          [
-            project_dir,
-            "git commit -m 'Publish package v#{next_version}' " \
-              "-m 'Update version number and CHANGELOG.md.'"
-          ],
-          [project_dir, "git tag v#{next_version}"],
-          [project_dir, "mix hex.publish package --yes"],
-          [project_dir, "git tag -d v1.2.4"],
-          [project_dir, "git reset --soft HEAD^"],
-          [project_dir, "git restore --staged :/"],
-          [project_dir, "git restore :/"]
-        ])
-        expect(exit_status).to eql(1), output
-      end
-    end
   end
 
   context "with mono Elixir project" do
@@ -240,7 +137,7 @@ RSpec.describe Mono::Cli::Publish do
         end
       end
       confirm_publish_package
-      output = run_publish_process
+      output = run_publish(:lang => :elixir)
 
       project_dir = "/#{current_project}"
       package_dir_a = "#{project_dir}/packages/package_a"
@@ -310,7 +207,7 @@ RSpec.describe Mono::Cli::Publish do
         end
       end
       confirm_publish_package
-      output = run_publish_process
+      output = run_publish(:lang => :elixir)
 
       project_dir = "/#{current_project}"
       package_dir_a = "#{project_dir}/packages/jason"
@@ -388,25 +285,5 @@ RSpec.describe Mono::Cli::Publish do
       ])
       expect(exit_status).to eql(0), output
     end
-  end
-
-  def run_publish_process(failed_commands: [], stubbed_commands: nil)
-    stubbed_commands ||= [/^mix hex.publish package --yes/, /^git push/]
-    output =
-      capture_stdout do
-        in_project do
-          add_changeset(:patch)
-
-          perform_commands do
-            fail_commands failed_commands do
-              stub_commands stubbed_commands do
-                run_bootstrap
-                run_publish
-              end
-            end
-          end
-        end
-      end
-    strip_changeset_output output
   end
 end

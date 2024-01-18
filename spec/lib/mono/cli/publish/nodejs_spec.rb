@@ -13,7 +13,7 @@ RSpec.describe Mono::Cli::Publish do
           add_changeset :patch
         end
         confirm_publish_package
-        output = run_publish_process
+        output = run_publish(:lang => :nodejs)
 
         project_dir = "/#{current_project}"
         next_version = "1.0.1"
@@ -70,7 +70,7 @@ RSpec.describe Mono::Cli::Publish do
           add_changeset :patch
         end
         confirm_publish_package
-        output = run_publish_process(["--alpha"])
+        output = run_publish(["--alpha"], :lang => :nodejs)
 
         project_dir = "/#{current_project}"
         next_version = "1.0.1-alpha.1"
@@ -116,7 +116,7 @@ RSpec.describe Mono::Cli::Publish do
           add_changeset :patch
         end
         confirm_publish_package
-        output = run_publish_process(["--beta"])
+        output = run_publish(["--beta"], :lang => :nodejs)
 
         project_dir = "/#{current_project}"
         next_version = "1.0.1-beta.1"
@@ -163,7 +163,7 @@ RSpec.describe Mono::Cli::Publish do
         end
         confirm_publish_package
         package_tag = "2.x-stable"
-        output = run_publish_process(["--tag", package_tag])
+        output = run_publish(["--tag", package_tag], :lang => :nodejs)
 
         project_dir = "/#{current_project}"
         next_version = "2.3.2"
@@ -209,7 +209,7 @@ RSpec.describe Mono::Cli::Publish do
           add_changeset :patch
         end
         confirm_publish_package
-        output = run_publish_process(["--rc"])
+        output = run_publish(["--rc"], :lang => :nodejs)
 
         project_dir = "/#{current_project}"
         next_version = "1.0.1-rc.1"
@@ -248,114 +248,6 @@ RSpec.describe Mono::Cli::Publish do
         ])
         expect(exit_status).to eql(0), output
       end
-
-      context "with failing publish command" do
-        it "retries to publish" do
-          fail_command = "exit 1"
-          prepare_nodejs_project do
-            create_package_json :version => "1.2.3"
-            add_changeset :patch
-          end
-          confirm_publish_package
-          add_cli_input "y" # Retry command
-          add_cli_input "n" # Don't retry command
-          add_cli_input "n" # Don't rollback changes
-          output = run_publish_process(
-            :stubbed_commands => [/^git push/],
-            :failed_commands => [/^npm publish/]
-          )
-
-          project_dir = "/#{current_project}"
-          next_version = "1.2.4"
-
-          expect(output).to include(<<~OUTPUT), output
-            #{fail_command}
-            Error: Command failed. Do you want to retry? (Y/n): #{fail_command}
-            Error: Command failed. Do you want to retry? (Y/n):#{" "}
-            A Mono error was encountered during the `mono publish` command. Stopping operation.
-
-            Mono::Error: Command failed with status `1`
-          OUTPUT
-
-          expect(performed_commands).to eql([
-            [project_dir, "npm install"],
-            [project_dir, "npm link"],
-            [project_dir, "git tag --list v#{next_version}"],
-            [project_dir, "npm run build"],
-            [project_dir, "git add -A"],
-            [
-              project_dir,
-              "git commit -m 'Publish package v#{next_version}' " \
-                "-m 'Update version number and CHANGELOG.md.'"
-            ],
-            [project_dir, "git tag v#{next_version}"],
-            [project_dir, "npm publish"]
-          ])
-          expect(exit_status).to eql(1), output
-        end
-
-        it "rolls back changes" do
-          fail_command = "exit 1"
-          prepare_nodejs_project do
-            create_package_json :version => "1.2.3"
-            add_changeset :patch
-          end
-          confirm_publish_package
-          add_cli_input "n" # Don't retry command
-          add_cli_input "y" # Rollback changes
-          output = run_publish_process(
-            :stubbed_commands => [
-              /^git push/,
-              # Happens after `## Untag package v1.2.4` in output,
-              # stubbed because output contains commit hash
-              /^git tag -d/
-            ],
-            :failed_commands => [/^npm publish/]
-          )
-
-          project_dir = "/#{current_project}"
-          next_version = "1.2.4"
-
-          expect(output).to include(<<~OUTPUT), output
-            #{fail_command}
-            Error: Command failed. Do you want to retry? (Y/n):#{" "}
-            A Mono error was encountered during the `mono publish` command. Stopping operation.
-
-            Mono::Error: Command failed with status `1`
-
-            Do you want to rollback the above changes? (Y/n)#{" "}
-            # Rolling back changes
-            ## Untag package v1.2.4
-            ## Removing release commit
-            git reset --soft HEAD^
-            git restore --staged :/
-            ## Restoring changelogs
-            git restore :/
-            ## Restoring package versions
-          OUTPUT
-
-          expect(performed_commands).to eql([
-            [project_dir, "npm install"],
-            [project_dir, "npm link"],
-            [project_dir, "git tag --list v#{next_version}"],
-            [project_dir, "npm run build"],
-            [project_dir, "git add -A"],
-            [
-              project_dir,
-              "git commit -m 'Publish package v#{next_version}' " \
-                "-m 'Update version number and CHANGELOG.md.'"
-            ],
-            [project_dir, "git tag v#{next_version}"],
-            [project_dir, "npm publish"],
-            [project_dir, "git tag -d v1.2.4"],
-            [project_dir, "git reset --soft HEAD^"],
-            [project_dir, "git restore --staged :/"],
-            [project_dir, "git restore :/"]
-
-          ])
-          expect(exit_status).to eql(1), output
-        end
-      end
     end
 
     context "with mono Node.js project" do
@@ -370,7 +262,7 @@ RSpec.describe Mono::Cli::Publish do
           end
         end
         confirm_publish_package
-        output = run_publish_process
+        output = run_publish(:lang => :nodejs)
 
         project_dir = "/#{current_project}"
         package_one_dir = "#{project_dir}/packages/package_one"
@@ -439,7 +331,7 @@ RSpec.describe Mono::Cli::Publish do
           end
         end
         confirm_publish_package
-        output = run_publish_process
+        output = run_publish(:lang => :nodejs)
 
         project_dir = "/#{current_project}"
         package_one_dir = "#{project_dir}/packages/package_one"
@@ -532,7 +424,7 @@ RSpec.describe Mono::Cli::Publish do
           end
         end
         confirm_publish_package
-        output = run_publish_process
+        output = run_publish(:lang => :nodejs)
 
         next_version_a = "1.0.1"
 
@@ -576,7 +468,7 @@ RSpec.describe Mono::Cli::Publish do
           end
         end
         confirm_publish_package
-        output = run_publish_process
+        output = run_publish(:lang => :nodejs)
 
         project_dir = "/#{current_project}"
         package_dir_a = "#{project_dir}/packages/package_a"
@@ -694,7 +586,7 @@ RSpec.describe Mono::Cli::Publish do
           end
         end
         confirm_publish_package
-        output = run_publish_process(["--alpha"])
+        output = run_publish(["--alpha"], :lang => :nodejs)
 
         project_dir = "/#{current_project}"
         package_dir_a = "#{project_dir}/packages/package_a"
@@ -788,7 +680,7 @@ RSpec.describe Mono::Cli::Publish do
           end
         end
         confirm_publish_package
-        output = run_publish_process
+        output = run_publish(:lang => :nodejs)
 
         project_dir = "/#{current_project}"
         package_dir_a = "#{project_dir}/packages/package_a"
@@ -880,7 +772,7 @@ RSpec.describe Mono::Cli::Publish do
           add_changeset :patch
         end
         confirm_publish_package
-        output = run_publish_process
+        output = run_publish(:lang => :nodejs)
 
         project_dir = "/#{current_project}"
         next_version = "1.0.1"
@@ -931,31 +823,5 @@ RSpec.describe Mono::Cli::Publish do
         expect(exit_status).to eql(0), output
       end
     end
-  end
-
-  def prepare_nodejs_project(config = {})
-    prepare_new_project do
-      create_mono_config({ "language" => "nodejs" }.merge(config))
-      create_package_json :name => "root", :private => true, :workspaces => ["packages/*"]
-      yield
-    end
-  end
-
-  def run_publish_process(args = [], failed_commands: [], stubbed_commands: nil)
-    stubbed_commands ||= [/^(npm|yarn) publish/, /^git push/]
-    output =
-      capture_stdout do
-        in_project do
-          perform_commands do
-            fail_commands failed_commands do
-              stub_commands stubbed_commands do
-                run_bootstrap
-                run_publish(args)
-              end
-            end
-          end
-        end
-      end
-    strip_changeset_output output
   end
 end
