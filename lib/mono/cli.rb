@@ -12,7 +12,12 @@ module Mono
 
       def initialize(options = {})
         @options = options
-        @config = Config.new(YAML.safe_load(File.read("mono.yml")))
+        config_file = "mono.yml"
+        unless File.exist?(config_file)
+          exit_cli "No Mono `#{config_file}` config file found in this " \
+            "directory!"
+        end
+        @config = Config.new(YAML.safe_load(File.read(config_file)))
         @language = Language.for(config.language).new(config)
         find_packages
         validate(options)

@@ -63,18 +63,16 @@ RSpec.describe Mono::Cli do
     end
   end
 
-  context "with unknown error" do
-    it "prints error and exits" do
+  context "with no Mono project in directory" do
+    it "prints error about missing config file and exits" do
       prepare_project :empty
       output =
         capture_stdout do
-          expect do
-            in_project { run(["run", "false"]) }
-          end.to raise_error(SystemCallError)
+          in_project { run(["run", "false"]) }
         end
 
       expect(output).to include(
-        "An unexpected error was encountered during the `mono run` command. Stopping operation."
+        "Mono::Error: No Mono `mono.yml` config file found in this directory!"
       )
       expect(performed_commands).to eql([])
     end
