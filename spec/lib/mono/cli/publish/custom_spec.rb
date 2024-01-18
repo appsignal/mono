@@ -24,18 +24,9 @@ RSpec.describe Mono::Cli::Publish do
     project_dir = "/#{current_project}"
     next_version = "1.2.3a2"
 
-    expect(output).to include(<<~OUTPUT), output
-      The following packages will be published (or not):
-      - #{current_project}:
-        Current version: v1.2.3a1
-        Next version:    v1.2.3a2 (patch)
-    OUTPUT
-    expect(output).to include(<<~OUTPUT), output
-      # Updating package versions
-      - #{current_project}:
-        Current version: v1.2.3a1
-        Next version:    v1.2.3a2 (patch)
-    OUTPUT
+    expect(output).to has_publish_and_update_summary(
+      current_project => { :old => "v1.2.3a1", :new => "v1.2.3a2", :bump => :patch }
+    )
 
     in_project do
       expect(File.read("version.py")).to include(next_version)
