@@ -48,9 +48,12 @@ module Mono
       contents = File.read(changelog_path)
       lines = contents.lines # Keep original contents to add to the bottom
       heading = lines.shift # Keep original heading
+      date = Time.now.utc.strftime("%Y-%m-%d")
       File.write(changelog_path, <<~CHANGELOG)
         #{heading}
         ## #{package.next_version}
+
+        _Published on #{date}._
 
         #{content.join.strip}
 
