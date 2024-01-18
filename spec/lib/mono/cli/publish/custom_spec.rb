@@ -19,7 +19,7 @@ RSpec.describe Mono::Cli::Publish do
       add_changeset :patch
     end
     confirm_publish_package
-    output = run_publish_process
+    output = run_publish(["--alpha"], :lang => :custom)
 
     project_dir = "/#{current_project}"
     next_version = "1.2.3a2"
@@ -80,21 +80,5 @@ RSpec.describe Mono::Cli::Publish do
 
   def create_version_file(version)
     File.write("version.py", version)
-  end
-
-  def run_publish_process(failed_commands: [], stubbed_commands: [/^git push/])
-    output =
-      capture_stdout do
-        in_project do
-          perform_commands do
-            fail_commands failed_commands do
-              stub_commands stubbed_commands do
-                run_publish(["--alpha"])
-              end
-            end
-          end
-        end
-      end
-    strip_changeset_output output
   end
 end

@@ -1,6 +1,20 @@
 # frozen_string_literal: true
 
 module PublishHelper
+  LANGUAGE_PUBLISH_SETUP = {
+    :ruby => { :publish_commands => [/^gem push/] },
+    :elixir => {
+      :publish_commands => [/^mix hex.publish package --yes/],
+      :before_commands => [lambda { PublishHelper.run_bootstrap }]
+    },
+    :nodejs => {
+      :publish_commands => [/^(npm|yarn) publish/],
+      :before_commands => [lambda { PublishHelper.run_bootstrap }]
+    },
+    :custom => { :publish_commands => [] },
+    :unknown => { :publish_commands => [] }
+  }.freeze
+
   def expect_changelog_to_include_version_header(changelog, version)
     expect(changelog).to include("## #{version}")
   end
@@ -29,14 +43,47 @@ module PublishHelper
     add_cli_input "y"
   end
 
-  def run_publish(args = [])
+  def run_publish( # rubocop:disable Metrics/ParameterLists
+    args = [],
+    lang:,
+    failed_commands: [],
+    stubbed_commands: [],
+    before_command: nil,
+    strip_changeset_output: true
+  )
+    integration_config = LANGUAGE_PUBLISH_SETUP.fetch(lang, {})
     prepare_cli_input
-    Mono::Cli::Wrapper.new(["publish"] + args).execute
+    integration_config[:publish_commands].each do |cmd|
+      # If stubbed and failing, it won't fail because it's stubbed
+      stubbed_commands << cmd unless failed_commands.include?(cmd)
+    end
+    stubbed_commands << /^git push/
+    output =
+      capture_stdout do
+        in_project do
+          perform_commands do
+            fail_commands failed_commands do
+              stub_commands stubbed_commands do
+                # Run commands before the publish process
+                integration_config[:before_commands]&.each(&:call)
+                before_command&.call
+                Mono::Cli::Wrapper.new(["publish"] + args).execute
+              end
+            end
+          end
+        end
+      end
+    if strip_changeset_output
+      strip_changeset_output output
+    else
+      output
+    end
   end
 
   def run_bootstrap(args = [])
     Mono::Cli::Wrapper.new(["bootstrap"] + args).execute
   end
+  module_function :run_bootstrap
 
   # Strip all changeset summary output from the output string.
   # Useful when only testing version changes, and not the summary itself.

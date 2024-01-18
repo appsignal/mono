@@ -9,9 +9,10 @@ RSpec.describe Mono::Cli::Publish do
     it "publishes the package" do
       prepare_elixir_project do
         create_package_mix :version => "1.2.3"
+        add_changeset :patch
       end
       confirm_publish_package
-      output = run_publish_process
+      output = run_publish(:lang => :elixir)
 
       project_dir = "/#{current_project}"
       next_version = "1.2.4"
@@ -67,9 +68,10 @@ RSpec.describe Mono::Cli::Publish do
     it "publishes the package" do
       prepare_elixir_project do
         create_package_mix :version => "1.2.3", :version_in_module_attribute? => true
+        add_changeset :patch
       end
       confirm_publish_package
-      output = run_publish_process
+      output = run_publish(:lang => :elixir)
 
       project_dir = "/#{current_project}"
       next_version = "1.2.4"
@@ -135,7 +137,7 @@ RSpec.describe Mono::Cli::Publish do
         end
       end
       confirm_publish_package
-      output = run_publish_process
+      output = run_publish(:lang => :elixir)
 
       project_dir = "/#{current_project}"
       package_dir_a = "#{project_dir}/packages/package_a"
@@ -205,7 +207,7 @@ RSpec.describe Mono::Cli::Publish do
         end
       end
       confirm_publish_package
-      output = run_publish_process
+      output = run_publish(:lang => :elixir)
 
       project_dir = "/#{current_project}"
       package_dir_a = "#{project_dir}/packages/jason"
@@ -283,25 +285,5 @@ RSpec.describe Mono::Cli::Publish do
       ])
       expect(exit_status).to eql(0), output
     end
-  end
-
-  def run_publish_process(failed_commands: [], stubbed_commands: nil)
-    stubbed_commands ||= [/^mix hex.publish package --yes/, /^git push/]
-    output =
-      capture_stdout do
-        in_project do
-          add_changeset(:patch)
-
-          perform_commands do
-            fail_commands failed_commands do
-              stub_commands stubbed_commands do
-                run_bootstrap
-                run_publish
-              end
-            end
-          end
-        end
-      end
-    strip_changeset_output output
   end
 end

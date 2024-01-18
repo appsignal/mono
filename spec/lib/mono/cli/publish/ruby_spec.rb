@@ -12,7 +12,7 @@ RSpec.describe Mono::Cli::Publish do
         add_changeset :patch
       end
       confirm_publish_package
-      output = run_publish_process
+      output = run_publish(:lang => :ruby)
 
       project_dir = "/#{current_project}"
       next_version = "1.2.4"
@@ -71,7 +71,7 @@ RSpec.describe Mono::Cli::Publish do
           FileUtils.touch("mygem-1.2.4-java.gem")
         end
         confirm_publish_package
-        output = run_publish_process
+        output = run_publish(:lang => :ruby)
 
         project_dir = "/#{current_project}"
         next_version = "1.2.4"
@@ -132,7 +132,7 @@ RSpec.describe Mono::Cli::Publish do
         add_changeset :patch
       end
       confirm_publish_package
-      output = run_publish_process
+      output = run_publish(:lang => :ruby)
 
       project_dir = "/#{current_project}"
       next_version = "1.2.4"
@@ -195,7 +195,7 @@ RSpec.describe Mono::Cli::Publish do
         end
       end
       confirm_publish_package
-      output = run_publish_process
+      output = run_publish(:lang => :ruby)
 
       project_dir = "/#{current_project}"
       package_dir_a = "#{project_dir}/packages/package_a"
@@ -262,7 +262,7 @@ RSpec.describe Mono::Cli::Publish do
         end
       end
       confirm_publish_package
-      output = run_publish_process
+      output = run_publish(:lang => :ruby)
 
       project_dir = "/#{current_project}"
       package_dir_a = "#{project_dir}/packages/package_a"
@@ -358,7 +358,7 @@ RSpec.describe Mono::Cli::Publish do
         end
       end
       confirm_publish_package
-      output = run_publish_process
+      output = run_publish(:lang => :ruby)
 
       project_dir = "/#{current_project}"
       package_dir_a = "#{project_dir}/packages/package_a"
@@ -459,28 +459,5 @@ RSpec.describe Mono::Cli::Publish do
       ])
       expect(exit_status).to eql(0), output
     end
-  end
-
-  def prepare_ruby_project(config = {})
-    prepare_new_project do
-      create_mono_config({ "language" => "ruby" }.merge(config))
-      yield
-    end
-  end
-
-  def run_publish_process(failed_commands: [], stubbed_commands: [/^gem push/, /^git push/])
-    output =
-      capture_stdout do
-        in_project do
-          perform_commands do
-            fail_commands failed_commands do
-              stub_commands stubbed_commands do
-                run_publish
-              end
-            end
-          end
-        end
-      end
-    strip_changeset_output output
   end
 end

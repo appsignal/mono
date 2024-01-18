@@ -13,7 +13,7 @@ RSpec.describe Mono::Cli::Publish do
           add_changeset :patch
         end
         confirm_publish_package
-        output = run_publish_process
+        output = run_publish(:lang => :nodejs)
 
         project_dir = "/#{current_project}"
         next_version = "1.0.1"
@@ -70,7 +70,7 @@ RSpec.describe Mono::Cli::Publish do
           add_changeset :patch
         end
         confirm_publish_package
-        output = run_publish_process(["--alpha"])
+        output = run_publish(["--alpha"], :lang => :nodejs)
 
         project_dir = "/#{current_project}"
         next_version = "1.0.1-alpha.1"
@@ -116,7 +116,7 @@ RSpec.describe Mono::Cli::Publish do
           add_changeset :patch
         end
         confirm_publish_package
-        output = run_publish_process(["--beta"])
+        output = run_publish(["--beta"], :lang => :nodejs)
 
         project_dir = "/#{current_project}"
         next_version = "1.0.1-beta.1"
@@ -163,7 +163,7 @@ RSpec.describe Mono::Cli::Publish do
         end
         confirm_publish_package
         package_tag = "2.x-stable"
-        output = run_publish_process(["--tag", package_tag])
+        output = run_publish(["--tag", package_tag], :lang => :nodejs)
 
         project_dir = "/#{current_project}"
         next_version = "2.3.2"
@@ -209,7 +209,7 @@ RSpec.describe Mono::Cli::Publish do
           add_changeset :patch
         end
         confirm_publish_package
-        output = run_publish_process(["--rc"])
+        output = run_publish(["--rc"], :lang => :nodejs)
 
         project_dir = "/#{current_project}"
         next_version = "1.0.1-rc.1"
@@ -262,7 +262,7 @@ RSpec.describe Mono::Cli::Publish do
           end
         end
         confirm_publish_package
-        output = run_publish_process
+        output = run_publish(:lang => :nodejs)
 
         project_dir = "/#{current_project}"
         package_one_dir = "#{project_dir}/packages/package_one"
@@ -331,7 +331,7 @@ RSpec.describe Mono::Cli::Publish do
           end
         end
         confirm_publish_package
-        output = run_publish_process
+        output = run_publish(:lang => :nodejs)
 
         project_dir = "/#{current_project}"
         package_one_dir = "#{project_dir}/packages/package_one"
@@ -424,7 +424,7 @@ RSpec.describe Mono::Cli::Publish do
           end
         end
         confirm_publish_package
-        output = run_publish_process
+        output = run_publish(:lang => :nodejs)
 
         next_version_a = "1.0.1"
 
@@ -468,7 +468,7 @@ RSpec.describe Mono::Cli::Publish do
           end
         end
         confirm_publish_package
-        output = run_publish_process
+        output = run_publish(:lang => :nodejs)
 
         project_dir = "/#{current_project}"
         package_dir_a = "#{project_dir}/packages/package_a"
@@ -586,7 +586,7 @@ RSpec.describe Mono::Cli::Publish do
           end
         end
         confirm_publish_package
-        output = run_publish_process(["--alpha"])
+        output = run_publish(["--alpha"], :lang => :nodejs)
 
         project_dir = "/#{current_project}"
         package_dir_a = "#{project_dir}/packages/package_a"
@@ -680,7 +680,7 @@ RSpec.describe Mono::Cli::Publish do
           end
         end
         confirm_publish_package
-        output = run_publish_process
+        output = run_publish(:lang => :nodejs)
 
         project_dir = "/#{current_project}"
         package_dir_a = "#{project_dir}/packages/package_a"
@@ -772,7 +772,7 @@ RSpec.describe Mono::Cli::Publish do
           add_changeset :patch
         end
         confirm_publish_package
-        output = run_publish_process
+        output = run_publish(:lang => :nodejs)
 
         project_dir = "/#{current_project}"
         next_version = "1.0.1"
@@ -823,31 +823,5 @@ RSpec.describe Mono::Cli::Publish do
         expect(exit_status).to eql(0), output
       end
     end
-  end
-
-  def prepare_nodejs_project(config = {})
-    prepare_new_project do
-      create_mono_config({ "language" => "nodejs" }.merge(config))
-      create_package_json :name => "root", :private => true, :workspaces => ["packages/*"]
-      yield
-    end
-  end
-
-  def run_publish_process(args = [], failed_commands: [], stubbed_commands: nil)
-    stubbed_commands ||= [/^(npm|yarn) publish/, /^git push/]
-    output =
-      capture_stdout do
-        in_project do
-          perform_commands do
-            fail_commands failed_commands do
-              stub_commands stubbed_commands do
-                run_bootstrap
-                run_publish(args)
-              end
-            end
-          end
-        end
-      end
-    strip_changeset_output output
   end
 end
