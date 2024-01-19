@@ -1,5 +1,54 @@
 # Mono
 
+## 0.7.0
+
+_Published on 2024-01-19._
+
+### Added
+
+- [e712276](https://github.com/appsignal/mono//commit/e71227686606d317e5f79663e51e0c49e6a47240) minor - Support custom languages with the custom language option. Example custom language configuration:
+  
+  ```yaml
+  ---
+  language: custom
+  repo: "https://github.com/appsignal/appsignal-python"
+  bootstrap:
+    command: "echo bootstrap"
+  clean:
+    command: "hatch clean"
+  build:
+    command: "hatch build"
+  publish:
+    command: "hatch publish"
+  test:
+    command: "hatch run test:pytest"
+  read_version: "hatch version"
+  write_version: "hatch version"
+  ```
+- [7853508](https://github.com/appsignal/mono//commit/7853508c106f16e8c9d7a11741e420b5f70c3701) minor - Add mono publish `--no-git` flag. When this flag is given to `mono publish`, the publishing process will not commit the changes to Git, create a tag or push the changes to the remote. This can be useful when you want mono to only generate changelogs and update package version.
+- [10ce9e4](https://github.com/appsignal/mono//commit/10ce9e44e3f271ac240aaeefb274b45a05114c6b) minor - Add mono publish `--no-package-push` flag. When this flag is given to `mono publish`, the publishing process will not push the packages to their version managers. This can be useful when you want mono to only generate changelogs and update package version.
+- [cbd946d](https://github.com/appsignal/mono//commit/cbd946d3f844b514dc5dcd43b53d83dddc9a9dc7) minor - Add mono publish `--yes` flag. When this flag is given to `mono publish`, the publishing process will not prompt to confirm publishing. Any OTP prompts by the package managers may still prompt for input.
+- [d7ab1e0](https://github.com/appsignal/mono//commit/d7ab1e08b5140718bb09075691e6d9969d95a938) patch - Support custom tags for Node.js packages. Call `mono publish` with the `--tag` option to set custom tags for new releases. By default Node.js adds the `latest` tag to new releases, but this may not always be desired. The tag specified applies to all packages published by mono. The `--tag` option has precedence over the `--prerelease` option.
+  
+  ```
+  mono publish --tag 2.x-stable
+  ```
+- [7837ef1](https://github.com/appsignal/mono//commit/7837ef18308d4bd9b77e677b49288f66a70ff12b) patch - When the `mono publish` command fails at or before the publishing step, offer the user the possibility to rollback changes performed to the Git repository.
+
+### Changed
+
+- [56d7135](https://github.com/appsignal/mono//commit/56d71351d37cc7ee615061e368b08f16cd3ca68a) minor - Require Ruby 3 going forward.
+- [8ae7c7f](https://github.com/appsignal/mono//commit/8ae7c7f19b807ea19e9631646efb6bf6d27e0a37) minor - Use a selection prompt for the semver change in `mono changeset add`. The prompts were inconsistency asking between a number and text input. It now will only require you to select options with numbers.
+- [19eb6f7](https://github.com/appsignal/mono//commit/19eb6f7b8881d90ff940ab6be064a33840b3b80f) patch - Remove [ci skip] tag from publish commit. Run the CI build for the publish commit just in case anything could break with updating the version.
+- [4e21aed](https://github.com/appsignal/mono//commit/4e21aed834c3fb5655832ecbc37da89743e08e7b) patch - Improve publish commit message. When only one package is publish, show the version number in the commit subject. Add a small description to the message what was changed.
+- [b0474af](https://github.com/appsignal/mono//commit/b0474af63cfea06bda0598b7b7db7ed4bdb9375c) patch - When running `mono publish`, check if the Git tag that is about to be published already exists, and if so, abort the publishing process early.
+- [ad5a451](https://github.com/appsignal/mono//commit/ad5a4515a4f4bd114b180db33d20ed0422a8c9e9) patch - Add the publish date for each version to the changelog. This allows people to see at a glance when a version was released.
+
+### Fixed
+
+- [db13740](https://github.com/appsignal/mono//commit/db137400a7db78481866bbccc751c6abde4f99fa) patch - Fix changeset filenames containing a backticks by replacing it with a dash (`-`). If a backtick was present in the changeset description it would fail to open the right file when prompted.
+- [6596f02](https://github.com/appsignal/mono//commit/6596f02435862edcd32444442545109b45f8b185) patch - Check if the directory in which Mono is run is Mono project before performing commands. Previously Mono would error with a non-user friendly Ruby error about a missing file. This case is now handled with a better error message.
+
 ## 0.6.2
 
 ### Added
