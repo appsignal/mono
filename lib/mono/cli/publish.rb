@@ -14,7 +14,7 @@ module Mono
         super(options)
       end
 
-      def execute
+      def execute # rubocop:disable Metrics/MethodLength
         if prerelease? && tag?
           exit_cli "Error: Both a prerelease flag (--alpha, --beta, --rc) " \
             "and --tag options are set. Only one can be used at a time to " \
@@ -40,18 +40,20 @@ module Mono
             "Commit or discard them and try again. Exiting."
         end
 
-        existing_tags = existing_tags(changed_packages)
-        unless existing_tags.empty?
-          message = "Error: The Git tags for packages to be published " \
-            "already exist: "
-          message += existing_tags.map(&:inspect).join(",")
-          message += ". Delete them and try again. Exiting."
-          exit_cli message
+        if git?
+          existing_tags = existing_tags(changed_packages)
+          unless existing_tags.empty?
+            message = "Error: The Git tags for packages to be published " \
+              "already exist: "
+            message += existing_tags.map(&:inspect).join(",")
+            message += ". Delete them and try again. Exiting."
+            exit_cli message
+          end
         end
 
         print_summary(packages)
         puts
-        ask_for_publish_confirmation
+        ask_for_publish_confirmation if ask_for_confirmation?
         puts
 
         rollback = []
@@ -63,9 +65,9 @@ module Mono
           puts
           build(changed_packages)
           puts
-          commit_changes(changed_packages, rollback)
+          commit_changes(changed_packages, rollback) if git?
           puts
-          publish_package_manager(changed_packages)
+          publish_package_manager(changed_packages) if package_push?
         rescue => error
           puts
           ask_for_rollback_confirmation(error)
@@ -75,10 +77,22 @@ module Mono
         end
 
         puts
-        publish_git(changed_packages)
+        publish_git(changed_packages) if git?
       end
 
       private
+
+      def ask_for_confirmation?
+        options.fetch(:ask_for_confirmation, true)
+      end
+
+      def git?
+        options.fetch(:git, true)
+      end
+
+      def package_push?
+        options.fetch(:package_push, true)
+      end
 
       def ask_for_publish_confirmation
         publish = yes_or_no "Do you want to publish the above changes? (Y/n) ",
