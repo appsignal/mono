@@ -22,7 +22,7 @@ RSpec.describe Mono::Cli::Publish do
       )
 
       in_project do
-        expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
+        expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
         changelog = File.read("CHANGELOG.md")
@@ -72,7 +72,7 @@ RSpec.describe Mono::Cli::Publish do
         )
 
         in_project do
-          expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
+          expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
           expect(current_package_changeset_files.length).to eql(0)
 
           changelog = File.read("CHANGELOG.md")
@@ -124,7 +124,7 @@ RSpec.describe Mono::Cli::Publish do
       )
 
       in_project do
-        expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
+        expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
         changelog = File.read("CHANGELOG.md")
@@ -182,7 +182,7 @@ RSpec.describe Mono::Cli::Publish do
 
       in_project do
         in_package :package_a do
-          expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version_a}"))
+          expect(read_ruby_gem_version_file).to have_ruby_version(next_version_a)
           expect(current_package_changeset_files.length).to eql(0)
 
           changelog = File.read("CHANGELOG.md")
@@ -243,7 +243,7 @@ RSpec.describe Mono::Cli::Publish do
 
       in_project do
         in_package :package_a do
-          expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version_a}"))
+          expect(read_ruby_gem_version_file).to have_ruby_version(next_version_a)
           expect(current_package_changeset_files.length).to eql(0)
 
           changelog = File.read("CHANGELOG.md")
@@ -252,7 +252,7 @@ RSpec.describe Mono::Cli::Publish do
         end
 
         in_package :package_b do
-          expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version_b}"))
+          expect(read_ruby_gem_version_file).to have_ruby_version(next_version_b)
           expect(current_package_changeset_files.length).to eql(0)
 
           changelog = File.read("CHANGELOG.md")
@@ -329,7 +329,7 @@ RSpec.describe Mono::Cli::Publish do
 
       in_project do
         in_package :package_a do
-          expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version_a}"))
+          expect(read_ruby_gem_version_file).to have_ruby_version(next_version_a)
           expect(current_package_changeset_files.length).to eql(0)
 
           changelog = File.read("CHANGELOG.md")
@@ -338,7 +338,7 @@ RSpec.describe Mono::Cli::Publish do
         end
 
         in_package :package_b do
-          expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version_b}"))
+          expect(read_ruby_gem_version_file).to have_ruby_version(next_version_b)
           expect(current_package_changeset_files.length).to eql(0)
 
           changelog = File.read("CHANGELOG.md")
@@ -347,7 +347,7 @@ RSpec.describe Mono::Cli::Publish do
         end
 
         in_package :package_c do
-          expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version_c}"))
+          expect(read_ruby_gem_version_file).to have_ruby_version(next_version_c)
           expect(current_package_changeset_files.length).to eql(0)
 
           changelog = File.read("CHANGELOG.md")

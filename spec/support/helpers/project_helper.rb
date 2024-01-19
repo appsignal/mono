@@ -355,4 +355,8 @@ module ProjectHelper
     package_json = File.join(Dir.pwd, "package.json")
     File.write(package_json, JSON.dump(new_config))
   end
+
+  def read_ruby_gem_version_file
+    File.read("lib/example/version.rb")
+  end
 end

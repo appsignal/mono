@@ -196,7 +196,7 @@ RSpec.describe Mono::Cli::Publish do
         # Does not commit any changes during the publish process on exit
         expect(commit_count).to eql(original_commit_count)
 
-        expect(File.read("lib/example/version.rb")).to include(%(VERSION = "1.2.3"))
+        expect(read_ruby_gem_version_file).to have_ruby_version("1.2.3")
         expect(current_package_changeset_files.length).to eql(1)
 
         changelog = File.read("CHANGELOG.md")
@@ -278,7 +278,7 @@ RSpec.describe Mono::Cli::Publish do
       )
 
       in_project do
-        expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
+        expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
         changelog = File.read("CHANGELOG.md")
@@ -330,7 +330,7 @@ RSpec.describe Mono::Cli::Publish do
       )
 
       in_project do
-        expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
+        expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
         changelog = File.read("CHANGELOG.md")
@@ -384,7 +384,7 @@ RSpec.describe Mono::Cli::Publish do
       )
 
       in_project do
-        expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
+        expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
         changelog = File.read("CHANGELOG.md")
@@ -435,7 +435,7 @@ RSpec.describe Mono::Cli::Publish do
       )
 
       in_project do
-        expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
+        expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
         changelog = File.read("CHANGELOG.md")
