@@ -67,7 +67,7 @@ module Mono
           puts
           commit_changes(changed_packages, rollback) if git?
           puts
-          publish_package_manager(changed_packages)
+          publish_package_manager(changed_packages) if package_push?
         rescue => error
           puts
           ask_for_rollback_confirmation(error)
@@ -84,6 +84,10 @@ module Mono
 
       def git?
         options.fetch(:git, true)
+      end
+
+      def package_push?
+        options.fetch(:package_push, true)
       end
 
       def ask_for_publish_confirmation

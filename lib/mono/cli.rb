@@ -294,6 +294,10 @@ module Mono
             "Do not commit changes, create a tag and push release using Git" do
             params[:git] = false
           end
+          opts.on "--no-package-push",
+            "Do not push the release to the package manager registery" do
+            params[:package_push] = false
+          end
         end.parse(@options)
         params
       end

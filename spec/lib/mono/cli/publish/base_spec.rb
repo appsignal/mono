@@ -766,4 +766,36 @@ RSpec.describe Mono::Cli::Publish do
       expect(exit_status).to eql(0), output
     end
   end
+
+  context "with --no-package-push" do
+    it "doesn't push to the package manager" do
+      prepare_ruby_project do
+        create_ruby_package_files :name => "mygem", :version => "1.2.3"
+        add_changeset :patch
+      end
+      confirm_publish_package
+      output = run_publish(["--no-package-push"], :lang => :ruby)
+
+      project_dir = current_project_path
+      next_version = "1.2.4"
+
+      in_project do
+        expect(local_changes?).to be_falsy, local_changes.inspect
+      end
+
+      expect(performed_commands).to eql([
+        [project_dir, "git tag --list v#{next_version}"],
+        [project_dir, "gem build"],
+        [project_dir, "git add -A"],
+        [
+          project_dir,
+          "git commit -m 'Publish package v#{next_version}' " \
+            "-m 'Update version number and CHANGELOG.md.'"
+        ],
+        [project_dir, "git tag v#{next_version}"],
+        [project_dir, "git push origin main v#{next_version}"]
+      ])
+      expect(exit_status).to eql(0), output
+    end
+  end
 end
