@@ -66,33 +66,35 @@ module Mono
         def prompt_for_type
           types = Mono::Changeset::SUPPORTED_TYPES.to_a
           loop do
-            puts "What type of change is this: "
-
-            types.each_with_index do |(_value, label), index|
-              puts "#{index + 1}: #{label}"
-            end
-            type_index = required_input("Select type 1-#{types.length}: ")
-            type_index = parse_number(type_index)
-            if type_index&.positive?
-              type = types[type_index - 1]&.first
-              break type if type
-            end
+            puts "What type of change is this?"
+            type = prompt_options("Select change type", types)
+            return type if type
 
             puts "Unknown type selected. Please select a type."
           end
         end
 
         def prompt_for_bump
+          bumps = Mono::Changeset::SUPPORTED_BUMPS.to_a
           loop do
-            input = required_input(
-              "What type of semver bump is this (major/minor/patch): "
-            )
-            if Mono::Changeset.supported_bump?(input)
-              break input
-            else
-              puts "Unknown bump type `#{input}`. " \
-                "Please specify supported bump type."
-            end
+            puts "What type of semver bump is this?"
+            bump = prompt_options("Select bump", bumps)
+            return bump if bump
+
+            puts "Unknown bump type `#{bump}`. " \
+              "Please select a supported bump type."
+          end
+        end
+
+        def prompt_options(prompt, options)
+          options.each_with_index do |(_value, label), index|
+            puts "#{index + 1}: #{label}"
+          end
+          option_index = required_input("#{prompt} 1-#{options.length}: ")
+          option_index = parse_number(option_index)
+          if option_index&.positive?
+            option = options[option_index - 1]&.first
+            return option if option
           end
         end
 

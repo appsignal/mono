@@ -11,8 +11,8 @@ RSpec.describe Mono::Cli::Changeset do
         prepare_project :elixir_single
 
         add_cli_input "My:; Awes/o\\me pa.tch"
-        add_cli_input "1"
-        add_cli_input "patch"
+        add_cli_input "1" # Type: Added
+        add_cli_input "3" # Bump: Patch
         add_cli_input "n"
         output =
           capture_stdout do
@@ -22,7 +22,6 @@ RSpec.describe Mono::Cli::Changeset do
         changeset_path = ".changesets/my---awes-o-me-pa-tch.md"
         expect(output).to include(
           "Summarize the change (for changeset filename):",
-          "What type of semver bump is this (major/minor/patch): ",
           "Changeset file created at ./#{changeset_path}",
           "Do you want to open this file to add more information? (y/N):"
         ), output
@@ -48,8 +47,8 @@ RSpec.describe Mono::Cli::Changeset do
         prepare_project :elixir_single
 
         add_cli_input "My Awes/o\\me pa.t`ch"
-        add_cli_input "1" # Type: "add"
-        add_cli_input "minor"
+        add_cli_input "1" # Type: Added
+        add_cli_input "2" # Bump: Minor
         add_cli_input "n"
         output =
           capture_stdout do
@@ -62,7 +61,6 @@ RSpec.describe Mono::Cli::Changeset do
         changeset_path = ".changesets/my-awes-o-me-pa-t-ch.md"
         expect(output).to include(
           "Summarize the change (for changeset filename):",
-          "What type of semver bump is this (major/minor/patch): ",
           "Changeset file created at ./#{changeset_path}",
           "Do you want to open this file to add more information? (y/N):"
         ), output
@@ -89,9 +87,9 @@ RSpec.describe Mono::Cli::Changeset do
 
         add_cli_input "My Awes/o\\me patch"
         add_cli_input "" # User presses enter without input
-        add_cli_input "unknown" # Unsupported type
-        add_cli_input "2" # Type: "change"
-        add_cli_input "patch" # Supported bump type
+        add_cli_input "unknown" # Type: Unsupported
+        add_cli_input "2" # Type: Change
+        add_cli_input "3" # Bump: Patch
         add_cli_input "n"
         output =
           capture_stdout do
@@ -100,7 +98,7 @@ RSpec.describe Mono::Cli::Changeset do
 
         changeset_path = ".changesets/my-awes-o-me-patch.md"
         expect(output).to include("Unknown type selected. Please select a type.")
-        expect(output.scan(/Select type /).length).to eql(3)
+        expect(output.scan(/Select change type /).length).to eql(3)
         in_project do
           expect(current_package_changeset_files.length).to eql(1)
           contents = File.read(changeset_path)
@@ -123,10 +121,10 @@ RSpec.describe Mono::Cli::Changeset do
         prepare_project :elixir_single
 
         add_cli_input "My Awes/o\\me patch"
-        add_cli_input "1" # Type: "add"
+        add_cli_input "1" # Type: Added
         add_cli_input "" # User presses enter without input
-        add_cli_input "unknown" # Unsupported bump type
-        add_cli_input "patch" # Supported bump type
+        add_cli_input "unknown" # Type: Unsupported
+        add_cli_input "3" # Bump: Patch
         add_cli_input "n"
         output =
           capture_stdout do
@@ -135,9 +133,9 @@ RSpec.describe Mono::Cli::Changeset do
 
         changeset_path = ".changesets/my-awes-o-me-patch.md"
         expect(output).to include(
-          "Unknown bump type `unknown`. Please specify supported bump type."
+          "Unknown bump type ``. Please select a supported bump type."
         )
-        expect(output.scan(/What type of semver bump is this/).length).to eql(3)
+        expect(output.scan(/Select bump 1-3/).length).to eql(3)
         in_project do
           expect(current_package_changeset_files.length).to eql(1)
           contents = File.read(changeset_path)
@@ -160,8 +158,8 @@ RSpec.describe Mono::Cli::Changeset do
         prepare_project :elixir_single
 
         add_cli_input "My Awes/o\\me patch"
-        add_cli_input "1" # Type: "add"
-        add_cli_input "patch"
+        add_cli_input "1" # Type: Added
+        add_cli_input "3" # Bump: Patch
         add_cli_input "y"
         output =
           capture_stdout do
@@ -184,8 +182,8 @@ RSpec.describe Mono::Cli::Changeset do
         prepare_project :elixir_single
 
         add_cli_input "My \"Awes/o\\mé', patch"
-        add_cli_input "1" # Type: "add"
-        add_cli_input "patch"
+        add_cli_input "1" # Type: Added
+        add_cli_input "3" # Bump: Patch
         add_cli_input "y"
         output =
           capture_stdout do
@@ -214,8 +212,8 @@ RSpec.describe Mono::Cli::Changeset do
       add_cli_input "3" # Invalid index, only 2 packages
       add_cli_input "1" # First package
       add_cli_input "My Awes/o\\me patch"
-      add_cli_input "1" # Type: "add"
-      add_cli_input "major"
+      add_cli_input "1" # Type: Added
+      add_cli_input "1" # Change: Major
       add_cli_input "n"
       output =
         capture_stdout do
@@ -227,7 +225,7 @@ RSpec.describe Mono::Cli::Changeset do
         "1: package_one (packages/package_one)",
         "2: package_two (packages/package_two)",
         "Summarize the change (for changeset filename):",
-        "What type of semver bump is this (major/minor/patch): ",
+        "What type of semver bump is this?",
         "Changeset file created at #{changeset_path}",
         "Do you want to open this file to add more information? (y/N):"
       ), output

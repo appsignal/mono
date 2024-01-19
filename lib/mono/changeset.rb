@@ -17,7 +17,11 @@ module Mono
     }.freeze
     # Supported changeset version bumps, sorted by biggest change. The "major"
     # change being the largest, index 0, and patch being the lowest, index 2.
-    SUPPORTED_BUMPS = %w[major minor patch].freeze
+    SUPPORTED_BUMPS = {
+      "major" => "Major",
+      "minor" => "Minor",
+      "patch" => "Patch"
+    }.freeze
     YAML_FRONT_MATTER_REGEXP =
       /\A(---\s*\n.*?\n?)^((---|\.\.\.)\s*$\n?)/m
 
@@ -127,7 +131,7 @@ module Mono
     # - minor == 1
     # - patch == 2
     def bump_index
-      SUPPORTED_BUMPS.index @metadata["bump"]
+      SUPPORTED_BUMPS.keys.index @metadata["bump"]
     end
 
     def date
