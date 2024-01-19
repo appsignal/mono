@@ -25,7 +25,7 @@ RSpec.describe Mono::Cli::Publish do
         expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect_changelog_to_include_version_header(changelog, next_version)
         expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -75,7 +75,7 @@ RSpec.describe Mono::Cli::Publish do
           expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
           expect(current_package_changeset_files.length).to eql(0)
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version)
           expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -127,7 +127,7 @@ RSpec.describe Mono::Cli::Publish do
         expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect_changelog_to_include_version_header(changelog, next_version)
         expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -185,7 +185,7 @@ RSpec.describe Mono::Cli::Publish do
           expect(read_ruby_gem_version_file).to have_ruby_version(next_version_a)
           expect(current_package_changeset_files.length).to eql(0)
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version_a)
           expect_changelog_to_include_release_notes(changelog, :patch)
         end
@@ -246,7 +246,7 @@ RSpec.describe Mono::Cli::Publish do
           expect(read_ruby_gem_version_file).to have_ruby_version(next_version_a)
           expect(current_package_changeset_files.length).to eql(0)
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version_a)
           expect_changelog_to_include_release_notes(changelog, :patch)
         end
@@ -255,7 +255,7 @@ RSpec.describe Mono::Cli::Publish do
           expect(read_ruby_gem_version_file).to have_ruby_version(next_version_b)
           expect(current_package_changeset_files.length).to eql(0)
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version_b)
           expect_changelog_to_include_release_notes(changelog, :patch)
         end
@@ -332,7 +332,7 @@ RSpec.describe Mono::Cli::Publish do
           expect(read_ruby_gem_version_file).to have_ruby_version(next_version_a)
           expect(current_package_changeset_files.length).to eql(0)
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version_a)
           expect_changelog_to_include_release_notes(changelog, :patch)
         end
@@ -341,7 +341,7 @@ RSpec.describe Mono::Cli::Publish do
           expect(read_ruby_gem_version_file).to have_ruby_version(next_version_b)
           expect(current_package_changeset_files.length).to eql(0)
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version_b)
           expect_changelog_to_include_package_bump(changelog, "package_a", next_version_a)
         end
@@ -350,7 +350,7 @@ RSpec.describe Mono::Cli::Publish do
           expect(read_ruby_gem_version_file).to have_ruby_version(next_version_c)
           expect(current_package_changeset_files.length).to eql(0)
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version_c)
           expect_changelog_to_include_package_bump(changelog, "package_b", next_version_b)
         end

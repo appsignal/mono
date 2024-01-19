@@ -199,7 +199,7 @@ RSpec.describe Mono::Cli::Publish do
         expect(read_ruby_gem_version_file).to have_ruby_version("1.2.3")
         expect(current_package_changeset_files.length).to eql(1)
 
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect(changelog).to_not include("1.2.4")
 
         expect(local_changes?).to be_falsy, local_changes.inspect
@@ -232,7 +232,7 @@ RSpec.describe Mono::Cli::Publish do
       )
 
       in_project do
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect_changelog_to_include_version_header(changelog, next_version)
         expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -281,7 +281,7 @@ RSpec.describe Mono::Cli::Publish do
         expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect_changelog_to_include_version_header(changelog, next_version)
         expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -333,7 +333,7 @@ RSpec.describe Mono::Cli::Publish do
         expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect_changelog_to_include_version_header(changelog, next_version)
         expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -387,7 +387,7 @@ RSpec.describe Mono::Cli::Publish do
         expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect_changelog_to_include_version_header(changelog, next_version)
         expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -438,7 +438,7 @@ RSpec.describe Mono::Cli::Publish do
         expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect_changelog_to_include_version_header(changelog, next_version)
         expect_changelog_to_include_message(changelog, :patch, "Package release.")
 

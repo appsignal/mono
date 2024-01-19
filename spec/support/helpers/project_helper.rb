@@ -359,4 +359,8 @@ module ProjectHelper
   def read_ruby_gem_version_file
     File.read("lib/example/version.rb")
   end
+
+  def read_changelog_file
+    File.read("CHANGELOG.md")
+  end
 end

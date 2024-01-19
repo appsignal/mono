@@ -225,7 +225,7 @@ RSpec.describe Mono::ChangesetCollection do
 
       in_project do
         collection.write_changesets_to_changelog
-        changelog = normalize_changelog(File.read("CHANGELOG.md"))
+        changelog = normalize_changelog(read_changelog_file)
         expect(changelog).to include(<<~CHANGELOG)
           ## 2.0.0
 
@@ -274,7 +274,7 @@ RSpec.describe Mono::ChangesetCollection do
 
       in_project do
         collection.write_changesets_to_changelog
-        changelog = normalize_changelog(File.read("CHANGELOG.md"))
+        changelog = normalize_changelog(read_changelog_file)
         expect(changelog).to include(<<~CHANGELOG)
           ## 2.0.0
 
