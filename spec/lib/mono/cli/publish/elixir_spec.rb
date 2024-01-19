@@ -14,7 +14,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :elixir)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       next_version = "1.2.4"
 
       expect(output).to has_publish_and_update_summary(
@@ -25,7 +25,7 @@ RSpec.describe Mono::Cli::Publish do
         expect(File.read("mix.exs")).to include(%(version: "#{next_version}",))
         expect(current_package_changeset_files.length).to eql(0)
 
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect_changelog_to_include_version_header(changelog, next_version)
         expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -64,7 +64,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :elixir)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       next_version = "1.2.4"
 
       expect(output).to has_publish_and_update_summary(
@@ -77,7 +77,7 @@ RSpec.describe Mono::Cli::Publish do
         expect(contents).to include(%(version: @version,))
         expect(current_package_changeset_files.length).to eql(0)
 
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect_changelog_to_include_version_header(changelog, next_version)
         expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -121,7 +121,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :elixir)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       package_dir_a = "#{project_dir}/packages/package_a"
       package_dir_b = "#{project_dir}/packages/package_b"
       next_version_a = "1.2.4"
@@ -137,7 +137,7 @@ RSpec.describe Mono::Cli::Publish do
           expect(File.read("mix.exs")).to include(%(version: "#{next_version_a}",))
           expect(current_package_changeset_files.length).to eql(0)
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version_a)
           expect_changelog_to_include_release_notes(changelog, :patch)
         end
@@ -182,7 +182,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :elixir)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       package_dir_a = "#{project_dir}/packages/jason"
       package_dir_b = "#{project_dir}/packages/package_b"
       next_version_a = "1.1.3"
@@ -200,7 +200,7 @@ RSpec.describe Mono::Cli::Publish do
           expect(File.read("mix.exs")).to include(%(version: "#{next_version_a}",))
           expect(current_package_changeset_files.length).to eql(0)
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version_a)
           expect_changelog_to_include_release_notes(changelog, :patch)
         end
@@ -209,7 +209,7 @@ RSpec.describe Mono::Cli::Publish do
           expect(File.read("mix.exs")).to include(%(version: "#{next_version_b}",))
           expect(current_package_changeset_files.length).to eql(0)
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version_b)
           expect_changelog_to_include_package_bump(changelog, "jason", next_version_a)
         end

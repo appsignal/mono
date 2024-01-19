@@ -15,7 +15,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(:lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         next_version = "1.0.1"
         tag = "v#{next_version}"
 
@@ -26,7 +26,7 @@ RSpec.describe Mono::Cli::Publish do
         in_project do
           expect(File.read("package.json")).to include(%("version": "#{next_version}"))
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version)
           expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -63,7 +63,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(["--alpha"], :lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         next_version = "1.0.1-alpha.1"
         tag = "v#{next_version}"
 
@@ -100,7 +100,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(["--beta"], :lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         next_version = "1.0.1-beta.1"
         tag = "v#{next_version}"
 
@@ -138,7 +138,7 @@ RSpec.describe Mono::Cli::Publish do
         package_tag = "2.x-stable"
         output = run_publish(["--tag", package_tag], :lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         next_version = "2.3.2"
         tag = "v#{next_version}"
 
@@ -175,7 +175,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(["--rc"], :lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         next_version = "1.0.1-rc.1"
         tag = "v#{next_version}"
 
@@ -219,7 +219,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(:lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         package_one_dir = "#{project_dir}/packages/package_one"
         package_two_dir = "#{project_dir}/packages/package_two"
         next_version = "1.0.1"
@@ -238,7 +238,7 @@ RSpec.describe Mono::Cli::Publish do
           in_package "package_one" do
             expect(File.read("package.json")).to include(%("version": "#{next_version}"))
 
-            changelog = File.read("CHANGELOG.md")
+            changelog = read_changelog_file
             expect_changelog_to_include_version_header(changelog, next_version)
             expect_changelog_to_include_release_notes(changelog, :patch)
           end
@@ -283,7 +283,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(:lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         package_one_dir = "#{project_dir}/packages/package_one"
         package_two_dir = "#{project_dir}/packages/package_two"
         next_version_one = "1.0.1"
@@ -309,7 +309,7 @@ RSpec.describe Mono::Cli::Publish do
             package_json = JSON.parse(File.read("package.json"))
             expect(package_json["version"]).to eql(next_version_one)
 
-            changelog = File.read("CHANGELOG.md")
+            changelog = read_changelog_file
             expect_changelog_to_include_version_header(changelog, next_version_one)
             expect_changelog_to_include_release_notes(changelog, :patch)
           end
@@ -318,7 +318,7 @@ RSpec.describe Mono::Cli::Publish do
             package_json = JSON.parse(File.read("package.json"))
             expect(package_json["version"]).to eql(next_version_two)
 
-            changelog = File.read("CHANGELOG.md")
+            changelog = read_changelog_file
             expect_changelog_to_include_version_header(changelog, next_version_two)
             expect_changelog_to_include_release_notes(changelog, :patch)
           end
@@ -377,7 +377,7 @@ RSpec.describe Mono::Cli::Publish do
             package_json = JSON.parse(File.read("package.json"))
             expect(package_json["version"]).to eql(next_version_a)
 
-            changelog = File.read("CHANGELOG.md")
+            changelog = read_changelog_file
             expect_changelog_to_include_version_header(changelog, next_version_a)
             expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -414,7 +414,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(:lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         package_dir_a = "#{project_dir}/packages/package_a"
         package_dir_b = "#{project_dir}/packages/package_b"
         package_dir_c = "#{project_dir}/packages/package_c"
@@ -436,7 +436,7 @@ RSpec.describe Mono::Cli::Publish do
             package_json = JSON.parse(File.read("package.json"))
             expect(package_json["version"]).to eql(next_version_a)
 
-            changelog = File.read("CHANGELOG.md")
+            changelog = read_changelog_file
             expect_changelog_to_include_version_header(changelog, next_version_a)
             expect_changelog_to_include_release_notes(changelog, :patch)
           end
@@ -446,7 +446,7 @@ RSpec.describe Mono::Cli::Publish do
             expect(package_json["version"]).to eql(next_version_b)
             expect(package_json["dependencies"]["package_a"]).to eql("=#{next_version_a}")
 
-            changelog = File.read("CHANGELOG.md")
+            changelog = read_changelog_file
             expect_changelog_to_include_version_header(changelog, next_version_b)
             expect_changelog_to_include_package_bump(changelog, :package_a, next_version_a)
           end
@@ -456,7 +456,7 @@ RSpec.describe Mono::Cli::Publish do
             expect(package_json["version"]).to eql(next_version_c)
             expect(package_json["dependencies"]["package_b"]).to eql("=#{next_version_b}")
 
-            changelog = File.read("CHANGELOG.md")
+            changelog = read_changelog_file
             expect_changelog_to_include_version_header(changelog, next_version_c)
             expect_changelog_to_include_package_bump(changelog, :package_b, next_version_b)
           end
@@ -513,7 +513,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(["--alpha"], :lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         package_dir_a = "#{project_dir}/packages/package_a"
         package_dir_b = "#{project_dir}/packages/package_b"
         next_version_a = "1.0.1-alpha.1"
@@ -539,7 +539,7 @@ RSpec.describe Mono::Cli::Publish do
             package_json = JSON.parse(File.read("package.json"))
             expect(package_json["version"]).to eql(next_version_a)
 
-            changelog = File.read("CHANGELOG.md")
+            changelog = read_changelog_file
             expect_changelog_to_include_version_header(changelog, next_version_a)
             expect_changelog_to_include_release_notes(changelog, :patch)
           end
@@ -549,7 +549,7 @@ RSpec.describe Mono::Cli::Publish do
             expect(package_json["version"]).to eql(next_version_b)
             expect(package_json["dependencies"]["package_a"]).to eql("=#{next_version_a}")
 
-            changelog = File.read("CHANGELOG.md")
+            changelog = read_changelog_file
             expect_changelog_to_include_version_header(changelog, next_version_b)
             expect_changelog_to_include_package_bump(changelog, :package_a, next_version_a)
           end
@@ -601,7 +601,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(:lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         package_dir_a = "#{project_dir}/packages/package_a"
         package_dir_b = "#{project_dir}/packages/package_b"
         next_version_a = "1.0.1"
@@ -627,7 +627,7 @@ RSpec.describe Mono::Cli::Publish do
             package_json = JSON.parse(File.read("package.json"))
             expect(package_json["version"]).to eql(next_version_a)
 
-            changelog = File.read("CHANGELOG.md")
+            changelog = read_changelog_file
             expect_changelog_to_include_version_header(changelog, next_version_a)
             expect_changelog_to_include_release_notes(changelog, :patch)
           end
@@ -637,7 +637,7 @@ RSpec.describe Mono::Cli::Publish do
             expect(package_json["version"]).to eql(next_version_b)
             expect(package_json["dependencies"]["package_a"]).to eql("=#{next_version_a}")
 
-            changelog = File.read("CHANGELOG.md")
+            changelog = read_changelog_file
             expect_changelog_to_include_version_header(changelog, next_version_b)
             expect_changelog_to_include_package_bump(changelog, :package_a, next_version_a)
           end
@@ -687,7 +687,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(:lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         next_version = "1.0.1"
         tag = "v#{next_version}"
 
@@ -698,7 +698,7 @@ RSpec.describe Mono::Cli::Publish do
         in_project do
           expect(File.read("package.json")).to include(%("version": "#{next_version}"))
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version)
           expect_changelog_to_include_release_notes(changelog, :patch)
 

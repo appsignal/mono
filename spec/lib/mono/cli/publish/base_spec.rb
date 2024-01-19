@@ -196,10 +196,10 @@ RSpec.describe Mono::Cli::Publish do
         # Does not commit any changes during the publish process on exit
         expect(commit_count).to eql(original_commit_count)
 
-        expect(File.read("lib/example/version.rb")).to include(%(VERSION = "1.2.3"))
+        expect(read_ruby_gem_version_file).to have_ruby_version("1.2.3")
         expect(current_package_changeset_files.length).to eql(1)
 
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect(changelog).to_not include("1.2.4")
 
         expect(local_changes?).to be_falsy, local_changes.inspect
@@ -224,7 +224,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :ruby)
 
-      project_dir = "/custom_project_project"
+      project_dir = current_project_path
       next_version = "1.2.4"
 
       expect(output).to has_publish_and_update_summary(
@@ -232,7 +232,7 @@ RSpec.describe Mono::Cli::Publish do
       )
 
       in_project do
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect_changelog_to_include_version_header(changelog, next_version)
         expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -270,7 +270,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(["--alpha"], :lang => :ruby)
 
-      project_dir = "/custom_project_project"
+      project_dir = current_project_path
       next_version = "1.2.4.alpha.1"
 
       expect(output).to has_publish_and_update_summary(
@@ -278,10 +278,10 @@ RSpec.describe Mono::Cli::Publish do
       )
 
       in_project do
-        expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
+        expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect_changelog_to_include_version_header(changelog, next_version)
         expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -318,7 +318,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(["--alpha"], :lang => :ruby)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       next_version = "1.2.3.alpha.2"
 
       expect(output).to has_publish_and_update_summary(
@@ -330,10 +330,10 @@ RSpec.describe Mono::Cli::Publish do
       )
 
       in_project do
-        expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
+        expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect_changelog_to_include_version_header(changelog, next_version)
         expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -372,7 +372,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :ruby)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       next_version = "1.2.3"
 
       expect(output).to has_publish_and_update_summary(
@@ -384,10 +384,10 @@ RSpec.describe Mono::Cli::Publish do
       )
 
       in_project do
-        expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
+        expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect_changelog_to_include_version_header(changelog, next_version)
         expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -423,7 +423,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :ruby)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       next_version = "1.2.3"
 
       expect(output).to has_publish_and_update_summary(
@@ -435,10 +435,10 @@ RSpec.describe Mono::Cli::Publish do
       )
 
       in_project do
-        expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
+        expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect_changelog_to_include_version_header(changelog, next_version)
         expect_changelog_to_include_message(changelog, :patch, "Package release.")
 
@@ -512,7 +512,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :ruby)
 
-      project_dir = "/custom_project_project"
+      project_dir = current_project_path
       next_version = "1.2.4"
       expect(performed_commands).to eql([
         [project_dir, "git tag --list v#{next_version}"],
@@ -550,7 +550,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(["--package", "package_a"], :lang => :ruby)
 
-      project_dir = "/custom_project_project"
+      project_dir = current_project_path
       package_a_dir = File.join(project_dir, project_package_path(:package_a))
       next_version = "1.2.4"
       tag = "package_a@#{next_version}"
@@ -587,7 +587,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(["--package", "package_a,package_b"], :lang => :ruby)
 
-      project_dir = "/custom_project_project"
+      project_dir = current_project_path
       package_a_dir = "#{project_dir}/packages/package_a"
       package_b_dir = "#{project_dir}/packages/package_b"
       next_version = "1.2.4"
@@ -655,7 +655,7 @@ RSpec.describe Mono::Cli::Publish do
         :failed_commands => [/^gem push/]
       )
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       next_version = "1.2.4"
 
       expect(output).to include(<<~OUTPUT), output
@@ -702,7 +702,7 @@ RSpec.describe Mono::Cli::Publish do
         :failed_commands => [/^gem push/]
       )
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       next_version = "1.2.4"
 
       expect(output).to include(<<~OUTPUT), output

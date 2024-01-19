@@ -14,7 +14,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :ruby)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       next_version = "1.2.4"
 
       expect(output).to has_publish_and_update_summary(
@@ -22,10 +22,10 @@ RSpec.describe Mono::Cli::Publish do
       )
 
       in_project do
-        expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
+        expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect_changelog_to_include_version_header(changelog, next_version)
         expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -64,7 +64,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(:lang => :ruby)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         next_version = "1.2.4"
 
         expect(output).to has_publish_and_update_summary(
@@ -72,10 +72,10 @@ RSpec.describe Mono::Cli::Publish do
         )
 
         in_project do
-          expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
+          expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
           expect(current_package_changeset_files.length).to eql(0)
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version)
           expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -116,7 +116,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :ruby)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       next_version = "1.2.4"
 
       expect(output).to has_publish_and_update_summary(
@@ -124,10 +124,10 @@ RSpec.describe Mono::Cli::Publish do
       )
 
       in_project do
-        expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version}"))
+        expect(read_ruby_gem_version_file).to have_ruby_version(next_version)
         expect(current_package_changeset_files.length).to eql(0)
 
-        changelog = File.read("CHANGELOG.md")
+        changelog = read_changelog_file
         expect_changelog_to_include_version_header(changelog, next_version)
         expect_changelog_to_include_release_notes(changelog, :patch)
 
@@ -170,7 +170,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :ruby)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       package_dir_a = "#{project_dir}/packages/package_a"
       next_version_a = "1.2.4"
       tag_a = "package_a@#{next_version_a}"
@@ -182,10 +182,10 @@ RSpec.describe Mono::Cli::Publish do
 
       in_project do
         in_package :package_a do
-          expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version_a}"))
+          expect(read_ruby_gem_version_file).to have_ruby_version(next_version_a)
           expect(current_package_changeset_files.length).to eql(0)
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version_a)
           expect_changelog_to_include_release_notes(changelog, :patch)
         end
@@ -228,7 +228,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :ruby)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       package_dir_a = "#{project_dir}/packages/package_a"
       package_dir_b = "#{project_dir}/packages/package_b"
       next_version_a = "1.2.4"
@@ -243,19 +243,19 @@ RSpec.describe Mono::Cli::Publish do
 
       in_project do
         in_package :package_a do
-          expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version_a}"))
+          expect(read_ruby_gem_version_file).to have_ruby_version(next_version_a)
           expect(current_package_changeset_files.length).to eql(0)
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version_a)
           expect_changelog_to_include_release_notes(changelog, :patch)
         end
 
         in_package :package_b do
-          expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version_b}"))
+          expect(read_ruby_gem_version_file).to have_ruby_version(next_version_b)
           expect(current_package_changeset_files.length).to eql(0)
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version_b)
           expect_changelog_to_include_release_notes(changelog, :patch)
         end
@@ -310,7 +310,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :ruby)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       package_dir_a = "#{project_dir}/packages/package_a"
       package_dir_b = "#{project_dir}/packages/package_b"
       package_dir_c = "#{project_dir}/packages/package_c"
@@ -329,28 +329,28 @@ RSpec.describe Mono::Cli::Publish do
 
       in_project do
         in_package :package_a do
-          expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version_a}"))
+          expect(read_ruby_gem_version_file).to have_ruby_version(next_version_a)
           expect(current_package_changeset_files.length).to eql(0)
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version_a)
           expect_changelog_to_include_release_notes(changelog, :patch)
         end
 
         in_package :package_b do
-          expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version_b}"))
+          expect(read_ruby_gem_version_file).to have_ruby_version(next_version_b)
           expect(current_package_changeset_files.length).to eql(0)
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version_b)
           expect_changelog_to_include_package_bump(changelog, "package_a", next_version_a)
         end
 
         in_package :package_c do
-          expect(File.read("lib/example/version.rb")).to include(%(VERSION = "#{next_version_c}"))
+          expect(read_ruby_gem_version_file).to have_ruby_version(next_version_c)
           expect(current_package_changeset_files.length).to eql(0)
 
-          changelog = File.read("CHANGELOG.md")
+          changelog = read_changelog_file
           expect_changelog_to_include_version_header(changelog, next_version_c)
           expect_changelog_to_include_package_bump(changelog, "package_b", next_version_b)
         end

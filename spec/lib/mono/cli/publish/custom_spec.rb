@@ -21,7 +21,7 @@ RSpec.describe Mono::Cli::Publish do
     confirm_publish_package
     output = run_publish(["--alpha"], :lang => :custom)
 
-    project_dir = "/#{current_project}"
+    project_dir = current_project_path
     next_version = "1.2.3a2"
 
     expect(output).to has_publish_and_update_summary(
@@ -32,7 +32,7 @@ RSpec.describe Mono::Cli::Publish do
       expect(File.read("version.py")).to include(next_version)
       expect(current_package_changeset_files.length).to eql(0)
 
-      changelog = File.read("CHANGELOG.md")
+      changelog = read_changelog_file
       expect_changelog_to_include_version_header(changelog, next_version)
       expect_changelog_to_include_release_notes(changelog, :patch)
 
