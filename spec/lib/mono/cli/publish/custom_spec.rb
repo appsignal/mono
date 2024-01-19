@@ -21,7 +21,7 @@ RSpec.describe Mono::Cli::Publish do
     confirm_publish_package
     output = run_publish(["--alpha"], :lang => :custom)
 
-    project_dir = "/#{current_project}"
+    project_dir = current_project_path
     next_version = "1.2.3a2"
 
     expect(output).to has_publish_and_update_summary(

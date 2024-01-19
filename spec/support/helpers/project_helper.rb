@@ -24,7 +24,11 @@ module ProjectHelper
     @current_project = project
   end
 
-  def current_project_dir
+  def current_project_path
+    "/#{current_project}"
+  end
+
+  def current_project_path_in_spec_dir
     File.join(EXAMPLES_TMP_DIR, current_project)
   end
 
@@ -41,7 +45,7 @@ module ProjectHelper
     select_project "custom_project"
     prepare_tmp_examples_dir
     # Create new directory
-    FileUtils.mkdir_p current_project_dir
+    FileUtils.mkdir_p current_project_path_in_spec_dir
     init_project
     if block_given?
       in_project do
@@ -80,7 +84,7 @@ module ProjectHelper
 
   def in_project(&block)
     # Execute block in test dir
-    Dir.chdir(current_project_dir, &block)
+    Dir.chdir(current_project_path_in_spec_dir, &block)
   rescue SystemExit => error
     Testing.exit_status = error.status
   end
@@ -90,7 +94,7 @@ module ProjectHelper
     # Create tmp examples dir
     FileUtils.mkdir_p(EXAMPLES_TMP_DIR)
     # Remove existing test dir
-    project_dir = current_project_dir
+    project_dir = current_project_path_in_spec_dir
     # Remove existing project dir if it exists
     FileUtils.rm_r(project_dir) if Dir.exist?(project_dir)
   end
@@ -153,7 +157,7 @@ module ProjectHelper
   end
 
   def package_path(package)
-    File.join(current_project_dir, "packages", package)
+    File.join(current_project_path_in_spec_dir, "packages", package)
   end
 
   def create_changelog

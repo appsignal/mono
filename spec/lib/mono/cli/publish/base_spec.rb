@@ -224,7 +224,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :ruby)
 
-      project_dir = "/custom_project_project"
+      project_dir = current_project_path
       next_version = "1.2.4"
 
       expect(output).to has_publish_and_update_summary(
@@ -270,7 +270,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(["--alpha"], :lang => :ruby)
 
-      project_dir = "/custom_project_project"
+      project_dir = current_project_path
       next_version = "1.2.4.alpha.1"
 
       expect(output).to has_publish_and_update_summary(
@@ -318,7 +318,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(["--alpha"], :lang => :ruby)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       next_version = "1.2.3.alpha.2"
 
       expect(output).to has_publish_and_update_summary(
@@ -372,7 +372,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :ruby)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       next_version = "1.2.3"
 
       expect(output).to has_publish_and_update_summary(
@@ -423,7 +423,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :ruby)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       next_version = "1.2.3"
 
       expect(output).to has_publish_and_update_summary(
@@ -512,7 +512,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :ruby)
 
-      project_dir = "/custom_project_project"
+      project_dir = current_project_path
       next_version = "1.2.4"
       expect(performed_commands).to eql([
         [project_dir, "git tag --list v#{next_version}"],
@@ -550,7 +550,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(["--package", "package_a"], :lang => :ruby)
 
-      project_dir = "/custom_project_project"
+      project_dir = current_project_path
       package_a_dir = File.join(project_dir, project_package_path(:package_a))
       next_version = "1.2.4"
       tag = "package_a@#{next_version}"
@@ -587,7 +587,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(["--package", "package_a,package_b"], :lang => :ruby)
 
-      project_dir = "/custom_project_project"
+      project_dir = current_project_path
       package_a_dir = "#{project_dir}/packages/package_a"
       package_b_dir = "#{project_dir}/packages/package_b"
       next_version = "1.2.4"
@@ -655,7 +655,7 @@ RSpec.describe Mono::Cli::Publish do
         :failed_commands => [/^gem push/]
       )
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       next_version = "1.2.4"
 
       expect(output).to include(<<~OUTPUT), output
@@ -702,7 +702,7 @@ RSpec.describe Mono::Cli::Publish do
         :failed_commands => [/^gem push/]
       )
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       next_version = "1.2.4"
 
       expect(output).to include(<<~OUTPUT), output

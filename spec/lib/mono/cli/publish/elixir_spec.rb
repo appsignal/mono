@@ -14,7 +14,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :elixir)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       next_version = "1.2.4"
 
       expect(output).to has_publish_and_update_summary(
@@ -64,7 +64,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :elixir)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       next_version = "1.2.4"
 
       expect(output).to has_publish_and_update_summary(
@@ -121,7 +121,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :elixir)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       package_dir_a = "#{project_dir}/packages/package_a"
       package_dir_b = "#{project_dir}/packages/package_b"
       next_version_a = "1.2.4"
@@ -182,7 +182,7 @@ RSpec.describe Mono::Cli::Publish do
       confirm_publish_package
       output = run_publish(:lang => :elixir)
 
-      project_dir = "/#{current_project}"
+      project_dir = current_project_path
       package_dir_a = "#{project_dir}/packages/jason"
       package_dir_b = "#{project_dir}/packages/package_b"
       next_version_a = "1.1.3"

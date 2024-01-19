@@ -15,7 +15,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(:lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         next_version = "1.0.1"
         tag = "v#{next_version}"
 
@@ -63,7 +63,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(["--alpha"], :lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         next_version = "1.0.1-alpha.1"
         tag = "v#{next_version}"
 
@@ -100,7 +100,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(["--beta"], :lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         next_version = "1.0.1-beta.1"
         tag = "v#{next_version}"
 
@@ -138,7 +138,7 @@ RSpec.describe Mono::Cli::Publish do
         package_tag = "2.x-stable"
         output = run_publish(["--tag", package_tag], :lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         next_version = "2.3.2"
         tag = "v#{next_version}"
 
@@ -175,7 +175,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(["--rc"], :lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         next_version = "1.0.1-rc.1"
         tag = "v#{next_version}"
 
@@ -219,7 +219,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(:lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         package_one_dir = "#{project_dir}/packages/package_one"
         package_two_dir = "#{project_dir}/packages/package_two"
         next_version = "1.0.1"
@@ -283,7 +283,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(:lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         package_one_dir = "#{project_dir}/packages/package_one"
         package_two_dir = "#{project_dir}/packages/package_two"
         next_version_one = "1.0.1"
@@ -414,7 +414,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(:lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         package_dir_a = "#{project_dir}/packages/package_a"
         package_dir_b = "#{project_dir}/packages/package_b"
         package_dir_c = "#{project_dir}/packages/package_c"
@@ -513,7 +513,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(["--alpha"], :lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         package_dir_a = "#{project_dir}/packages/package_a"
         package_dir_b = "#{project_dir}/packages/package_b"
         next_version_a = "1.0.1-alpha.1"
@@ -601,7 +601,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(:lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         package_dir_a = "#{project_dir}/packages/package_a"
         package_dir_b = "#{project_dir}/packages/package_b"
         next_version_a = "1.0.1"
@@ -687,7 +687,7 @@ RSpec.describe Mono::Cli::Publish do
         confirm_publish_package
         output = run_publish(:lang => :nodejs)
 
-        project_dir = "/#{current_project}"
+        project_dir = current_project_path
         next_version = "1.0.1"
         tag = "v#{next_version}"
 
