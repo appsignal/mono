@@ -273,6 +273,9 @@ module Mono
         OptionParser.new do |opts| # rubocop:disable Metrics/BlockLength
           opts.banner = "Usage: mono publish [options]"
 
+          opts.on "--yes", "Publish packages without confirmation" do |_value|
+            params[:ask_for_confirmation] = false
+          end
           opts.on "-p", "--package package1,package2,package3", Array,
             "Select packages to publish" do |value|
             params[:packages] = value

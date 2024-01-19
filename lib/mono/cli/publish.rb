@@ -53,7 +53,7 @@ module Mono
 
         print_summary(packages)
         puts
-        ask_for_publish_confirmation
+        ask_for_publish_confirmation if ask_for_confirmation?
         puts
 
         rollback = []
@@ -81,6 +81,10 @@ module Mono
       end
 
       private
+
+      def ask_for_confirmation?
+        options.fetch(:ask_for_confirmation, true)
+      end
 
       def git?
         options.fetch(:git, true)
