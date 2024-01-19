@@ -742,4 +742,28 @@ RSpec.describe Mono::Cli::Publish do
       expect(exit_status).to eql(1), output
     end
   end
+
+  context "with --no-git" do
+    it "doesn't commit or push using Git" do
+      prepare_ruby_project do
+        create_ruby_package_files :name => "mygem", :version => "1.2.3"
+        add_changeset :patch
+      end
+      confirm_publish_package
+      output = run_publish(["--no-git"], :lang => :ruby)
+
+      project_dir = current_project_path
+      next_version = "1.2.4"
+
+      in_project do
+        expect(local_changes?).to be_truthy, local_changes.inspect
+      end
+
+      expect(performed_commands).to eql([
+        [project_dir, "gem build"],
+        [project_dir, "gem push mygem-#{next_version}.gem"]
+      ])
+      expect(exit_status).to eql(0), output
+    end
+  end
 end

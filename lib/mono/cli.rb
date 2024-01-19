@@ -270,7 +270,7 @@ module Mono
 
       def publish_options
         params = {}
-        OptionParser.new do |opts|
+        OptionParser.new do |opts| # rubocop:disable Metrics/BlockLength
           opts.banner = "Usage: mono publish [options]"
 
           opts.on "-p", "--package package1,package2,package3", Array,
@@ -289,6 +289,10 @@ module Mono
           opts.on "--tag TAG",
             "Set the tag for the package release (Node.js only)" do |tag|
             params[:tag] = tag
+          end
+          opts.on "--no-git",
+            "Do not commit changes, create a tag and push release using Git" do
+            params[:git] = false
           end
         end.parse(@options)
         params
