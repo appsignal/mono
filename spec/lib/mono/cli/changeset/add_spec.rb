@@ -30,8 +30,8 @@ RSpec.describe Mono::Cli::Changeset do
           contents = File.read(changeset_path)
           expect(contents).to eql(<<~CHANGESET)
             ---
-            bump: "patch"
-            type: "add"
+            bump: patch
+            type: add
             ---
 
             My:; Awes/o\\me (pa).tch
@@ -69,8 +69,8 @@ RSpec.describe Mono::Cli::Changeset do
           contents = File.read(changeset_path)
           expect(contents).to eql(<<~CHANGESET)
             ---
-            bump: "minor"
-            type: "add"
+            bump: minor
+            type: add
             ---
 
             My Awes/o\\me pa.t`ch
@@ -104,8 +104,8 @@ RSpec.describe Mono::Cli::Changeset do
           contents = File.read(changeset_path)
           expect(contents).to eql(<<~CHANGESET)
             ---
-            bump: "patch"
-            type: "change"
+            bump: patch
+            type: change
             ---
 
             My Awes/o\\me patch
@@ -141,8 +141,8 @@ RSpec.describe Mono::Cli::Changeset do
           contents = File.read(changeset_path)
           expect(contents).to eql(<<~CHANGESET)
             ---
-            bump: "patch"
-            type: "add"
+            bump: patch
+            type: add
             ---
 
             My Awes/o\\me patch
@@ -237,8 +237,8 @@ RSpec.describe Mono::Cli::Changeset do
         contents = File.read(changeset_path)
         expect(contents).to eql(<<~CHANGESET)
           ---
-          bump: "major"
-          type: "add"
+          bump: major
+          type: add
           ---
 
           My Awes/o\\me patch

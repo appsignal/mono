@@ -23,11 +23,14 @@ module Mono
           filepath = File.join(dir, "#{filename}.md")
           type = prompt_for_type
           bump = prompt_for_bump
+          metadata = {
+            "bump" => bump,
+            "type" => type
+          }
 
+          metadata_yml = YAML.dump(metadata)
           File.write(filepath, <<~CONTENTS)
-            ---
-            bump: "#{bump}"
-            type: "#{type}"
+            #{metadata_yml.strip}
             ---
 
             #{change_description}
