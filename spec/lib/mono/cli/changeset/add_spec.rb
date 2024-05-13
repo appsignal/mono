@@ -200,6 +200,240 @@ RSpec.describe Mono::Cli::Changeset do
         expect(exit_status).to eql(0), output
       end
     end
+
+    context "with integrations config" do
+      it "stores a single integration" do
+        prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
+          create_ruby_package_files :name => "mygem", :version => "1.2.3"
+        end
+
+        add_cli_input "My change"
+        add_cli_input "1" # Type: Added
+        add_cli_input "3" # Bump: Patch
+        add_cli_input "ruby"
+        add_cli_input "n"
+        output = capture_stdout { in_project { run_changeset_add } }
+
+        changeset_path = ".changesets/my-change.md"
+        expect(output).to include(
+          "For which integrations is this change? (all, none, ruby, elixir, python): "
+        )
+        in_project do
+          contents = File.read(changeset_path)
+          expect(contents).to eql(<<~CHANGESET)
+            ---
+            bump: patch
+            type: add
+            integrations: ruby
+            ---
+
+            My change
+          CHANGESET
+        end
+        expect(performed_commands).to be_empty
+        expect(exit_status).to eql(0), output
+      end
+
+      it "stores multiple integrations" do
+        prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
+          create_ruby_package_files :name => "mygem", :version => "1.2.3"
+        end
+
+        add_cli_input "My change"
+        add_cli_input "1" # Type: Added
+        add_cli_input "3" # Bump: Patch
+        add_cli_input "ruby, elixir"
+        add_cli_input "n"
+        output = capture_stdout { in_project { run_changeset_add } }
+
+        changeset_path = ".changesets/my-change.md"
+        expect(output).to include(
+          "For which integrations is this change? (all, none, ruby, elixir, python): "
+        )
+        in_project do
+          contents = File.read(changeset_path)
+          expect(contents).to eql(<<~CHANGESET)
+            ---
+            bump: patch
+            type: add
+            integrations:
+            - ruby
+            - elixir
+            ---
+
+            My change
+          CHANGESET
+        end
+        expect(performed_commands).to be_empty
+        expect(exit_status).to eql(0), output
+      end
+
+      it "accept 'all' as integrations" do
+        prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
+          create_ruby_package_files :name => "mygem", :version => "1.2.3"
+        end
+
+        add_cli_input "My change"
+        add_cli_input "1" # Type: Added
+        add_cli_input "3" # Bump: Patch
+        add_cli_input "all"
+        add_cli_input "n"
+        output = capture_stdout { in_project { run_changeset_add } }
+
+        changeset_path = ".changesets/my-change.md"
+        expect(output).to include(
+          "For which integrations is this change? (all, none, ruby, elixir, python): "
+        )
+        in_project do
+          contents = File.read(changeset_path)
+          expect(contents).to eql(<<~CHANGESET)
+            ---
+            bump: patch
+            type: add
+            integrations: all
+            ---
+
+            My change
+          CHANGESET
+        end
+        expect(performed_commands).to be_empty
+        expect(exit_status).to eql(0), output
+      end
+
+      it "accept only 'all' as integrations" do
+        prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
+          create_ruby_package_files :name => "mygem", :version => "1.2.3"
+        end
+
+        add_cli_input "My change"
+        add_cli_input "1" # Type: Added
+        add_cli_input "3" # Bump: Patch
+        add_cli_input "ruby, all"
+        add_cli_input "n"
+        output = capture_stdout { in_project { run_changeset_add } }
+
+        changeset_path = ".changesets/my-change.md"
+        expect(output).to include(
+          "For which integrations is this change? (all, none, ruby, elixir, python): "
+        )
+        in_project do
+          contents = File.read(changeset_path)
+          expect(contents).to eql(<<~CHANGESET)
+            ---
+            bump: patch
+            type: add
+            integrations: all
+            ---
+
+            My change
+          CHANGESET
+        end
+        expect(performed_commands).to be_empty
+        expect(exit_status).to eql(0), output
+      end
+
+      it "accept 'none' as integrations" do
+        prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
+          create_ruby_package_files :name => "mygem", :version => "1.2.3"
+        end
+
+        add_cli_input "My change"
+        add_cli_input "1" # Type: Added
+        add_cli_input "3" # Bump: Patch
+        add_cli_input "none"
+        add_cli_input "n"
+        output = capture_stdout { in_project { run_changeset_add } }
+
+        changeset_path = ".changesets/my-change.md"
+        expect(output).to include(
+          "For which integrations is this change? (all, none, ruby, elixir, python): "
+        )
+        in_project do
+          contents = File.read(changeset_path)
+          expect(contents).to eql(<<~CHANGESET)
+            ---
+            bump: patch
+            type: add
+            integrations: none
+            ---
+
+            My change
+          CHANGESET
+        end
+        expect(performed_commands).to be_empty
+        expect(exit_status).to eql(0), output
+      end
+
+      it "accept only 'none' as integrations" do
+        prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
+          create_ruby_package_files :name => "mygem", :version => "1.2.3"
+        end
+
+        add_cli_input "My change"
+        add_cli_input "1" # Type: Added
+        add_cli_input "3" # Bump: Patch
+        add_cli_input "elixir, none"
+        add_cli_input "n"
+        output = capture_stdout { in_project { run_changeset_add } }
+
+        changeset_path = ".changesets/my-change.md"
+        expect(output).to include(
+          "For which integrations is this change? (all, none, ruby, elixir, python): "
+        )
+        in_project do
+          contents = File.read(changeset_path)
+          expect(contents).to eql(<<~CHANGESET)
+            ---
+            bump: patch
+            type: add
+            integrations: none
+            ---
+
+            My change
+          CHANGESET
+        end
+        expect(performed_commands).to be_empty
+        expect(exit_status).to eql(0), output
+      end
+
+      it "does not accept unknown integrations" do
+        prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
+          create_ruby_package_files :name => "mygem", :version => "1.2.3"
+        end
+
+        add_cli_input "My change"
+        add_cli_input "1" # Type: Added
+        add_cli_input "3" # Bump: Patch
+        add_cli_input "" # Empty value
+        add_cli_input ",,," # Empty list gets ignored
+        add_cli_input "random 1"
+        add_cli_input "random 1, , random 2" # Multiple values with empty value
+        add_cli_input "python"
+        add_cli_input "n"
+        output = capture_stdout { in_project { run_changeset_add } }
+
+        changeset_path = ".changesets/my-change.md"
+        expect(output).to include(
+          "For which integrations is this change? (all, none, ruby, elixir, python): ",
+          "Unknown integration entered: \"random 1\". Please try again.",
+          "Unknown integration entered: \"random 1\", \"random 2\". Please try again."
+        )
+        in_project do
+          contents = File.read(changeset_path)
+          expect(contents).to eql(<<~CHANGESET)
+            ---
+            bump: patch
+            type: add
+            integrations: python
+            ---
+
+            My change
+          CHANGESET
+        end
+        expect(performed_commands).to be_empty
+        expect(exit_status).to eql(0), output
+      end
+    end
   end
 
   context "with mono repo" do

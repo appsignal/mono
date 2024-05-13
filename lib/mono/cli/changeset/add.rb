@@ -27,6 +27,8 @@ module Mono
             "bump" => bump,
             "type" => type
           }
+          integrations = prompt_for_integrations
+          metadata["integrations"] = integrations if integrations
 
           metadata_yml = YAML.dump(metadata)
           File.write(filepath, <<~CONTENTS)
@@ -87,6 +89,47 @@ module Mono
             puts "Unknown bump type `#{bump}`. " \
               "Please select a supported bump type."
           end
+        end
+
+        def prompt_for_integrations
+          integration_options = fetch_integration_options
+          return unless integration_options
+
+          loop do
+            integrations = required_input(
+              "For which integrations is this change? " \
+                "(all, none, #{integration_options.join(", ")}): "
+            )
+
+            integrations_list = integrations
+              .split(",")
+              .map(&:strip)
+              .reject(&:empty?)
+            next if integrations_list.empty?
+            return "all" if integrations_list.include?("all")
+            return "none" if integrations_list.include?("none")
+
+            unknowns = integrations_list - integration_options
+            if unknowns.any?
+              puts "Unknown integration entered: " \
+                "#{unknowns.map(&:inspect).join(", ")}. Please try again."
+            elsif integrations_list.length == 1
+              return integrations_list.first
+            else
+              return integrations_list
+            end
+          end
+        end
+
+        def unknown_integrations(integrations)
+          known_integrations = fetch_integration_options
+          integrations.reject do |integration|
+            known_integrations.include?(integration)
+          end
+        end
+
+        def fetch_integration_options
+          @config.config("integrations") if @config.config?("integrations")
         end
 
         def prompt_options(prompt, options)
