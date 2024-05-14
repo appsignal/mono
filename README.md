@@ -93,6 +93,9 @@ test:
             - Ruby only.
             - Specify which path the `.gem` files to publish can be found if
               not in the root of the project.
+- `integrations`
+    - List of integration options that are accepted.
+    - Example: `["ruby", "elixir", "nodejs"]`
 
 ### Customize commands
 
