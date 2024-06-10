@@ -226,6 +226,8 @@ RSpec.describe Mono::Cli::Publish do
 
       project_dir = current_project_path
       next_version = "1.2.4"
+      tag = "v#{next_version}"
+      tmp_changelog_file = tmp_changelog_file_for(current_project)
 
       expect(output).to has_publish_and_update_summary(
         :custom_project_project => { :old => "v1.2.3", :new => "v1.2.4", :bump => :patch }
@@ -245,19 +247,56 @@ RSpec.describe Mono::Cli::Publish do
       end
 
       expect(performed_commands).to eql([
-        [project_dir, "git tag --list v#{next_version}"],
+        [project_dir, "git tag --list #{tag}"],
         [project_dir, "gem build"],
         [project_dir, "git add -A"],
         [
           project_dir,
-          "git commit -m 'Publish package v#{next_version}' " \
+          "git commit -m 'Publish package #{tag}' " \
             "-m 'Update version number and CHANGELOG.md.'"
         ],
-        [project_dir, "git tag v#{next_version}"],
+        [project_dir, version_tag_command(tag, tmp_changelog_file)],
         [project_dir, "gem push mygem-#{next_version}.gem"],
-        [project_dir, "git push origin main v#{next_version}"]
+        [project_dir, "git push origin main #{tag}"]
       ])
       expect(exit_status).to eql(0), output
+    end
+  end
+
+  context "Git tag" do
+    it "adds the changelog contents to the tag" do
+      prepare_ruby_project do
+        create_ruby_package_files :name => "mygem", :version => "1.2.3"
+        create_changelog
+        add_changeset(:minor, :type => "add")
+        add_changeset(:patch, :type => "change")
+        FileUtils.rm("CHANGELOG.md")
+        commit_changes "Remove CHANGELOG.md"
+      end
+      confirm_publish_package
+      run_publish(:lang => :ruby)
+
+      project_dir = current_project_path
+      next_version = "1.3.0"
+      tag = "v#{next_version}"
+      tmp_changelog_file = tmp_changelog_file_for(current_project)
+
+      in_project do
+        expect(tag_changelog_contents(tag)).to eq(<<~CONTENTS.strip)
+          ## Added
+
+          - This is a minor changeset bump.
+
+          ## Changed
+
+          - This is a patch changeset bump.
+        CONTENTS
+        expect(File.exist?(tmp_changelog_file)).to be_falsey
+      end
+
+      expect(performed_commands).to include(
+        [project_dir, version_tag_command(tag, tmp_changelog_file)]
+      )
     end
   end
 
@@ -272,6 +311,7 @@ RSpec.describe Mono::Cli::Publish do
 
       project_dir = current_project_path
       next_version = "1.2.4.alpha.1"
+      tag = "v#{next_version}"
 
       expect(output).to has_publish_and_update_summary(
         :custom_project_project => { :old => "v1.2.3", :new => "v1.2.4.alpha.1", :bump => :patch }
@@ -294,17 +334,17 @@ RSpec.describe Mono::Cli::Publish do
       end
 
       expect(performed_commands).to eql([
-        [project_dir, "git tag --list v#{next_version}"],
+        [project_dir, "git tag --list #{tag}"],
         [project_dir, "gem build"],
         [project_dir, "git add -A"],
         [
           project_dir,
-          "git commit -m 'Publish package v#{next_version}' " \
+          "git commit -m 'Publish package #{tag}' " \
             "-m 'Update version number and CHANGELOG.md.'"
         ],
-        [project_dir, "git tag v#{next_version}"],
+        [project_dir, version_tag_command(tag)],
         [project_dir, "gem push mygem-#{next_version}.gem"],
-        [project_dir, "git push origin main v#{next_version}"]
+        [project_dir, "git push origin main #{tag}"]
       ])
       expect(exit_status).to eql(0), output
     end
@@ -320,6 +360,7 @@ RSpec.describe Mono::Cli::Publish do
 
       project_dir = current_project_path
       next_version = "1.2.3.alpha.2"
+      tag = "v#{next_version}"
 
       expect(output).to has_publish_and_update_summary(
         :custom_project_project => {
@@ -346,17 +387,17 @@ RSpec.describe Mono::Cli::Publish do
       end
 
       expect(performed_commands).to eql([
-        [project_dir, "git tag --list v#{next_version}"],
+        [project_dir, "git tag --list #{tag}"],
         [project_dir, "gem build"],
         [project_dir, "git add -A"],
         [
           project_dir,
-          "git commit -m 'Publish package v#{next_version}' " \
+          "git commit -m 'Publish package #{tag}' " \
             "-m 'Update version number and CHANGELOG.md.'"
         ],
-        [project_dir, "git tag v#{next_version}"],
+        [project_dir, version_tag_command(tag)],
         [project_dir, "gem push mygem-#{next_version}.gem"],
-        [project_dir, "git push origin main v#{next_version}"]
+        [project_dir, "git push origin main #{tag}"]
       ])
       expect(exit_status).to eql(0), output
     end
@@ -374,6 +415,7 @@ RSpec.describe Mono::Cli::Publish do
 
       project_dir = current_project_path
       next_version = "1.2.3"
+      tag = "v#{next_version}"
 
       expect(output).to has_publish_and_update_summary(
         :custom_project_project => {
@@ -400,17 +442,17 @@ RSpec.describe Mono::Cli::Publish do
       end
 
       expect(performed_commands).to eql([
-        [project_dir, "git tag --list v#{next_version}"],
+        [project_dir, "git tag --list #{tag}"],
         [project_dir, "gem build"],
         [project_dir, "git add -A"],
         [
           project_dir,
-          "git commit -m 'Publish package v#{next_version}' " \
+          "git commit -m 'Publish package #{tag}' " \
             "-m 'Update version number and CHANGELOG.md.'"
         ],
-        [project_dir, "git tag v#{next_version}"],
+        [project_dir, version_tag_command(tag)],
         [project_dir, "gem push mygem-#{next_version}.gem"],
-        [project_dir, "git push origin main v#{next_version}"]
+        [project_dir, "git push origin main #{tag}"]
       ])
       expect(exit_status).to eql(0), output
     end
@@ -425,6 +467,7 @@ RSpec.describe Mono::Cli::Publish do
 
       project_dir = current_project_path
       next_version = "1.2.3"
+      tag = "v#{next_version}"
 
       expect(output).to has_publish_and_update_summary(
         :custom_project_project => {
@@ -450,17 +493,17 @@ RSpec.describe Mono::Cli::Publish do
       end
 
       expect(performed_commands).to eql([
-        [project_dir, "git tag --list v#{next_version}"],
+        [project_dir, "git tag --list #{tag}"],
         [project_dir, "gem build"],
         [project_dir, "git add -A"],
         [
           project_dir,
-          "git commit -m 'Publish package v#{next_version}' " \
+          "git commit -m 'Publish package #{tag}' " \
             "-m 'Update version number and CHANGELOG.md.'"
         ],
-        [project_dir, "git tag v#{next_version}"],
+        [project_dir, version_tag_command(tag)],
         [project_dir, "gem push mygem-#{next_version}.gem"],
-        [project_dir, "git push origin main v#{next_version}"]
+        [project_dir, "git push origin main #{tag}"]
       ])
       expect(exit_status).to eql(0), output
     end
@@ -514,22 +557,24 @@ RSpec.describe Mono::Cli::Publish do
 
       project_dir = current_project_path
       next_version = "1.2.4"
+      tag = "v#{next_version}"
+
       expect(performed_commands).to eql([
-        [project_dir, "git tag --list v#{next_version}"],
+        [project_dir, "git tag --list #{tag}"],
         [project_dir, "echo before build"],
         [project_dir, "gem build"],
         [project_dir, "echo after build"],
         [project_dir, "git add -A"],
         [
           project_dir,
-          "git commit -m 'Publish package v#{next_version}' " \
+          "git commit -m 'Publish package #{tag}' " \
             "-m 'Update version number and CHANGELOG.md.'"
         ],
-        [project_dir, "git tag v#{next_version}"],
+        [project_dir, version_tag_command(tag)],
         [project_dir, "echo before publish"],
         [project_dir, "gem push mygem-#{next_version}.gem"],
         [project_dir, "echo after publish"],
-        [project_dir, "git push origin main v#{next_version}"]
+        [project_dir, "git push origin main #{tag}"]
       ])
       expect(exit_status).to eql(0), output
     end
@@ -554,6 +599,7 @@ RSpec.describe Mono::Cli::Publish do
       package_a_dir = File.join(project_dir, project_package_path(:package_a))
       next_version = "1.2.4"
       tag = "package_a@#{next_version}"
+      tmp_changelog_file = tmp_changelog_file_for("package_a")
 
       expect(performed_commands).to eql([
         [project_dir, "git tag --list #{tag}"],
@@ -564,7 +610,7 @@ RSpec.describe Mono::Cli::Publish do
           "git commit -m 'Publish package #{tag}' " \
             "-m 'Update version number and CHANGELOG.md.'"
         ],
-        [project_dir, "git tag #{tag}"],
+        [project_dir, version_tag_command(tag, tmp_changelog_file)],
         [project_dir, "gem push #{project_package_path(:package_a)}/package_a-#{next_version}.gem"],
         [project_dir, "git push origin main #{tag}"]
       ])
@@ -593,6 +639,8 @@ RSpec.describe Mono::Cli::Publish do
       next_version = "1.2.4"
       tag1 = "package_a@#{next_version}"
       tag2 = "package_b@#{next_version}"
+      package_a_changelog_file = tmp_changelog_file_for("package_a")
+      package_b_changelog_file = tmp_changelog_file_for("package_b")
 
       expect(performed_commands).to eql([
         [project_dir, "git tag --list #{tag1} #{tag2}"],
@@ -606,8 +654,8 @@ RSpec.describe Mono::Cli::Publish do
             "- #{tag1}\n" \
             "- #{tag2}'"
         ],
-        [project_dir, "git tag #{tag1}"],
-        [project_dir, "git tag #{tag2}"],
+        [project_dir, version_tag_command(tag1, package_a_changelog_file)],
+        [project_dir, version_tag_command(tag2, package_b_changelog_file)],
         [project_dir, "gem push #{project_package_path(:package_a)}/package_a-#{next_version}.gem"],
         [project_dir, "gem push #{project_package_path(:package_b)}/package_b-#{next_version}.gem"],
         [project_dir, "git push origin main #{tag1} #{tag2}"]
@@ -657,6 +705,7 @@ RSpec.describe Mono::Cli::Publish do
 
       project_dir = current_project_path
       next_version = "1.2.4"
+      tag = "v#{next_version}"
 
       expect(output).to include(<<~OUTPUT), output
         #{fail_command}
@@ -668,15 +717,15 @@ RSpec.describe Mono::Cli::Publish do
       OUTPUT
 
       expect(performed_commands).to eql([
-        [project_dir, "git tag --list v#{next_version}"],
+        [project_dir, "git tag --list #{tag}"],
         [project_dir, "gem build"],
         [project_dir, "git add -A"],
         [
           project_dir,
-          "git commit -m 'Publish package v#{next_version}' " \
+          "git commit -m 'Publish package #{tag}' " \
             "-m 'Update version number and CHANGELOG.md.'"
         ],
-        [project_dir, "git tag v#{next_version}"],
+        [project_dir, version_tag_command(tag)],
         [project_dir, "gem push mygem-#{next_version}.gem"]
       ])
       expect(exit_status).to eql(1), output
@@ -704,6 +753,7 @@ RSpec.describe Mono::Cli::Publish do
 
       project_dir = current_project_path
       next_version = "1.2.4"
+      tag = "v#{next_version}"
 
       expect(output).to include(<<~OUTPUT), output
         #{fail_command}
@@ -724,17 +774,17 @@ RSpec.describe Mono::Cli::Publish do
       OUTPUT
 
       expect(performed_commands).to eql([
-        [project_dir, "git tag --list v#{next_version}"],
+        [project_dir, "git tag --list #{tag}"],
         [project_dir, "gem build"],
         [project_dir, "git add -A"],
         [
           project_dir,
-          "git commit -m 'Publish package v#{next_version}' " \
+          "git commit -m 'Publish package #{tag}' " \
             "-m 'Update version number and CHANGELOG.md.'"
         ],
-        [project_dir, "git tag v#{next_version}"],
+        [project_dir, version_tag_command(tag)],
         [project_dir, "gem push mygem-#{next_version}.gem"],
-        [project_dir, "git tag -d v1.2.4"],
+        [project_dir, "git tag -d #{tag}"],
         [project_dir, "git reset --soft HEAD^"],
         [project_dir, "git restore --staged :/"],
         [project_dir, "git restore :/"]
@@ -753,19 +803,20 @@ RSpec.describe Mono::Cli::Publish do
 
       project_dir = current_project_path
       next_version = "1.2.4"
+      tag = "v#{next_version}"
 
       expect(performed_commands).to eql([
-        [project_dir, "git tag --list v#{next_version}"],
+        [project_dir, "git tag --list #{tag}"],
         [project_dir, "gem build"],
         [project_dir, "git add -A"],
         [
           project_dir,
-          "git commit -m 'Publish package v#{next_version}' " \
+          "git commit -m 'Publish package #{tag}' " \
             "-m 'Update version number and CHANGELOG.md.'"
         ],
-        [project_dir, "git tag v#{next_version}"],
+        [project_dir, version_tag_command(tag)],
         [project_dir, "gem push mygem-#{next_version}.gem"],
-        [project_dir, "git push origin main v#{next_version}"]
+        [project_dir, "git push origin main #{tag}"]
       ])
       expect(exit_status).to eql(0), output
     end
@@ -806,22 +857,23 @@ RSpec.describe Mono::Cli::Publish do
 
       project_dir = current_project_path
       next_version = "1.2.4"
+      tag = "v#{next_version}"
 
       in_project do
         expect(local_changes?).to be_falsy, local_changes.inspect
       end
 
       expect(performed_commands).to eql([
-        [project_dir, "git tag --list v#{next_version}"],
+        [project_dir, "git tag --list #{tag}"],
         [project_dir, "gem build"],
         [project_dir, "git add -A"],
         [
           project_dir,
-          "git commit -m 'Publish package v#{next_version}' " \
+          "git commit -m 'Publish package #{tag}' " \
             "-m 'Update version number and CHANGELOG.md.'"
         ],
-        [project_dir, "git tag v#{next_version}"],
-        [project_dir, "git push origin main v#{next_version}"]
+        [project_dir, version_tag_command(tag)],
+        [project_dir, "git push origin main #{tag}"]
       ])
       expect(exit_status).to eql(0), output
     end

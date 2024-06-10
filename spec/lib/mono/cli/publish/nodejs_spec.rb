@@ -48,7 +48,7 @@ RSpec.describe Mono::Cli::Publish do
             project_dir,
             "git commit -m 'Publish package #{tag}' -m 'Update version number and CHANGELOG.md.'"
           ],
-          [project_dir, "git tag #{tag}"],
+          [project_dir, version_tag_command(tag, tmp_changelog_file_for("my_package"))],
           [project_dir, "npm publish"],
           [project_dir, "git push origin main #{tag}"]
         ])
@@ -85,7 +85,7 @@ RSpec.describe Mono::Cli::Publish do
             project_dir,
             "git commit -m 'Publish package #{tag}' -m 'Update version number and CHANGELOG.md.'"
           ],
-          [project_dir, "git tag #{tag}"],
+          [project_dir, version_tag_command(tag, tmp_changelog_file_for("my_package"))],
           [project_dir, "npm publish --tag alpha"],
           [project_dir, "git push origin main #{tag}"]
         ])
@@ -122,7 +122,7 @@ RSpec.describe Mono::Cli::Publish do
             project_dir,
             "git commit -m 'Publish package #{tag}' -m 'Update version number and CHANGELOG.md.'"
           ],
-          [project_dir, "git tag #{tag}"],
+          [project_dir, version_tag_command(tag, tmp_changelog_file_for("my_package"))],
           [project_dir, "npm publish --tag beta"],
           [project_dir, "git push origin main #{tag}"]
         ])
@@ -160,7 +160,7 @@ RSpec.describe Mono::Cli::Publish do
             project_dir,
             "git commit -m 'Publish package #{tag}' -m 'Update version number and CHANGELOG.md.'"
           ],
-          [project_dir, "git tag #{tag}"],
+          [project_dir, version_tag_command(tag, tmp_changelog_file_for("my_package"))],
           [project_dir, "npm publish --tag #{package_tag}"],
           [project_dir, "git push origin main #{tag}"]
         ])
@@ -197,7 +197,7 @@ RSpec.describe Mono::Cli::Publish do
             project_dir,
             "git commit -m 'Publish package #{tag}' -m 'Update version number and CHANGELOG.md.'"
           ],
-          [project_dir, "git tag #{tag}"],
+          [project_dir, version_tag_command(tag, tmp_changelog_file_for("my_package"))],
           [project_dir, "npm publish --tag rc"],
           [project_dir, "git push origin main #{tag}"]
         ])
@@ -262,7 +262,7 @@ RSpec.describe Mono::Cli::Publish do
             project_dir,
             "git commit -m 'Publish package #{tag}' -m 'Update version number and CHANGELOG.md.'"
           ],
-          [project_dir, "git tag #{tag}"],
+          [project_dir, version_tag_command(tag, tmp_changelog_file_for("package_one"))],
           [package_one_dir, "npm publish"],
           [project_dir, "git push origin main #{tag}"]
         ])
@@ -347,8 +347,14 @@ RSpec.describe Mono::Cli::Publish do
             "git commit -m 'Publish packages' -m 'Update version number and CHANGELOG.md.\n\n" \
               "- #{package_one_tag}\n- #{package_two_tag}'"
           ],
-          [project_dir, "git tag #{package_one_tag}"],
-          [project_dir, "git tag #{package_two_tag}"],
+          [
+            project_dir,
+            version_tag_command(package_one_tag, tmp_changelog_file_for("package_one"))
+          ],
+          [
+            project_dir,
+            version_tag_command(package_two_tag, tmp_changelog_file_for("package_two"))
+          ],
           [package_one_dir, "npm publish"],
           [package_two_dir, "npm publish"],
           [project_dir, "git push origin main #{package_one_tag} #{package_two_tag}"]
@@ -488,9 +494,9 @@ RSpec.describe Mono::Cli::Publish do
             "git commit -m 'Publish packages' -m 'Update version number and CHANGELOG.md.\n\n" \
               "- #{package_tag_a}\n- #{package_tag_b}\n- #{package_tag_c}'"
           ],
-          [project_dir, "git tag #{package_tag_a}"],
-          [project_dir, "git tag #{package_tag_b}"],
-          [project_dir, "git tag #{package_tag_c}"],
+          [project_dir, version_tag_command(package_tag_a, tmp_changelog_file_for("package_a"))],
+          [project_dir, version_tag_command(package_tag_b, tmp_changelog_file_for("package_b"))],
+          [project_dir, version_tag_command(package_tag_c, tmp_changelog_file_for("package_c"))],
           [package_dir_a, "npm publish"],
           [package_dir_b, "npm publish"],
           [package_dir_c, "npm publish"],
@@ -577,8 +583,8 @@ RSpec.describe Mono::Cli::Publish do
             "git commit -m 'Publish packages' -m 'Update version number and CHANGELOG.md.\n\n" \
               "- #{package_tag_a}\n- #{package_tag_b}'"
           ],
-          [project_dir, "git tag #{package_tag_a}"],
-          [project_dir, "git tag #{package_tag_b}"],
+          [project_dir, version_tag_command(package_tag_a, tmp_changelog_file_for("package_a"))],
+          [project_dir, version_tag_command(package_tag_b, tmp_changelog_file_for("package_b"))],
           [package_dir_a, "npm publish --tag alpha"],
           [package_dir_b, "npm publish --tag alpha"],
           [project_dir, "git push origin main #{package_tag_a} #{package_tag_b}"]
@@ -666,8 +672,8 @@ RSpec.describe Mono::Cli::Publish do
             "git commit -m 'Publish packages' -m 'Update version number and CHANGELOG.md.\n\n" \
               "- #{package_tag_a}\n- #{package_tag_b}'"
           ],
-          [project_dir, "git tag #{package_tag_a}"],
-          [project_dir, "git tag #{package_tag_b}"],
+          [project_dir, version_tag_command(package_tag_a, tmp_changelog_file_for("package_a"))],
+          [project_dir, version_tag_command(package_tag_b, tmp_changelog_file_for("package_b"))],
           [package_dir_a, "npm publish"],
           [package_dir_b, "npm publish"],
           [project_dir, "git push origin main #{package_tag_a} #{package_tag_b}"]
@@ -720,7 +726,7 @@ RSpec.describe Mono::Cli::Publish do
             project_dir,
             "git commit -m 'Publish package #{tag}' -m 'Update version number and CHANGELOG.md.'"
           ],
-          [project_dir, "git tag #{tag}"],
+          [project_dir, version_tag_command(tag, tmp_changelog_file_for("my_package"))],
           [project_dir, "yarn publish --new-version #{next_version}"],
           [project_dir, "git push origin main #{tag}"]
         ])

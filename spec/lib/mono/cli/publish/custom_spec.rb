@@ -23,6 +23,7 @@ RSpec.describe Mono::Cli::Publish do
 
     project_dir = current_project_path
     next_version = "1.2.3a2"
+    tag = "v#{next_version}"
 
     expect(output).to has_publish_and_update_summary(
       current_project => { :old => "v1.2.3a1", :new => "v1.2.3a2", :bump => :patch }
@@ -46,18 +47,18 @@ RSpec.describe Mono::Cli::Publish do
 
     expect(performed_commands).to eql([
       [project_dir, "cat version.py"],
-      [project_dir, "git tag --list v#{next_version}"],
+      [project_dir, "git tag --list #{tag}"],
       [project_dir, "ruby write_version_file.rb #{next_version}"],
       [project_dir, "echo build"],
       [project_dir, "git add -A"],
       [
         project_dir,
-        "git commit -m 'Publish package v#{next_version}' " \
+        "git commit -m 'Publish package #{tag}' " \
           "-m 'Update version number and CHANGELOG.md.'"
       ],
-      [project_dir, "git tag v#{next_version}"],
+      [project_dir, version_tag_command(tag)],
       [project_dir, "echo publish"],
-      [project_dir, "git push origin main v#{next_version}"]
+      [project_dir, "git push origin main #{tag}"]
     ])
     expect(exit_status).to eql(0), output
   end

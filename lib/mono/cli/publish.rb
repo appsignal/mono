@@ -4,6 +4,8 @@ module Mono
   module Cli
     # rubocop:disable Metrics/ClassLength
     class Publish < Base
+      TMP_DIR = "tmp"
+
       attr_reader :prerelease, :tag
       alias prerelease? prerelease
       alias tag? tag
@@ -59,13 +61,21 @@ module Mono
         rollback = []
 
         begin
+          changesets =
+            packages.to_h do |package|
+              [
+                package.name,
+                package.changesets.formatted_changesets(:format => :short)
+              ]
+            end
+
           update_packages(changed_packages, rollback)
           puts
           update_changelog(changed_packages, rollback)
           puts
           build(changed_packages)
           puts
-          commit_changes(changed_packages, rollback) if git?
+          commit_changes(changed_packages, changesets, rollback) if git?
           puts
           publish_package_manager(changed_packages) if package_push?
         rescue => error
@@ -206,7 +216,7 @@ module Mono
         run_hooks("publish", "post")
       end
 
-      def commit_changes(packages, rollback)
+      def commit_changes(packages, changesets, rollback)
         run_hooks("git-commit", "pre")
         puts "# Committing changes to Git"
         puts "## Creating release commit"
@@ -236,13 +246,24 @@ module Mono
 
         packages.each do |package|
           puts "## Tag package #{package.next_tag}"
-          run_command "git tag #{package.next_tag}"
+
+          prepare_tmp_dir
+          tmp_file = File.join(TMP_DIR, "#{package.name}_changesets.txt")
+          File.write(tmp_file, changesets[package.name].join)
+
+          run_command "git tag #{package.next_tag} " \
+            "--annotate --cleanup=verbatim --file #{tmp_file}"
+          FileUtils.rm(tmp_file)
           rollback << [
             "## Untag package #{package.next_tag}",
             "git tag -d #{package.next_tag}"
           ]
         end
         run_hooks("git-commit", "post")
+      end
+
+      def prepare_tmp_dir
+        FileUtils.mkdir_p(TMP_DIR)
       end
 
       def publish_git(packages)
