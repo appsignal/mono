@@ -30,18 +30,25 @@ module Mono
       collection
     end
 
-    def write_changesets_to_changelog
+    def formatted_changesets(format: :changelog)
       changesets_by_type = changesets_by_types_sorted_by_bump
       content = []
       Changeset::SUPPORTED_TYPES.each do |key, label|
         messages_for_type = changesets_by_type[key]
         next if messages_for_type.empty?
 
-        content << "\n### #{label}\n\n"
+        heading_level = format == :changelog ? 3 : 2
+        heading = "#" * heading_level
+        content << "\n#{heading} #{label}\n\n"
         messages_for_type.each do |changeset|
-          content << build_changelog_entry(changeset)
+          content << build_changelog_entry(changeset, :format => format)
         end
       end
+      content
+    end
+
+    def write_changesets_to_changelog
+      content = formatted_changesets(:format => :changelog)
 
       changelog_path = File.join(package.path, "CHANGELOG.md")
       FileUtils.touch(changelog_path)
@@ -75,15 +82,18 @@ module Mono
 
     private
 
-    def build_changelog_entry(changeset)
+    def build_changelog_entry(changeset, format: :changelog)
       message = ["- "]
-      commit = changeset.commit
-      if commit
-        url = "#{config.repo}/commit/#{commit[:long]}"
-        message << "[#{commit[:short]}](#{url}) "
+      if format == :changelog
+        commit = changeset.commit
+        if commit
+          url = "#{config.repo}/commit/#{commit[:long]}"
+          message << "[#{commit[:short]}](#{url}) "
+        end
+        message << changeset.bump
+        message << " - "
       end
-      message << changeset.bump
-      message << " - #{changeset.message.lines.join("  ")}\n"
+      message << "#{changeset.message.lines.join("  ")}\n"
       message.join
     end
   end

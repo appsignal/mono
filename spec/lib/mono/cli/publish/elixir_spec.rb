@@ -16,6 +16,7 @@ RSpec.describe Mono::Cli::Publish do
 
       project_dir = current_project_path
       next_version = "1.2.4"
+      tag = "v#{next_version}"
 
       expect(output).to has_publish_and_update_summary(
         current_project => { :old => "v1.2.3", :new => "v1.2.4", :bump => :patch }
@@ -39,7 +40,7 @@ RSpec.describe Mono::Cli::Publish do
 
       expect(performed_commands).to eql([
         [project_dir, "mix deps.get"],
-        [project_dir, "git tag --list v#{next_version}"],
+        [project_dir, "git tag --list #{tag}"],
         [project_dir, "mix compile"],
         [project_dir, "git add -A"],
         [
@@ -47,7 +48,7 @@ RSpec.describe Mono::Cli::Publish do
           "git commit -m 'Publish package v#{next_version}' " \
             "-m 'Update version number and CHANGELOG.md.'"
         ],
-        [project_dir, "git tag v#{next_version}"],
+        [project_dir, version_tag_command(tag)],
         [project_dir, "mix hex.publish package --yes"],
         [project_dir, "git push origin main v#{next_version}"]
       ])
@@ -66,6 +67,7 @@ RSpec.describe Mono::Cli::Publish do
 
       project_dir = current_project_path
       next_version = "1.2.4"
+      tag = "v#{next_version}"
 
       expect(output).to has_publish_and_update_summary(
         current_project => { :old => "v1.2.3", :new => "v1.2.4", :bump => :patch }
@@ -91,17 +93,17 @@ RSpec.describe Mono::Cli::Publish do
 
       expect(performed_commands).to eql([
         [project_dir, "mix deps.get"],
-        [project_dir, "git tag --list v#{next_version}"],
+        [project_dir, "git tag --list #{tag}"],
         [project_dir, "mix compile"],
         [project_dir, "git add -A"],
         [
           project_dir,
-          "git commit -m 'Publish package v#{next_version}' " \
+          "git commit -m 'Publish package #{tag}' " \
             "-m 'Update version number and CHANGELOG.md.'"
         ],
-        [project_dir, "git tag v#{next_version}"],
+        [project_dir, version_tag_command(tag)],
         [project_dir, "mix hex.publish package --yes"],
-        [project_dir, "git push origin main v#{next_version}"]
+        [project_dir, "git push origin main #{tag}"]
       ])
       expect(exit_status).to eql(0), output
     end
@@ -161,7 +163,7 @@ RSpec.describe Mono::Cli::Publish do
           "git commit -m 'Publish package #{tag}' " \
             "-m 'Update version number and CHANGELOG.md.'"
         ],
-        [project_dir, "git tag #{tag}"],
+        [project_dir, version_tag_command(tag, tmp_changelog_file_for("package_a"))],
         [package_dir_a, "mix hex.publish package --yes"],
         [project_dir, "git push origin main #{tag}"]
       ])
@@ -236,8 +238,8 @@ RSpec.describe Mono::Cli::Publish do
           "git commit -m 'Publish packages' " \
             "-m 'Update version number and CHANGELOG.md.\n\n- #{tag_a}\n- #{tag_b}'"
         ],
-        [project_dir, "git tag #{tag_a}"],
-        [project_dir, "git tag #{tag_b}"],
+        [project_dir, version_tag_command(tag_a, tmp_changelog_file_for("jason"))],
+        [project_dir, version_tag_command(tag_b, tmp_changelog_file_for("package_b"))],
         [package_dir_a, "mix hex.publish package --yes"],
         [package_dir_b, "mix hex.publish package --yes"],
         [project_dir, "git push origin main #{tag_a} #{tag_b}"]

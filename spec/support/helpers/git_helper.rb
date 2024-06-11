@@ -27,4 +27,17 @@ module GitHelper
     run_command "git add -A"
     run_command %(git commit -m "#{message}")
   end
+
+  def tag_changelog_contents(tag)
+    contents = `git show --format=oneline --no-color --no-patch #{tag}`
+    contents.lines[2..-2].join.strip
+  end
+
+  def tmp_changelog_file_for(project)
+    "tmp/#{project}_changesets.txt"
+  end
+
+  def version_tag_command(tag, file = tmp_changelog_file_for(current_project))
+    "git tag #{tag} --annotate --cleanup=verbatim --file #{file}"
+  end
 end
