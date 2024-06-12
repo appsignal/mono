@@ -298,6 +298,38 @@ RSpec.describe Mono::Cli::Publish do
         [project_dir, version_tag_command(tag, tmp_changelog_file)]
       )
     end
+
+    it "doesn't error on package names with symbols" do
+      prepare_nodejs_project do
+        create_package_json :name => "@appsignal/my_package", :version => "1.2.3"
+        add_changeset(:minor, :type => "add")
+        add_changeset(:patch, :type => "change")
+      end
+      confirm_publish_package
+      run_publish(:lang => :nodejs)
+
+      project_dir = current_project_path
+      next_version = "1.3.0"
+      tag = "v#{next_version}"
+      tmp_changelog_file = tmp_changelog_file_for("-appsignal-my_package")
+
+      in_project do
+        expect(tag_changelog_contents(tag)).to eq(<<~CONTENTS.strip)
+          ## Added
+
+          - This is a minor changeset bump.
+
+          ## Changed
+
+          - This is a patch changeset bump.
+        CONTENTS
+        expect(File.exist?(tmp_changelog_file)).to be_falsey
+      end
+
+      expect(performed_commands).to include(
+        [project_dir, version_tag_command(tag, tmp_changelog_file)]
+      )
+    end
   end
 
   context "with --alpha option" do

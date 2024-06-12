@@ -39,6 +39,7 @@ module Mono
   end
 end
 
+require "mono/utils"
 require "mono/shell"
 require "mono/version"
 require "mono/version_object"

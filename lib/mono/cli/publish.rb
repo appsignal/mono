@@ -248,7 +248,11 @@ module Mono
           puts "## Tag package #{package.next_tag}"
 
           prepare_tmp_dir
-          tmp_file = File.join(TMP_DIR, "#{package.name}_changesets.txt")
+          normalized_package_name = Utils.normalize_filename(package.name.to_s)
+          tmp_file = File.join(
+            TMP_DIR,
+            "#{normalized_package_name}_changesets.txt"
+          )
           File.write(tmp_file, changesets[package.name].join)
 
           run_command "git tag #{package.next_tag} " \
