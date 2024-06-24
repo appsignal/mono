@@ -82,19 +82,35 @@ module Mono
 
     private
 
+    CHANGELOG_INDENT = " " * 2
+
     def build_changelog_entry(changeset, format: :changelog)
-      message = ["- "]
+      changeset_message = indent_message(changeset.message)
+      message = ["- #{changeset_message.strip}"]
       if format == :changelog
+        message <<
+          if changeset_message.lines.count > 1
+            "\n\n#{CHANGELOG_INDENT}"
+          else
+            " "
+          end
+        message << "(#{changeset.bump}"
         commit = changeset.commit
         if commit
           url = "#{config.repo}/commit/#{commit[:long]}"
-          message << "[#{commit[:short]}](#{url}) "
+          message << " [#{commit[:short]}](#{url})"
         end
-        message << changeset.bump
-        message << " - "
+        message << ")"
       end
-      message << "#{changeset.message.lines.join("  ")}\n"
+      message << "\n"
       message.join
+    end
+
+    def indent_message(message)
+      message
+        .lines
+        .map { |line| "#{CHANGELOG_INDENT}#{line}".rstrip }
+        .join("\n")
     end
   end
 end

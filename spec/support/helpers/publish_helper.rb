@@ -23,15 +23,15 @@ module PublishHelper
     url = "https://github.com/appsignal/#{current_project}"
     message ||= "This is a #{bump} changeset bump."
     expect(changelog)
-      .to match(%r{- \[[a-z0-9]{7}\]\(#{url}/commit/[a-z0-9]{40}\) #{bump} - #{message}})
+      .to match(%r{- #{message} \(#{bump} \[[a-z0-9]{7}\]\(#{url}/commit/[a-z0-9]{40}\)\)})
   end
 
   def expect_changelog_to_include_message(changelog, bump, message)
-    expect(changelog).to match(/- #{bump} - #{message}/)
+    expect(changelog).to match(/- #{message} \(#{bump}\)/)
   end
 
   def expect_changelog_to_include_package_bump(changelog, package, version)
-    message = "Update #{package} dependency to #{version}"
+    message = "Update #{package} dependency to #{version}."
     expect_changelog_to_include_message(changelog, "patch", message)
   end
 
