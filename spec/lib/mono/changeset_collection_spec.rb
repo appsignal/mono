@@ -233,32 +233,75 @@ RSpec.describe Mono::ChangesetCollection do
 
           ### Added
 
-          - [LINK] major - This is a major changeset bump.
-          - [LINK] minor - This is a minor changeset bump.
-          - [LINK] patch - This is a patch changeset bump.
+          - This is a major changeset bump. (major [LINK])
+          - This is a minor changeset bump. (minor [LINK])
+          - This is a patch changeset bump. (patch [LINK])
 
           ### Changed
 
-          - [LINK] major - This is a major changeset bump.
-          - [LINK] minor - This is a minor changeset bump.
-          - [LINK] patch - This is a patch changeset bump.
+          - This is a major changeset bump. (major [LINK])
+          - This is a minor changeset bump. (minor [LINK])
+          - This is a patch changeset bump. (patch [LINK])
 
           ### Deprecated
 
-          - [LINK] patch - This is a patch changeset bump.
+          - This is a patch changeset bump. (patch [LINK])
 
           ### Removed
 
-          - [LINK] major - This is a major changeset bump.
-          - [LINK] patch - This is a patch changeset bump.
+          - This is a major changeset bump. (major [LINK])
+          - This is a patch changeset bump. (patch [LINK])
 
           ### Fixed
 
-          - [LINK] patch - This is a patch changeset bump.
+          - This is a patch changeset bump. (patch [LINK])
 
           ### Security
 
-          - [LINK] patch - This is a patch changeset bump.
+          - This is a patch changeset bump. (patch [LINK])
+
+        CHANGELOG
+      end
+    end
+
+    it "adds the changeset metadata at the end of a multi line change" do
+      prepare_elixir_project do
+        create_package_mix :version => "1.2.3"
+        create_changelog
+        add_changeset :major,
+          :type => :add,
+          :message => <<~MESSAGE
+            Multi
+            Line
+
+            Change
+
+            ```ruby
+            Code example
+            ```
+          MESSAGE
+      end
+
+      in_project do
+        collection.write_changesets_to_changelog
+        changelog = normalize_changelog(read_changelog_file)
+        expect(changelog).to include(<<~CHANGELOG)
+          ## 2.0.0
+
+          _Published on #{date_label}._
+
+          ### Added
+
+          - Multi
+            Line
+
+            Change
+
+            ```ruby
+            Code example
+            ```
+
+            (major [LINK])
         CHANGELOG
       end
     end
@@ -282,12 +325,12 @@ RSpec.describe Mono::ChangesetCollection do
 
           ### Deprecated
 
-          - [LINK] patch - This is a patch changeset bump.
+          - This is a patch changeset bump. (patch [LINK])
 
           ### Removed
 
-          - [LINK] major - This is a major changeset bump.
-          - [LINK] patch - This is a patch changeset bump.
+          - This is a major changeset bump. (major [LINK])
+          - This is a patch changeset bump. (patch [LINK])
         CHANGELOG
       end
     end
@@ -295,7 +338,8 @@ RSpec.describe Mono::ChangesetCollection do
 
   def normalize_changelog(content)
     # Remove links so we don't have to try and match against every instance
-    content.gsub(/\[[a-z0-9]{7}\]\(.+\)/, "[LINK]")
+    content
+      .gsub(/\[[a-z0-9]{7}\]\([^)]+\)/, "[LINK]")
   end
 
   def date_label
