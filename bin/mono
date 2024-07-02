@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+CHECK_FOR_UPDATES_AFTER = 60 * 60 * 24 # 1 day
+
 module MonoCheck
   def self.run(command)
     read, write = IO.pipe
@@ -10,6 +12,15 @@ module MonoCheck
     Process.wait pid
     write.close
     read.read
+  end
+
+  def self.run!(command)
+    output = run(command)
+    unless $?.success?
+      puts "ERROR: Command failed: #{command}"
+      exit 1
+    end
+    output
   end
 end
 
@@ -24,7 +35,7 @@ if $?.success?
     exit 1
   end
 
-  current_branch = MonoCheck.run("git rev-parse --abbrev-ref HEAD").chomp
+  current_branch = MonoCheck.run!("git rev-parse --abbrev-ref HEAD").chomp
   unless current_branch == "main"
     puts "ERROR: The mono repository is not on the `main` branch. " \
       "Please switch to the main branch to ensure you're using a released " \
@@ -32,6 +43,32 @@ if $?.success?
     puts "Please use the `mono-dev` executable if you want to use " \
       "uncommitted changes to _test_ mono itself."
     exit 1
+  end
+
+  repository_root = MonoCheck.run!("git rev-parse --show-toplevel").chomp
+  fetch_head = File.join(repository_root, ".git", "FETCH_HEAD")
+
+  last_modified = File.exist?(fetch_head) ? File.mtime(fetch_head) : Time.at(0)
+  if Time.now - last_modified > CHECK_FOR_UPDATES_AFTER
+    puts "Checking for updates..."
+    previous_version = MonoCheck.run!("git rev-parse --short HEAD").chomp
+    fetch_output = MonoCheck.run("git fetch origin main")
+    if $?.success?
+      MonoCheck.run!("git reset --hard origin/main")
+      latest_version = MonoCheck.run!("git rev-parse --short HEAD").chomp
+
+      if previous_version == latest_version
+        puts "You are running the latest version of Mono (#{latest_version})"
+      else
+        puts "Updated Mono to the latest version " \
+          "(#{previous_version} -> #{latest_version})"
+        exec File.join(__dir__, "mono"), *ARGV
+      end
+    else
+      puts "WARNING: Could not check for updates (#{fetch_output.chomp})"
+      puts "Continuing with current version."
+    end
+    puts
   end
 end
 
