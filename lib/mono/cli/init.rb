@@ -5,6 +5,10 @@ module Mono
     class Init
       include Shell
 
+      def initialize(options = {})
+        @options = options
+      end
+
       def execute
         config = {}
         puts "Initializing project..."
