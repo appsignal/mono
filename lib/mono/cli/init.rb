@@ -2,7 +2,7 @@
 
 module Mono
   module Cli
-    class Init
+    class Init < Base
       include Shell
 
       def execute
