@@ -24,34 +24,14 @@ module MonoCheck
   end
 end
 
-git_status = MonoCheck.run("git status -s")
-if $?.success?
-  unless git_status.empty?
-    puts "ERROR: The mono repository has been modified locally. " \
-      "You are using the `mono` executable which is only meant for " \
-      "'production' use."
-    puts "Please use the `mono-dev` executable if you want to use " \
-      "uncommitted changes to _test_ mono itself."
-    exit 1
-  end
-
-  current_branch = MonoCheck.run!("git rev-parse --abbrev-ref HEAD").chomp
-  unless current_branch == "main"
-    puts "ERROR: The mono repository is not on the `main` branch. " \
-      "Please switch to the main branch to ensure you're using a released " \
-      "version."
-    puts "Please use the `mono-dev` executable if you want to use " \
-      "uncommitted changes to _test_ mono itself."
-    exit 1
-  end
-
-  repository_root = MonoCheck.run!("git rev-parse --show-toplevel").chomp
-  fetch_head = File.join(repository_root, ".git", "FETCH_HEAD")
+def check_for_updates
+  fetch_head = File.expand_path("../.git/FETCH_HEAD", __dir__)
 
   last_modified = File.exist?(fetch_head) ? File.mtime(fetch_head) : Time.at(0)
   if Time.now - last_modified > CHECK_FOR_UPDATES_AFTER
     puts "Checking for updates..."
     previous_version = MonoCheck.run!("git rev-parse --short HEAD").chomp
+
     fetch_output = MonoCheck.run("git fetch origin main")
     if $?.success?
       MonoCheck.run!("git reset --hard origin/main")
@@ -62,13 +42,39 @@ if $?.success?
       else
         puts "Updated Mono to the latest version " \
           "(#{previous_version} -> #{latest_version})"
-        exec File.join(__dir__, "mono"), *ARGV
+        exec File.join(__dir__, "mono"), *ARGV # Restart with the new version
       end
     else
-      puts "WARNING: Could not check for updates (#{fetch_output.chomp})"
+      puts "WARNING: Could not check for updates:\n#{fetch_output.chomp}"
       puts "Continuing with current version."
     end
     puts
+  end
+end
+
+if ENV["MONO_DEV"].nil?
+  git_status = MonoCheck.run("git status -s")
+  if $?.success?
+    unless git_status.empty?
+      puts "ERROR: The mono repository has been modified locally. " \
+        "You are using the `mono` executable which is only meant for " \
+        "'production' use."
+      puts "Please use the `mono-dev` executable if you want to use " \
+        "uncommitted changes to _test_ mono itself."
+      exit 1
+    end
+
+    current_branch = MonoCheck.run!("git rev-parse --abbrev-ref HEAD").chomp
+    unless current_branch == "main"
+      puts "ERROR: The mono repository is not on the `main` branch. " \
+        "Please switch to the main branch to ensure you're using a released " \
+        "version."
+      puts "Please use the `mono-dev` executable if you want to use " \
+        "uncommitted changes to _test_ mono itself."
+      exit 1
+    end
+
+    check_for_updates
   end
 end
 
