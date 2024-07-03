@@ -125,7 +125,7 @@ module Mono
         command = @options.shift
         case command
         when "init"
-          Mono::Cli::Init.new.execute
+          Mono::Cli::Init.new(init_options).execute
         when "bootstrap"
           Mono::Cli::Bootstrap.new(bootstrap_options).execute
         when "unbootstrap"
@@ -204,8 +204,22 @@ module Mono
           end
 
           o.separator ""
+          o.separator "Run `mono <command> --help` for command-specific help."
           o.separator "Available commands: #{AVAILABLE_COMMANDS.join(", ")}"
+
+          if @options.empty?
+            puts o
+            exit_cli_with_status 1
+          end
         end.order!(@options)
+      end
+
+      def init_options
+        params = {}
+        OptionParser.new do |opts|
+          opts.banner = "Usage: mono init"
+        end.parse(@options)
+        params
       end
 
       def bootstrap_options
@@ -224,7 +238,7 @@ module Mono
       def unbootstrap_options
         params = {}
         OptionParser.new do |opts|
-          opts.banner = "Usage: mono unbootstrap [options]"
+          opts.banner = "Usage: mono unbootstrap"
         end.parse(@options)
         params
       end
