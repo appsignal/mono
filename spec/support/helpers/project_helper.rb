@@ -157,7 +157,7 @@ module ProjectHelper
   end
 
   def package_path(package)
-    File.join(current_project_path_in_spec_dir, "packages", package)
+    File.join(current_project_path_in_spec_dir, "packages", package.to_s)
   end
 
   def create_changelog
@@ -306,9 +306,8 @@ module ProjectHelper
   end
 
   def config_for(project)
-    mono_config(
-      YAML.safe_load(File.read(File.join(ROOT_DIR, EXAMPLES_DIR, "#{project}_project", "mono.yml")))
-    )
+    config_file = File.join(ROOT_DIR, EXAMPLES_TMP_DIR, project.to_s, "mono.yml")
+    mono_config(YAML.safe_load(File.read(config_file)))
   end
 
   def create_mono_config(config)
@@ -343,6 +342,10 @@ module ProjectHelper
   def update_config(new_config)
     config_file = File.join(ROOT_DIR, EXAMPLES_TMP_DIR, current_project, "mono.yml")
     File.write(config_file, YAML.dump(new_config))
+  end
+
+  def ruby_project_package_for(project, path, config)
+    Mono::Languages::Ruby::Package.new(project, path, config)
   end
 
   def package_for(package, config)
