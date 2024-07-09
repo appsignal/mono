@@ -2,19 +2,15 @@
 
 RSpec.describe Mono::ChangesetCollection do
   describe "#changesets" do
-    let(:test_project) { :nodejs_npm_mono }
-    let(:config) { config_for(test_project) }
-    let(:package) { package_for("package_one", config) }
+    let(:config) { config_for(current_project) }
+    let(:package) { ruby_project_package_for(current_project, ".", config) }
     let(:collection) { described_class.new(config, package) }
     let(:changesets) { collection.changesets }
-    before { prepare_project test_project }
 
     context "without changesets" do
       it "returns an empty array" do
-        in_project do
-          in_package :package_one do
-            expect(current_package_changeset_files).to eql([])
-          end
+        prepare_ruby_project do
+          expect(current_package_changeset_files).to eql([])
 
           expect(changesets).to eql([])
           expect(collection.any?).to be_falsy
@@ -24,12 +20,10 @@ RSpec.describe Mono::ChangesetCollection do
 
     context "with one changeset" do
       it "returns an array with one changeset object" do
-        in_project do
-          in_package :package_one do
-            add_changeset :patch
+        prepare_ruby_project do
+          add_changeset :patch
 
-            expect(current_package_changeset_files.length).to eql(1)
-          end
+          expect(current_package_changeset_files.length).to eql(1)
 
           expect(changesets.map(&:bump)).to contain_exactly("patch")
           expect(collection.any?).to be_truthy
@@ -39,8 +33,31 @@ RSpec.describe Mono::ChangesetCollection do
 
     context "with multiple changesets" do
       it "returns an array of changeset objects" do
-        in_project do
-          in_package :package_one do
+        prepare_ruby_project do
+          add_changeset :patch
+          add_changeset :minor
+          add_changeset :major
+
+          expect(current_package_changeset_files.length).to eql(3)
+
+          expect(changesets.map(&:bump)).to contain_exactly("patch", "minor", "major")
+          expect(collection.any?).to be_truthy
+        end
+      end
+    end
+
+    context "with multiple changesets" do
+      let(:package) do
+        ruby_project_package_for(
+          :package_one,
+          project_package_path(:package_one),
+          config
+        )
+      end
+
+      it "returns an array of changeset objects" do
+        prepare_ruby_project do
+          create_package :package_one do
             add_changeset :patch
             add_changeset :minor
             add_changeset :major
@@ -56,21 +73,18 @@ RSpec.describe Mono::ChangesetCollection do
   end
 
   describe "#next_bump" do
-    let(:test_project) { :nodejs_npm_mono }
-    let(:config) { config_for(test_project) }
-    let(:package) { package_for("package_one", config) }
+    let(:config) { config_for(current_project) }
+    let(:package) { ruby_project_package_for(current_project, ".", config) }
     let(:collection) { described_class.new(config, package) }
-    before { prepare_project test_project }
+    let(:changesets) { collection.changesets }
     subject { collection.next_bump }
 
     context "with major version" do
       it "returns the major version bump" do
-        in_project do
-          in_package :package_one do
-            add_changeset :patch
-            add_changeset :minor
-            add_changeset :major
-          end
+        prepare_ruby_project do
+          add_changeset :patch
+          add_changeset :minor
+          add_changeset :major
 
           is_expected.to eql("major")
         end
@@ -79,11 +93,9 @@ RSpec.describe Mono::ChangesetCollection do
 
     context "with minor version" do
       it "returns the major version bump" do
-        in_project do
-          in_package :package_one do
-            add_changeset :patch
-            add_changeset :minor
-          end
+        prepare_ruby_project do
+          add_changeset :patch
+          add_changeset :minor
 
           is_expected.to eql("minor")
         end
@@ -92,10 +104,8 @@ RSpec.describe Mono::ChangesetCollection do
 
     context "with patch version" do
       it "returns the major version bump" do
-        in_project do
-          in_package :package_one do
-            add_changeset :patch
-          end
+        prepare_ruby_project do
+          add_changeset :patch
 
           is_expected.to eql("patch")
         end
@@ -104,15 +114,14 @@ RSpec.describe Mono::ChangesetCollection do
   end
 
   describe "#changesets_by_types_sorted_by_bump" do
-    let(:test_project) { :elixir_single }
-    let(:config) { config_for(test_project) }
-    let(:package) { Mono::Languages::Elixir::Package.new("my-package", ".", config) }
+    let(:config) { config_for(current_project) }
+    let(:package) { ruby_project_package_for(current_project, ".", config) }
     let(:collection) { described_class.new(config, package) }
 
     it "returns changesets in a hash per type sorted by version bump" do
-      prepare_elixir_project do
-        create_package_mix :version => "1.2.3"
-        create_changelog
+      prepare_ruby_project do
+        create_ruby_package_files :name => "mygem", :version => "1.2.3"
+
         add_changeset :patch, :type => :fix
 
         add_changeset :patch, :type => :add
@@ -162,9 +171,9 @@ RSpec.describe Mono::ChangesetCollection do
     end
 
     it "only returns present type changesets in a hash per type sorted by version bump" do
-      prepare_elixir_project do
-        create_package_mix :version => "1.2.3"
-        create_changelog
+      prepare_ruby_project do
+        create_ruby_package_files :name => "mygem", :version => "1.2.3"
+
         add_changeset :patch, :type => :fix
 
         add_changeset :minor, :type => :change
@@ -196,15 +205,15 @@ RSpec.describe Mono::ChangesetCollection do
   end
 
   describe "#write_changesets_to_changelog" do
-    let(:test_project) { :elixir_single }
-    let(:config) { config_for(test_project) }
-    let(:package) { Mono::Languages::Elixir::Package.new("my-package", ".", config) }
+    let(:config) { config_for(current_project) }
+    let(:package) { ruby_project_package_for(current_project, ".", config) }
     let(:collection) { described_class.new(config, package) }
+    let(:changesets) { collection.changesets }
 
     it "writes all changesets to the changelog in order of bump size" do
-      prepare_elixir_project do
-        create_package_mix :version => "1.2.3"
-        create_changelog
+      prepare_ruby_project do
+        create_ruby_package_files :name => "mygem", :version => "1.2.3"
+
         add_changeset :patch, :type => :fix
 
         add_changeset :patch, :type => :add
@@ -265,9 +274,9 @@ RSpec.describe Mono::ChangesetCollection do
     end
 
     it "adds the changeset metadata at the end of a multi line change" do
-      prepare_elixir_project do
-        create_package_mix :version => "1.2.3"
-        create_changelog
+      prepare_ruby_project do
+        create_ruby_package_files :name => "mygem", :version => "1.2.3"
+
         add_changeset :major,
           :type => :add,
           :message => <<~MESSAGE
@@ -307,9 +316,9 @@ RSpec.describe Mono::ChangesetCollection do
     end
 
     it "only writes about types the release includes" do
-      prepare_elixir_project do
-        create_package_mix :version => "1.2.3"
-        create_changelog
+      prepare_ruby_project do
+        create_ruby_package_files :name => "mygem", :version => "1.2.3"
+
         add_changeset :patch, :type => :deprecate
         add_changeset :patch, :type => :remove
         add_changeset :major, :type => :remove
