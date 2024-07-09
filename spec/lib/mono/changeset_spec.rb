@@ -295,7 +295,7 @@ RSpec.describe Mono::Changeset do
       end
     end
 
-    it "returns a hash with commit metadata" do
+    it "returns a hash with commit metadata from a complex filename" do
       prepare_project :nodejs_npm_single
       in_project do
         path = add_changeset :patch, :filename => "Patch, & \"messagé'"
@@ -310,6 +310,31 @@ RSpec.describe Mono::Changeset do
         expect(commit[:long].length).to be >= 40
         expect(commit[:short].length).to be >= 7
         expect(commit[:short].length).to be < 40
+      end
+    end
+
+    context "with multiple commits" do
+      it "returns a hash with the relevant commit metadata" do
+        prepare_project :nodejs_npm_single
+        in_project do
+          path = add_changeset :patch, :filename => "the-changeset.md"
+          File.open(path, "a+") do |f|
+            f.write "Other changeset text"
+          end
+          commit_long = `git rev-parse HEAD`.chomp
+          commit_changes("Improve changeset text\n\n[skip mono]")
+
+          changeset = described_class.parse(path)
+          commit = changeset.commit
+          expect(commit).to include(
+            :date => kind_of(Time),
+            :long => commit_long,
+            :short => commit_long[0..6]
+          )
+          expect(commit[:long].length).to be >= 40
+          expect(commit[:short].length).to be >= 7
+          expect(commit[:short].length).to be < 40
+        end
       end
     end
   end

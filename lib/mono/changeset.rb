@@ -142,8 +142,15 @@ module Mono
       @commit ||=
         begin
           escaped_path = path.gsub('"', '\"')
-          git_log =
-            `git log -n 1 --pretty="format:%h %H %cI" -- "#{escaped_path}"`
+          cmd = <<~COMMAND
+            git log \
+              -n 1 \
+              --pretty="format:%h %H %cI" \
+            --grep="\\[skip mono\\]" \
+              --invert-grep \
+              -- "#{escaped_path}"
+          COMMAND
+          git_log = `#{cmd}`
           short, long, date = git_log.split(" ")
           {
             :short => short,
