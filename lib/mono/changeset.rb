@@ -135,21 +135,29 @@ module Mono
     end
 
     def date
-      commit[:date]
+      commits.first[:date]
     end
 
-    def commit
-      @commit ||=
+    def commits
+      @commits ||=
         begin
           escaped_path = path.gsub('"', '\"')
-          git_log =
-            `git log -n 1 --pretty="format:%h %H %cI" -- "#{escaped_path}"`
-          short, long, date = git_log.split(" ")
-          {
-            :short => short,
-            :long => long,
-            :date => Time.parse(date)
-          }
+          cmd = <<~COMMAND
+            git log \
+              --pretty="format:%h %H %cI" \
+            --grep="\\[skip mono\\]" \
+              --invert-grep \
+              -- "#{escaped_path}"
+          COMMAND
+          git_log = `#{cmd}`
+          git_log.split("\n").map do |line|
+            short, long, date = line.split(" ")
+            {
+              :short => short,
+              :long => long,
+              :date => Time.parse(date)
+            }
+          end
         end
     end
 
@@ -167,8 +175,8 @@ module Mono
       @date ||= Time.now
     end
 
-    def commit
-      # noop
+    def commits
+      []
     end
 
     def remove

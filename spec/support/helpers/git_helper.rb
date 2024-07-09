@@ -10,6 +10,10 @@ module GitHelper
     local_changes.any?
   end
 
+  def commit_sha
+    `git rev-parse HEAD`.chomp
+  end
+
   def commit_count
     run_command "git rev-list --count HEAD"
   end

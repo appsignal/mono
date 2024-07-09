@@ -94,13 +94,13 @@ module Mono
           else
             " "
           end
-        message << "(#{changeset.bump}"
-        commit = changeset.commit
-        if commit
+        commits = []
+        changeset.commits.reverse_each do |commit|
           url = "#{config.repo}/commit/#{commit[:long]}"
-          message << " [#{commit[:short]}](#{url})"
+          commits << "[#{commit[:short]}](#{url})"
         end
-        message << ")"
+        formatted_commits = " #{commits.join(", ")}" if commits.any?
+        message << "(#{changeset.bump}#{formatted_commits})"
       end
       message << "\n"
       message.join

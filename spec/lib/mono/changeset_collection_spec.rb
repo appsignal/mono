@@ -315,6 +315,35 @@ RSpec.describe Mono::ChangesetCollection do
       end
     end
 
+    it "links to all commits that modify a changeset" do
+      first_commit, second_commit = nil
+      prepare_ruby_project do
+        create_ruby_package_files :name => "mygem", :version => "1.2.3"
+
+        path = add_changeset :major, :type => :add
+        first_commit = commit_sha
+        File.open(path, "a+") { |f| f.write " Extra text." }
+        commit_changeset
+        second_commit = commit_sha
+      end
+
+      in_project do
+        collection.write_changesets_to_changelog
+        changelog = read_changelog_file
+        first_link = "[#{first_commit[0..6]}](https://github.com/appsignal/#{current_project}/commit/#{first_commit})"
+        second_link = "[#{second_commit[0..6]}](https://github.com/appsignal/#{current_project}/commit/#{second_commit})"
+        expect(changelog).to include(<<~CHANGELOG)
+          ## 2.0.0
+
+          _Published on #{date_label}._
+
+          ### Added
+
+          - This is a major changeset bump. Extra text. (major #{first_link}, #{second_link})
+        CHANGELOG
+      end
+    end
+
     it "only writes about types the release includes" do
       prepare_ruby_project do
         create_ruby_package_files :name => "mygem", :version => "1.2.3"
