@@ -283,7 +283,9 @@ RSpec.describe Mono::Changeset do
         path = add_changeset :patch
 
         changeset = described_class.parse(path)
-        commit = changeset.commit
+        commits = changeset.commits
+        expect(commits.length).to eq(1)
+        commit = commits.first
         expect(commit).to match(
           :date => kind_of(Time),
           :long => kind_of(String),
@@ -301,7 +303,9 @@ RSpec.describe Mono::Changeset do
         path = add_changeset :patch, :filename => "Patch, & \"messagé'"
 
         changeset = described_class.parse(path)
-        commit = changeset.commit
+        commits = changeset.commits
+        expect(commits.length).to eq(1)
+        commit = commits.first
         expect(commit).to match(
           :date => kind_of(Time),
           :long => kind_of(String),
@@ -314,18 +318,44 @@ RSpec.describe Mono::Changeset do
     end
 
     context "with multiple commits" do
+      it "returns a list of multiple commit hashes" do
+        prepare_project :nodejs_npm_single
+        in_project do
+          path = add_changeset :patch, :filename => "the-changeset.md"
+          first_commit = commit_sha
+          File.open(path, "a+") { |f| f.write "Other changeset text" }
+          commit_changeset
+          second_commit = commit_sha
+
+          changeset = described_class.parse(path)
+          commits = changeset.commits
+          expect(commits.length).to eq(2)
+
+          expect(commits[0]).to include(
+            :date => kind_of(Time),
+            :long => second_commit,
+            :short => second_commit[0..6]
+          )
+          expect(commits[1]).to include(
+            :date => kind_of(Time),
+            :long => first_commit,
+            :short => first_commit[0..6]
+          )
+        end
+      end
+
       it "returns a hash with the relevant commit metadata" do
         prepare_project :nodejs_npm_single
         in_project do
           path = add_changeset :patch, :filename => "the-changeset.md"
-          File.open(path, "a+") do |f|
-            f.write "Other changeset text"
-          end
-          commit_long = `git rev-parse HEAD`.chomp
+          File.open(path, "a+") { |f| f.write "Other changeset text" }
+          commit_long = commit_sha
           commit_changes("Improve changeset text\n\n[skip mono]")
 
           changeset = described_class.parse(path)
-          commit = changeset.commit
+          commits = changeset.commits
+          expect(commits.length).to eq(1)
+          commit = commits.first
           expect(commit).to include(
             :date => kind_of(Time),
             :long => commit_long,
