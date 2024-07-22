@@ -372,6 +372,26 @@ RSpec.describe Mono::ChangesetCollection do
         CHANGELOG
       end
     end
+
+    it "links to no commit if there are none" do
+      prepare_ruby_project do
+        create_ruby_package_files :name => "mygem", :version => "1.2.3"
+
+        add_changeset :patch, :type => :deprecate, :commit => false
+        commit_changeset "[skip mono]"
+      end
+
+      in_project do
+        collection.write_changesets_to_changelog
+        changelog = normalize_changelog(read_changelog_file)
+        puts changelog
+        expect(changelog).to include(<<~CHANGELOG)
+          ### Deprecated
+
+          - This is a patch changeset bump. (patch)
+        CHANGELOG
+      end
+    end
   end
 
   def normalize_changelog(content)

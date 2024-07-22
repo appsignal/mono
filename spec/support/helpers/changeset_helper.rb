@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module ChangesetHelper
-  def add_changeset(bump, type: :add, message: nil, filename: nil)
+  def add_changeset(bump, type: :add, message: nil, filename: nil, commit: true)
     @changeset_count ||= 0
     @changeset_count += 1
     FileUtils.mkdir_p(".changesets")
@@ -18,7 +18,7 @@ module ChangesetHelper
     end
     message ||= "This is a #{bump} changeset bump."
     File.write(path, "#{metadata}#{message}")
-    commit_changeset("Changeset #{@changeset_count} #{bump}")
+    commit_changeset("Changeset #{@changeset_count} #{bump}") if commit
     path
   end
 
