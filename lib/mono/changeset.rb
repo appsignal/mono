@@ -135,7 +135,8 @@ module Mono
     end
 
     def date
-      commits.first[:date]
+      commit = commits.first
+      commit ? commit[:date] : nil
     end
 
     def commits
