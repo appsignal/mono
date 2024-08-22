@@ -148,6 +148,7 @@ RSpec.describe Mono::PackagePromoter do
         package_one = nodejs_package("one")
         promoter = build_promoter([package_one])
         expect(promoter.changed_packages).to contain_exactly(package_one)
+        expect_package_to_contain_release_changeset(package_one)
         update_packages(promoter.changed_packages)
 
         package_one = nodejs_package("one")
@@ -164,6 +165,7 @@ RSpec.describe Mono::PackagePromoter do
           end
           create_package "c" do
             create_package_json :name => "c", :version => "2.1.1-beta.10"
+            add_changeset :patch
           end
         end
         package_a = nodejs_package("a")
@@ -171,6 +173,10 @@ RSpec.describe Mono::PackagePromoter do
         package_c = nodejs_package("c")
         promoter = build_promoter([package_a, package_b, package_c])
         expect(promoter.changed_packages).to contain_exactly(package_a, package_b, package_c)
+
+        expect_package_to_contain_release_changeset(package_a)
+        expect_package_to_contain_release_changeset(package_b)
+        expect_package_to_contain_release_changeset(package_c)
         update_packages(promoter.changed_packages)
 
         package_a = nodejs_package("a")
@@ -195,6 +201,8 @@ RSpec.describe Mono::PackagePromoter do
         package_b = nodejs_package("b")
         promoter = build_promoter([package_a, package_b])
         expect(promoter.changed_packages).to contain_exactly(package_a, package_b)
+        expect_package_to_contain_release_changeset(package_a)
+        expect_package_to_contain_release_changeset(package_b)
         update_packages(promoter.changed_packages)
 
         package_a = nodejs_package("a")
@@ -217,6 +225,8 @@ RSpec.describe Mono::PackagePromoter do
         package_b = nodejs_package("b")
         promoter = build_promoter([package_a, package_b])
         expect(promoter.changed_packages).to contain_exactly(package_a, package_b)
+        expect_package_to_contain_release_changeset(package_a)
+        expect_package_to_not_contain_release_changeset(package_b)
         update_packages(promoter.changed_packages)
 
         package_a = nodejs_package("a")
@@ -238,5 +248,17 @@ RSpec.describe Mono::PackagePromoter do
 
   def update_packages(packages)
     packages.each(&:update_spec)
+  end
+
+  def expect_package_to_contain_release_changeset(package)
+    expect(package.changesets.changesets.map(&:message)).to include(
+      Mono::PackageBase::FINAL_CHANGESET_MESSAGE
+    )
+  end
+
+  def expect_package_to_not_contain_release_changeset(package)
+    expect(package.changesets.changesets.map(&:message)).to_not include(
+      Mono::PackageBase::FINAL_CHANGESET_MESSAGE
+    )
   end
 end

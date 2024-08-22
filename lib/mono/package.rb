@@ -17,6 +17,10 @@ module Mono
       end
     end
 
+    FINAL_CHANGESET_MESSAGE = "Release the final package version. " \
+      "See the pre-release changelog entries for the changes in " \
+      "this version."
+
     include Command::Helper
 
     attr_reader :path, :name
@@ -49,8 +53,7 @@ module Mono
     def bump_version_to_final
       changesets.changesets << MemoryChangeset.new(
         { "bump" => current_version.current_bump, "type" => "change" },
-        "Release the final package version. " \
-          "See the pre-release changelog entries for the changes in this version."
+        FINAL_CHANGESET_MESSAGE
       )
     end
 

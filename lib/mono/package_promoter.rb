@@ -32,7 +32,7 @@ module Mono
           # This covers the scenario where you did a prerelease, no further
           # fixes/changes are needed and the latest prerelease will become the
           # final release.
-          if updated_packages.empty? && !prerelease?
+          unless prerelease?
             packages.each do |package|
               next unless package.current_version.prerelease?
 
