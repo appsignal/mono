@@ -515,7 +515,12 @@ RSpec.describe Mono::Cli::Publish do
 
         changelog = read_changelog_file
         expect_changelog_to_include_version_header(changelog, next_version)
-        expect_changelog_to_include_message(changelog, :patch, "Package release.")
+        expect_changelog_to_include_message(
+          changelog,
+          :patch,
+          "Release the final package version. " \
+            "See the pre-release changelog entries for the changes in this version."
+        )
 
         expect(local_changes?).to be_falsy, local_changes.inspect
         expect(commited_files).to eql([
