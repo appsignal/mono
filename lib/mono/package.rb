@@ -49,7 +49,8 @@ module Mono
     def bump_version_to_final
       changesets.changesets << MemoryChangeset.new(
         { "bump" => current_version.current_bump, "type" => "change" },
-        "Package release."
+        "Release the final package version. " \
+          "See the pre-release changelog entries for the changes in this version."
       )
     end
 
