@@ -379,13 +379,13 @@ RSpec.describe Mono::Changeset do
       end
     end
 
-    it "returns nil if no valid commit is found" do
+    it "returns a Time of 0 if no valid commit is found" do
       prepare_ruby_project do
         path = add_changeset :patch, :commit => false
         commit_changeset("[skip mono]")
 
         changeset = described_class.parse(path)
-        expect(changeset.date).to be_nil
+        expect(changeset.date).to eq(Time.at(0))
       end
     end
   end
