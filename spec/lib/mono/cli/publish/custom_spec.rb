@@ -58,7 +58,8 @@ RSpec.describe Mono::Cli::Publish do
       ],
       [project_dir, version_tag_command(tag)],
       [project_dir, "echo publish"],
-      [project_dir, "git push origin main #{tag}"]
+      [project_dir, "git push origin main"],
+      [project_dir, "git push origin #{tag}"]
     ])
     expect(exit_status).to eql(0), output
   end

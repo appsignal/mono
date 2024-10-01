@@ -50,7 +50,8 @@ RSpec.describe Mono::Cli::Publish do
           ],
           [project_dir, version_tag_command(tag, tmp_changelog_file_for("my_package"))],
           [project_dir, "npm publish"],
-          [project_dir, "git push origin main #{tag}"]
+          [project_dir, "git push origin main"],
+          [project_dir, "git push origin #{tag}"]
         ])
         expect(exit_status).to eql(0), output
       end
@@ -87,7 +88,8 @@ RSpec.describe Mono::Cli::Publish do
           ],
           [project_dir, version_tag_command(tag, tmp_changelog_file_for("my_package"))],
           [project_dir, "npm publish --tag alpha"],
-          [project_dir, "git push origin main #{tag}"]
+          [project_dir, "git push origin main"],
+          [project_dir, "git push origin #{tag}"]
         ])
         expect(exit_status).to eql(0), output
       end
@@ -124,7 +126,8 @@ RSpec.describe Mono::Cli::Publish do
           ],
           [project_dir, version_tag_command(tag, tmp_changelog_file_for("my_package"))],
           [project_dir, "npm publish --tag beta"],
-          [project_dir, "git push origin main #{tag}"]
+          [project_dir, "git push origin main"],
+          [project_dir, "git push origin #{tag}"]
         ])
         expect(exit_status).to eql(0), output
       end
@@ -162,7 +165,8 @@ RSpec.describe Mono::Cli::Publish do
           ],
           [project_dir, version_tag_command(tag, tmp_changelog_file_for("my_package"))],
           [project_dir, "npm publish --tag #{package_tag}"],
-          [project_dir, "git push origin main #{tag}"]
+          [project_dir, "git push origin main"],
+          [project_dir, "git push origin #{tag}"]
         ])
         expect(exit_status).to eql(0), output
       end
@@ -199,7 +203,8 @@ RSpec.describe Mono::Cli::Publish do
           ],
           [project_dir, version_tag_command(tag, tmp_changelog_file_for("my_package"))],
           [project_dir, "npm publish --tag rc"],
-          [project_dir, "git push origin main #{tag}"]
+          [project_dir, "git push origin main"],
+          [project_dir, "git push origin #{tag}"]
         ])
         expect(exit_status).to eql(0), output
       end
@@ -264,7 +269,8 @@ RSpec.describe Mono::Cli::Publish do
           ],
           [project_dir, version_tag_command(tag, tmp_changelog_file_for("package_one"))],
           [package_one_dir, "npm publish"],
-          [project_dir, "git push origin main #{tag}"]
+          [project_dir, "git push origin main"],
+          [project_dir, "git push origin #{tag}"]
         ])
         expect(exit_status).to eql(0), output
       end
@@ -357,7 +363,9 @@ RSpec.describe Mono::Cli::Publish do
           ],
           [package_one_dir, "npm publish"],
           [package_two_dir, "npm publish"],
-          [project_dir, "git push origin main #{package_one_tag} #{package_two_tag}"]
+          [project_dir, "git push origin main"],
+          [project_dir, "git push origin #{package_one_tag}"],
+          [project_dir, "git push origin #{package_two_tag}"]
         ])
         expect(exit_status).to eql(0), output
       end
@@ -500,7 +508,10 @@ RSpec.describe Mono::Cli::Publish do
           [package_dir_a, "npm publish"],
           [package_dir_b, "npm publish"],
           [package_dir_c, "npm publish"],
-          [project_dir, "git push origin main #{package_tag_a} #{package_tag_b} #{package_tag_c}"]
+          [project_dir, "git push origin main"],
+          [project_dir, "git push origin #{package_tag_a}"],
+          [project_dir, "git push origin #{package_tag_b}"],
+          [project_dir, "git push origin #{package_tag_c}"]
         ])
         expect(exit_status).to eql(0), output
       end
@@ -587,7 +598,9 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, version_tag_command(package_tag_b, tmp_changelog_file_for("package_b"))],
           [package_dir_a, "npm publish --tag alpha"],
           [package_dir_b, "npm publish --tag alpha"],
-          [project_dir, "git push origin main #{package_tag_a} #{package_tag_b}"]
+          [project_dir, "git push origin main"],
+          [project_dir, "git push origin #{package_tag_a}"],
+          [project_dir, "git push origin #{package_tag_b}"]
         ])
         expect(exit_status).to eql(0), output
       end
@@ -676,7 +689,9 @@ RSpec.describe Mono::Cli::Publish do
           [project_dir, version_tag_command(package_tag_b, tmp_changelog_file_for("package_b"))],
           [package_dir_a, "npm publish"],
           [package_dir_b, "npm publish"],
-          [project_dir, "git push origin main #{package_tag_a} #{package_tag_b}"]
+          [project_dir, "git push origin main"],
+          [project_dir, "git push origin #{package_tag_a}"],
+          [project_dir, "git push origin #{package_tag_b}"]
         ])
         expect(exit_status).to eql(0), output
       end
@@ -728,7 +743,8 @@ RSpec.describe Mono::Cli::Publish do
           ],
           [project_dir, version_tag_command(tag, tmp_changelog_file_for("my_package"))],
           [project_dir, "yarn publish --new-version #{next_version}"],
-          [project_dir, "git push origin main #{tag}"]
+          [project_dir, "git push origin main"],
+          [project_dir, "git push origin #{tag}"]
         ])
         expect(exit_status).to eql(0), output
       end

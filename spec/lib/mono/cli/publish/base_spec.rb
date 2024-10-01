@@ -257,7 +257,8 @@ RSpec.describe Mono::Cli::Publish do
         ],
         [project_dir, version_tag_command(tag, tmp_changelog_file)],
         [project_dir, "gem push mygem-#{next_version}.gem"],
-        [project_dir, "git push origin main #{tag}"]
+        [project_dir, "git push origin main"],
+        [project_dir, "git push origin #{tag}"]
       ])
       expect(exit_status).to eql(0), output
     end
@@ -376,7 +377,8 @@ RSpec.describe Mono::Cli::Publish do
         ],
         [project_dir, version_tag_command(tag)],
         [project_dir, "gem push mygem-#{next_version}.gem"],
-        [project_dir, "git push origin main #{tag}"]
+        [project_dir, "git push origin main"],
+        [project_dir, "git push origin #{tag}"]
       ])
       expect(exit_status).to eql(0), output
     end
@@ -429,7 +431,8 @@ RSpec.describe Mono::Cli::Publish do
         ],
         [project_dir, version_tag_command(tag)],
         [project_dir, "gem push mygem-#{next_version}.gem"],
-        [project_dir, "git push origin main #{tag}"]
+        [project_dir, "git push origin main"],
+        [project_dir, "git push origin #{tag}"]
       ])
       expect(exit_status).to eql(0), output
     end
@@ -484,7 +487,8 @@ RSpec.describe Mono::Cli::Publish do
         ],
         [project_dir, version_tag_command(tag)],
         [project_dir, "gem push mygem-#{next_version}.gem"],
-        [project_dir, "git push origin main #{tag}"]
+        [project_dir, "git push origin main"],
+        [project_dir, "git push origin #{tag}"]
       ])
       expect(exit_status).to eql(0), output
     end
@@ -540,7 +544,8 @@ RSpec.describe Mono::Cli::Publish do
         ],
         [project_dir, version_tag_command(tag)],
         [project_dir, "gem push mygem-#{next_version}.gem"],
-        [project_dir, "git push origin main #{tag}"]
+        [project_dir, "git push origin main"],
+        [project_dir, "git push origin #{tag}"]
       ])
       expect(exit_status).to eql(0), output
     end
@@ -611,7 +616,8 @@ RSpec.describe Mono::Cli::Publish do
         [project_dir, "echo before publish"],
         [project_dir, "gem push mygem-#{next_version}.gem"],
         [project_dir, "echo after publish"],
-        [project_dir, "git push origin main #{tag}"]
+        [project_dir, "git push origin main"],
+        [project_dir, "git push origin #{tag}"]
       ])
       expect(exit_status).to eql(0), output
     end
@@ -649,7 +655,8 @@ RSpec.describe Mono::Cli::Publish do
         ],
         [project_dir, version_tag_command(tag, tmp_changelog_file)],
         [project_dir, "gem push #{project_package_path(:package_a)}/package_a-#{next_version}.gem"],
-        [project_dir, "git push origin main #{tag}"]
+        [project_dir, "git push origin main"],
+        [project_dir, "git push origin #{tag}"]
       ])
       expect(exit_status).to eql(0), output
     end
@@ -695,7 +702,9 @@ RSpec.describe Mono::Cli::Publish do
         [project_dir, version_tag_command(tag2, package_b_changelog_file)],
         [project_dir, "gem push #{project_package_path(:package_a)}/package_a-#{next_version}.gem"],
         [project_dir, "gem push #{project_package_path(:package_b)}/package_b-#{next_version}.gem"],
-        [project_dir, "git push origin main #{tag1} #{tag2}"]
+        [project_dir, "git push origin main"],
+        [project_dir, "git push origin #{tag1}"],
+        [project_dir, "git push origin #{tag2}"]
       ])
       expect(exit_status).to eql(0), output
     end
@@ -853,7 +862,8 @@ RSpec.describe Mono::Cli::Publish do
         ],
         [project_dir, version_tag_command(tag)],
         [project_dir, "gem push mygem-#{next_version}.gem"],
-        [project_dir, "git push origin main #{tag}"]
+        [project_dir, "git push origin main"],
+        [project_dir, "git push origin #{tag}"]
       ])
       expect(exit_status).to eql(0), output
     end
@@ -910,7 +920,8 @@ RSpec.describe Mono::Cli::Publish do
             "-m 'Update version number and CHANGELOG.md.'"
         ],
         [project_dir, version_tag_command(tag)],
-        [project_dir, "git push origin main #{tag}"]
+        [project_dir, "git push origin main"],
+        [project_dir, "git push origin #{tag}"]
       ])
       expect(exit_status).to eql(0), output
     end

@@ -274,8 +274,10 @@ module Mono
         run_hooks("git-publish", "pre")
         puts "# Publishing to Git"
         puts "## Pushing to Git remote origin"
-        package_versions = packages.map(&:next_tag).join(" ")
-        run_command "git push origin #{current_branch} #{package_versions}"
+        run_command "git push origin #{current_branch}"
+        packages.map(&:next_tag).each do |package_version|
+          run_command "git push origin #{package_version}"
+        end
         run_hooks("git-publish", "post")
       end
 
