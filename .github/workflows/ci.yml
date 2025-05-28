@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - main
+    - develop
+  pull_request:
+    types:
+    - opened
+    - reopened
+    - synchronize
+  schedule:
+  - cron: 0 0 * * 1-5
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: "${{ !contains(github.ref, 'main')}}"
+
+jobs:
+  lint-git:
+    name: Git Linters (Lintje)
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Git Lint
+        uses: lintje/action@main
+
+  ruby-lint:
+    name: Ruby Linters (RuboCop)
+    runs-on: ubuntu-22.04
+    env:
+      RUNNING_IN_CI: 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2.2
+          bundler-cache: true
+
+      - name: Set up Git
+        run: |
+          git config --global init.defaultBranch main
+          git config --global user.email "example@example.com"
+          git config --global user.name "Example user"
+
+      - name: Run RuboCop
+        run: bundle exec rubocop
+
+  test:
+    name: "Tests"
+    runs-on: ubuntu-22.04
+    env:
+      RUNNING_IN_CI: 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.4.4
+          bundler-cache: true
+
+      - name: Set up Erlang
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: 27.x
+          elixir-version: 1.17.x
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Set up Git
+        run: |
+          git config --global init.defaultBranch main
+          git config --global user.email "example@example.com"
+          git config --global user.name "Example user"
+
+      - name: Run tests
+        run: bundle exec rspec
