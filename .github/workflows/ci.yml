@@ -21,6 +21,7 @@ jobs:
   lint-git:
     name: Git Linters (Lintje)
     runs-on: ubuntu-22.04
+    if: "${{ github.event_name != 'schedule' }}"
     steps:
       - name: Checkout project
         uses: actions/checkout@v4
