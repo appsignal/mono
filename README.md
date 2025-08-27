@@ -114,6 +114,7 @@ Commands that can be customized:
 - `build`
 - `test`
 - `clean`
+- `git-commit`, pre and post hooks only
 - `publish`
 
 ### Hooks
