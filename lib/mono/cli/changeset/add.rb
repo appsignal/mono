@@ -5,39 +5,90 @@ require "fileutils"
 module Mono
   module Cli
     class Changeset
-      class Add < Base
+      class Add < Base # rubocop:disable Metrics/ClassLength
+        NON_INTERACTIVE_FLAGS = [:type, :bump, :integration, :packages].freeze
+
         def execute
-          package =
-            if config.monorepo?
-              prompt_for_package
-            else
-              packages.first
-            end
+          validate_non_interactive_flags!
+          package = resolve_package
 
           dir = File.join(package.path, ".changesets")
           FileUtils.mkdir_p(dir)
           FileUtils.touch(File.join(dir, ".gitkeep"))
-          change_description =
-            required_input("Summarize the change (for changeset filename): ")
+
+          change_description = resolve_change_description
           filename = Utils.normalize_filename(change_description)
           filepath = File.join(dir, "#{filename}.md")
-          type = prompt_for_type
-          bump = prompt_for_bump
+
+          type = resolve_type
+          bump = resolve_bump
+
           metadata = {
             "bump" => bump,
             "type" => type
           }
-          integrations = prompt_for_integrations
+          integrations = resolve_integrations
           metadata["integrations"] = integrations if integrations
+
+          body = resolve_body(change_description)
 
           metadata_yml = YAML.dump(metadata)
           File.write(filepath, <<~CONTENTS)
             #{metadata_yml.strip}
             ---
 
-            #{change_description}
+            #{body}
           CONTENTS
           puts "Changeset file created at #{filepath}"
+
+          maybe_open_editor(filepath)
+        end
+
+        private
+
+        def non_interactive?
+          options.key?(:message)
+        end
+
+        def resolve_package
+          return resolve_package_non_interactive if non_interactive?
+
+          config.monorepo? ? prompt_for_package : packages.first
+        end
+
+        def resolve_change_description
+          return options[:message].first if non_interactive?
+
+          required_input("Summarize the change (for changeset filename): ")
+        end
+
+        def resolve_type
+          return resolve_type_non_interactive if non_interactive?
+
+          prompt_for_type
+        end
+
+        def resolve_bump
+          return resolve_bump_non_interactive if non_interactive?
+
+          prompt_for_bump
+        end
+
+        def resolve_integrations
+          return resolve_integrations_non_interactive if non_interactive?
+
+          prompt_for_integrations
+        end
+
+        def resolve_body(change_description)
+          return join_messages(options[:message]) if non_interactive?
+
+          change_description
+        end
+
+        def maybe_open_editor(filepath)
+          return if non_interactive?
+
           open_editor = yes_or_no(
             "Do you want to open this file to add more information? (y/N): ",
             :default => "N"
@@ -48,7 +99,101 @@ module Mono
           end
         end
 
-        private
+        def join_messages(messages)
+          messages.map { |m| m.end_with?(".") ? m : "#{m}." }.join(" ")
+        end
+
+        def validate_non_interactive_flags!
+          return if non_interactive?
+
+          present = NON_INTERACTIVE_FLAGS.select { |k| options.key?(k) }
+          return if present.empty?
+
+          flag_names = present.map do |k|
+            k == :packages ? "--package" : "--#{k}"
+          end.join(", ")
+          exit_cli \
+            "#{flag_names} provided without --message.\n" \
+              "Non-interactive flags require --message / -m to be set."
+        end
+
+        def resolve_package_non_interactive
+          if !config.monorepo? && options.key?(:packages)
+            exit_cli "--package is not supported for single-package projects."
+          end
+          if config.monorepo? && packages.length != 1
+            exit_cli \
+              "--package is required in non-interactive mode for monorepos.\n" \
+                "Available packages: #{packages.map(&:name).join(", ")}"
+          end
+          packages.first
+        end
+
+        def resolve_type_non_interactive
+          type = options[:type]
+          unless type && Mono::Changeset.supported_type?(type)
+            allowed = Mono::Changeset::SUPPORTED_TYPES.keys.join(", ")
+            exit_cli \
+              "--type is required in non-interactive mode.\n" \
+                "Allowed values: #{allowed}"
+          end
+          type
+        end
+
+        def resolve_bump_non_interactive
+          bump = options[:bump]
+          unless bump && Mono::Changeset.supported_bump?(bump)
+            allowed = Mono::Changeset::SUPPORTED_BUMPS.keys.join(", ")
+            exit_cli \
+              "--bump is required in non-interactive mode.\n" \
+                "Allowed values: #{allowed}"
+          end
+          bump
+        end
+
+        def resolve_integrations_non_interactive
+          integration_options = fetch_integration_options
+          if !integration_options && options.key?(:integration)
+            exit_cli \
+              "--integration was provided but this " \
+                "project has no integrations configured."
+          end
+          return unless integration_options
+
+          raw = options[:integration]
+          unless raw
+            exit_cli \
+              "--integration is required in non-interactive mode " \
+                "because this project has integrations configured.\n" \
+                "Allowed values: all, none, #{integration_options.join(", ")}"
+          end
+
+          integrations_list = raw.split(",").map(&:strip).reject(&:empty?)
+          if integrations_list.include?("all")
+            if integrations_list.length > 1
+              exit_cli "\"all\" cannot be combined with other integrations."
+            end
+            return "all"
+          end
+          if integrations_list.include?("none")
+            if integrations_list.length > 1
+              exit_cli "\"none\" cannot be combined with other integrations."
+            end
+            return "none"
+          end
+
+          unknowns = integrations_list - integration_options
+          if unknowns.any?
+            exit_cli \
+              "Unknown integration(s): " \
+                "#{unknowns.map(&:inspect).join(", ")}.\n" \
+                "Allowed values: all, none, #{integration_options.join(", ")}"
+          end
+
+          return integrations_list.first if integrations_list.length == 1
+
+          integrations_list
+        end
 
         def prompt_for_package
           loop do
@@ -95,7 +240,7 @@ module Mono
           integration_options = fetch_integration_options
           return unless integration_options
 
-          loop do
+          loop do # rubocop:disable Metrics/BlockLength
             integrations = required_input(
               "For which integrations is this change? " \
                 "(all, none, #{integration_options.join(", ")}): "
@@ -106,8 +251,23 @@ module Mono
               .map(&:strip)
               .reject(&:empty?)
             next if integrations_list.empty?
-            return "all" if integrations_list.include?("all")
-            return "none" if integrations_list.include?("none")
+
+            if integrations_list.include?("all")
+              if integrations_list.length > 1
+                puts "\"all\" cannot be combined with other " \
+                  "integrations. Please try again."
+                next
+              end
+              return "all"
+            end
+            if integrations_list.include?("none")
+              if integrations_list.length > 1
+                puts "\"none\" cannot be combined with other " \
+                  "integrations. Please try again."
+                next
+              end
+              return "none"
+            end
 
             unknowns = integrations_list - integration_options
             if unknowns.any?

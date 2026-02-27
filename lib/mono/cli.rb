@@ -48,9 +48,11 @@ module Mono
 
           selected_packages = options[:packages]
           @packages = []
+          @all_package_names = []
           directories.each do |package|
             path = File.join(packages_dir, package)
             package = package_class.new(package, path, config)
+            @all_package_names << package.name
             if selected_packages && !selected_packages.include?(package.name)
               next
             end
@@ -72,7 +74,7 @@ module Mono
             next if packages.find { |package| package.name == package_name }
 
             # One of the selected packages was not found. Exit mono.
-            raise PackageNotFound, package_name
+            raise PackageNotFound.new(package_name, @all_package_names.to_a)
           end
         end
       end
@@ -111,7 +113,7 @@ module Mono
       end
     end
 
-    class Wrapper
+    class Wrapper # rubocop:disable Metrics/ClassLength
       def initialize(options)
         @options = options
       end
@@ -142,7 +144,7 @@ module Mono
           subcommand = @options.shift
           case subcommand
           when "add"
-            Mono::Cli::Changeset::Add.new.execute
+            Mono::Cli::Changeset::Add.new(changeset_add_options).execute
           when "status"
             puts "Not implemented in prototype. " \
               "But this would print the next determined version number."
@@ -314,6 +316,41 @@ module Mono
           opts.on "--no-package-push",
             "Do not push the release to the package manager registery" do
             params[:package_push] = false
+          end
+        end.parse(@options)
+        params
+      end
+
+      def changeset_add_options
+        params = {}
+        OptionParser.new do |opts| # rubocop:disable Metrics/BlockLength
+          opts.banner = "Usage: mono changeset add [options]"
+
+          opts.on "-m", "--message MESSAGE",
+            "Change description (used for the changeset filename). " \
+              "Repeat to add more detail to the changeset body." do |value|
+            params[:message] ||= []
+            params[:message] << value
+          end
+          opts.on "--type TYPE",
+            "Change type. Allowed values: " \
+              "#{Mono::Changeset::SUPPORTED_TYPES.keys.join(", ")}" do |value|
+            params[:type] = value
+          end
+          opts.on "--bump BUMP",
+            "Version bump type. Allowed values: " \
+              "#{Mono::Changeset::SUPPORTED_BUMPS.keys.join(", ")}" do |value|
+            params[:bump] = value
+          end
+          opts.on "-p", "--package PACKAGE",
+            "Package to add the changeset to " \
+              "(required for monorepos)" do |value|
+            params[:packages] = [value]
+          end
+          opts.on "--integration VALUE",
+            'Integrations: "all", "none", or ' \
+              'comma-separated list (e.g. "ruby,elixir")' do |value|
+            params[:integration] = value
           end
         end.parse(@options)
         params
