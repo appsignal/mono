@@ -248,6 +248,29 @@ After this commit the changeset file and submit your change.
 When `mono publish` is run the changeset file will be removed and its contents
 added to the CHANGELOG file.
 
+#### Changeset add non-interactive mode
+
+Skip all prompts by passing `-m` / `--message` along with the other required
+flags. The first `-m` value is used as the changeset filename; repeat the flag
+to add further paragraphs to the changeset body.
+
+```
+mono changeset add \
+  -m "Short summary used as the filename" \
+  -m "Optional additional detail added to the changeset body." \
+  --type add \
+  --bump minor \
+  --package <package-name>
+```
+
+| Flag | Description |
+|---|---|
+| `-m` / `--message` | Change description (required). First value sets the filename; repeat for body paragraphs. |
+| `--type` | Change type: `add`, `change`, `deprecate`, `remove`, `fix`, `security` |
+| `--bump` | Semver bump: `major`, `minor`, `patch` |
+| `-p` / `--package` | Package to add the changeset to (required for mono repos) |
+| `--integration` | Integration(s): `all`, `none`, or a comma-separated list (for projects with integrations configured) |
+
 ### Publish
 
 Publish new versions of the package(s) in the project with the publish command.

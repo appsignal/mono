@@ -4,13 +4,16 @@ module Mono
   class Error < StandardError; end
 
   class PackageNotFound < Error
-    def initialize(package)
+    def initialize(package, available = [])
       @package = package
+      @available = available
       super()
     end
 
     def message
-      "The package with the name `#{@package}` could not be found."
+      msg = "The package with the name `#{@package}` could not be found."
+      msg += "\nAvailable packages: #{@available.join(", ")}" if @available.any?
+      msg
     end
   end
 

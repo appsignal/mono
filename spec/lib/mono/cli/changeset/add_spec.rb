@@ -199,6 +199,23 @@ RSpec.describe Mono::Cli::Changeset do
         ])
         expect(exit_status).to eql(0), output
       end
+
+      it "strips special symbols from the start and end of the filename" do
+        prepare_project :elixir_single
+
+        add_cli_input ":my patch:"
+        add_cli_input "1" # Type: Added
+        add_cli_input "3" # Bump: Patch
+        add_cli_input "n"
+        output =
+          capture_stdout do
+            in_project { run_changeset_add }
+          end
+
+        changeset_path = ".changesets/my-patch.md"
+        expect(output).to include("Changeset file created at ./#{changeset_path}")
+        expect(exit_status).to eql(0), output
+      end
     end
 
     context "with integrations config" do
@@ -300,38 +317,6 @@ RSpec.describe Mono::Cli::Changeset do
         expect(exit_status).to eql(0), output
       end
 
-      it "accept only 'all' as integrations" do
-        prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
-          create_ruby_package_files :name => "mygem", :version => "1.2.3"
-        end
-
-        add_cli_input "My change"
-        add_cli_input "1" # Type: Added
-        add_cli_input "3" # Bump: Patch
-        add_cli_input "ruby, all"
-        add_cli_input "n"
-        output = capture_stdout { in_project { run_changeset_add } }
-
-        changeset_path = ".changesets/my-change.md"
-        expect(output).to include(
-          "For which integrations is this change? (all, none, ruby, elixir, python): "
-        )
-        in_project do
-          contents = File.read(changeset_path)
-          expect(contents).to eql(<<~CHANGESET)
-            ---
-            bump: patch
-            type: add
-            integrations: all
-            ---
-
-            My change
-          CHANGESET
-        end
-        expect(performed_commands).to be_empty
-        expect(exit_status).to eql(0), output
-      end
-
       it "accept 'none' as integrations" do
         prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
           create_ruby_package_files :name => "mygem", :version => "1.2.3"
@@ -364,7 +349,26 @@ RSpec.describe Mono::Cli::Changeset do
         expect(exit_status).to eql(0), output
       end
 
-      it "accept only 'none' as integrations" do
+      it "does not accept 'all' combined with other integrations" do
+        prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
+          create_ruby_package_files :name => "mygem", :version => "1.2.3"
+        end
+
+        add_cli_input "My change"
+        add_cli_input "1" # Type: Added
+        add_cli_input "3" # Bump: Patch
+        add_cli_input "ruby, all"
+        add_cli_input "all"
+        add_cli_input "n"
+        output = capture_stdout { in_project { run_changeset_add } }
+
+        expect(output).to include(
+          "\"all\" cannot be combined with other integrations. Please try again."
+        ), output
+        expect(exit_status).to eql(0), output
+      end
+
+      it "does not accept 'none' combined with other integrations" do
         prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
           create_ruby_package_files :name => "mygem", :version => "1.2.3"
         end
@@ -373,26 +377,13 @@ RSpec.describe Mono::Cli::Changeset do
         add_cli_input "1" # Type: Added
         add_cli_input "3" # Bump: Patch
         add_cli_input "elixir, none"
+        add_cli_input "none"
         add_cli_input "n"
         output = capture_stdout { in_project { run_changeset_add } }
 
-        changeset_path = ".changesets/my-change.md"
         expect(output).to include(
-          "For which integrations is this change? (all, none, ruby, elixir, python): "
-        )
-        in_project do
-          contents = File.read(changeset_path)
-          expect(contents).to eql(<<~CHANGESET)
-            ---
-            bump: patch
-            type: add
-            integrations: none
-            ---
-
-            My change
-          CHANGESET
-        end
-        expect(performed_commands).to be_empty
+          "\"none\" cannot be combined with other integrations. Please try again."
+        ), output
         expect(exit_status).to eql(0), output
       end
 
@@ -432,6 +423,517 @@ RSpec.describe Mono::Cli::Changeset do
         end
         expect(performed_commands).to be_empty
         expect(exit_status).to eql(0), output
+      end
+    end
+  end
+
+  context "when non-interactive flags are provided without --message" do
+    it "exits with an error listing the offending flags" do
+      prepare_project :elixir_single
+
+      output =
+        capture_stdout do
+          in_project do
+            run_changeset_add ["--type", "fix", "--bump", "patch"]
+          end
+        end
+
+      expect(output).to include(
+        "--type, --bump provided without --message.",
+        "Non-interactive flags require --message / -m to be set."
+      ), output
+      expect(exit_status).to eql(1), output
+    end
+
+    it "exits with an error for a single offending flag" do
+      prepare_project :elixir_single
+
+      output =
+        capture_stdout do
+          in_project do
+            run_changeset_add ["--bump", "patch"]
+          end
+        end
+
+      expect(output).to include(
+        "--bump provided without --message.",
+        "Non-interactive flags require --message / -m to be set."
+      ), output
+      expect(exit_status).to eql(1), output
+    end
+  end
+
+  context "in non-interactive mode" do
+    context "with single repo" do
+      it "creates a changeset file without prompts" do
+        prepare_project :elixir_single
+
+        output =
+          capture_stdout do
+            in_project do
+              run_changeset_add ["-m", "Fix the thing", "--type", "fix", "--bump", "patch"]
+            end
+          end
+
+        changeset_path = ".changesets/fix-the-thing.md"
+        expect(output).to include("Changeset file created at ./#{changeset_path}")
+        expect(output).not_to include("Summarize the change")
+        expect(output).not_to include("Do you want to open this file")
+        in_project do
+          expect(current_package_changeset_files.length).to eql(1)
+          contents = File.read(changeset_path)
+          expect(contents).to eql(<<~CHANGESET)
+            ---
+            bump: patch
+            type: fix
+            ---
+
+            Fix the thing.
+          CHANGESET
+        end
+        expect(performed_commands).to eql([])
+        expect(exit_status).to eql(0), output
+      end
+
+      it "creates a single-line body joining multiple -m values as sentences" do
+        prepare_project :elixir_single
+
+        output =
+          capture_stdout do
+            in_project do
+              run_changeset_add [
+                "-m", "Fix the thing",
+                "-m", "More detail about the fix.",
+                "--type", "fix", "--bump", "patch"
+              ]
+            end
+          end
+
+        changeset_path = ".changesets/fix-the-thing.md"
+        expect(output).to include("Changeset file created at ./#{changeset_path}")
+        in_project do
+          contents = File.read(changeset_path)
+          expect(contents).to eql(<<~CHANGESET)
+            ---
+            bump: patch
+            type: fix
+            ---
+
+            Fix the thing. More detail about the fix.
+          CHANGESET
+        end
+        expect(exit_status).to eql(0), output
+      end
+
+      it "does not double up a period when the -m value already ends with one" do
+        prepare_project :elixir_single
+
+        output =
+          capture_stdout do
+            in_project do
+              run_changeset_add [
+                "-m", "Fix the thing.",
+                "-m", "More detail.",
+                "--type", "fix", "--bump", "patch"
+              ]
+            end
+          end
+
+        in_project do
+          contents = File.read(".changesets/fix-the-thing.md")
+          expect(contents).to include("Fix the thing. More detail.")
+        end
+        expect(exit_status).to eql(0), output
+      end
+
+      it "exits with an error when --type is missing" do
+        prepare_project :elixir_single
+
+        output =
+          capture_stdout do
+            in_project do
+              run_changeset_add ["-m", "Fix the thing", "--bump", "patch"]
+            end
+          end
+
+        expect(output).to include(
+          "--type is required in non-interactive mode.",
+          "Allowed values: add, change, deprecate, remove, fix, security"
+        ), output
+        expect(exit_status).to eql(1), output
+      end
+
+      it "exits with an error when --bump is missing" do
+        prepare_project :elixir_single
+
+        output =
+          capture_stdout do
+            in_project do
+              run_changeset_add ["-m", "Fix the thing", "--type", "fix"]
+            end
+          end
+
+        expect(output).to include(
+          "--bump is required in non-interactive mode.",
+          "Allowed values: major, minor, patch"
+        ), output
+        expect(exit_status).to eql(1), output
+      end
+
+      it "exits with an error for an invalid --type value" do
+        prepare_project :elixir_single
+
+        output =
+          capture_stdout do
+            in_project do
+              run_changeset_add ["-m", "Fix the thing", "--type", "bogus", "--bump", "patch"]
+            end
+          end
+
+        expect(output).to include(
+          "--type is required in non-interactive mode.",
+          "Allowed values: add, change, deprecate, remove, fix, security"
+        ), output
+        expect(exit_status).to eql(1), output
+      end
+
+      it "exits with an error for an invalid --bump value" do
+        prepare_project :elixir_single
+
+        output =
+          capture_stdout do
+            in_project do
+              run_changeset_add ["-m", "Fix the thing", "--type", "fix", "--bump", "bogus"]
+            end
+          end
+
+        expect(output).to include(
+          "--bump is required in non-interactive mode.",
+          "Allowed values: major, minor, patch"
+        ), output
+        expect(exit_status).to eql(1), output
+      end
+
+      context "with integrations config" do
+        it "creates a changeset with a valid integration" do
+          prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
+            create_ruby_package_files :name => "mygem", :version => "1.2.3"
+          end
+
+          output =
+            capture_stdout do
+              in_project do
+                run_changeset_add [
+                  "-m", "My change", "--type", "add", "--bump", "patch",
+                  "--integration", "ruby"
+                ]
+              end
+            end
+
+          changeset_path = ".changesets/my-change.md"
+          expect(output).to include("Changeset file created at ./#{changeset_path}")
+          in_project do
+            contents = File.read(changeset_path)
+            expect(contents).to eql(<<~CHANGESET)
+              ---
+              bump: patch
+              type: add
+              integrations: ruby
+              ---
+
+              My change.
+            CHANGESET
+          end
+          expect(performed_commands).to be_empty
+          expect(exit_status).to eql(0), output
+        end
+
+        it "creates a changeset with 'all' integration" do
+          prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
+            create_ruby_package_files :name => "mygem", :version => "1.2.3"
+          end
+
+          output =
+            capture_stdout do
+              in_project do
+                run_changeset_add [
+                  "-m", "My change", "--type", "add", "--bump", "patch",
+                  "--integration", "all"
+                ]
+              end
+            end
+
+          changeset_path = ".changesets/my-change.md"
+          in_project do
+            contents = File.read(changeset_path)
+            expect(contents).to eql(<<~CHANGESET)
+              ---
+              bump: patch
+              type: add
+              integrations: all
+              ---
+
+              My change.
+            CHANGESET
+          end
+          expect(exit_status).to eql(0), output
+        end
+
+        it "creates a changeset with 'none' integration" do
+          prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
+            create_ruby_package_files :name => "mygem", :version => "1.2.3"
+          end
+
+          output =
+            capture_stdout do
+              in_project do
+                run_changeset_add [
+                  "-m", "My change", "--type", "add", "--bump", "patch",
+                  "--integration", "none"
+                ]
+              end
+            end
+
+          changeset_path = ".changesets/my-change.md"
+          in_project do
+            contents = File.read(changeset_path)
+            expect(contents).to eql(<<~CHANGESET)
+              ---
+              bump: patch
+              type: add
+              integrations: none
+              ---
+
+              My change.
+            CHANGESET
+          end
+          expect(exit_status).to eql(0), output
+        end
+
+        it "creates a changeset with multiple integrations" do
+          prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
+            create_ruby_package_files :name => "mygem", :version => "1.2.3"
+          end
+
+          output =
+            capture_stdout do
+              in_project do
+                run_changeset_add [
+                  "-m", "My change", "--type", "add", "--bump", "patch",
+                  "--integration", "ruby,elixir"
+                ]
+              end
+            end
+
+          changeset_path = ".changesets/my-change.md"
+          in_project do
+            contents = File.read(changeset_path)
+            expect(contents).to eql(<<~CHANGESET)
+              ---
+              bump: patch
+              type: add
+              integrations:
+              - ruby
+              - elixir
+              ---
+
+              My change.
+            CHANGESET
+          end
+          expect(exit_status).to eql(0), output
+        end
+
+        it "exits with an error when --integration is missing" do
+          prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
+            create_ruby_package_files :name => "mygem", :version => "1.2.3"
+          end
+
+          output =
+            capture_stdout do
+              in_project do
+                run_changeset_add ["-m", "My change", "--type", "add", "--bump", "patch"]
+              end
+            end
+
+          expect(output).to include(
+            "--integration is required in non-interactive mode",
+            "Allowed values: all, none, ruby, elixir, python"
+          ), output
+          expect(exit_status).to eql(1), output
+        end
+
+        it "exits with an error for an unknown integration" do
+          prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
+            create_ruby_package_files :name => "mygem", :version => "1.2.3"
+          end
+
+          output =
+            capture_stdout do
+              in_project do
+                run_changeset_add [
+                  "-m", "My change", "--type", "add", "--bump", "patch",
+                  "--integration", "unknown"
+                ]
+              end
+            end
+
+          expect(output).to include(
+            "Unknown integration(s): \"unknown\".",
+            "Allowed values: all, none, ruby, elixir, python"
+          ), output
+          expect(exit_status).to eql(1), output
+        end
+
+        it "exits with an error when 'all' is combined with other integrations" do
+          prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
+            create_ruby_package_files :name => "mygem", :version => "1.2.3"
+          end
+
+          output =
+            capture_stdout do
+              in_project do
+                run_changeset_add [
+                  "-m", "My change", "--type", "add", "--bump", "patch",
+                  "--integration", "all,ruby"
+                ]
+              end
+            end
+
+          expect(output).to include(
+            "\"all\" cannot be combined with other integrations."
+          ), output
+          expect(exit_status).to eql(1), output
+        end
+
+        it "exits with an error when 'none' is combined with other integrations" do
+          prepare_ruby_project("integrations" => ["ruby", "elixir", "python"]) do
+            create_ruby_package_files :name => "mygem", :version => "1.2.3"
+          end
+
+          output =
+            capture_stdout do
+              in_project do
+                run_changeset_add [
+                  "-m", "My change", "--type", "add", "--bump", "patch",
+                  "--integration", "none,ruby"
+                ]
+              end
+            end
+
+          expect(output).to include(
+            "\"none\" cannot be combined with other integrations."
+          ), output
+          expect(exit_status).to eql(1), output
+        end
+
+        it "exits with an error when --integration is used on a project with no integrations" do
+          prepare_project :elixir_single
+
+          output =
+            capture_stdout do
+              in_project do
+                run_changeset_add [
+                  "-m", "Fix the thing", "--type", "fix", "--bump", "patch",
+                  "--integration", "ruby"
+                ]
+              end
+            end
+
+          expect(output).to include(
+            "--integration was provided but this project has no integrations configured."
+          ), output
+          expect(exit_status).to eql(1), output
+        end
+      end
+    end
+
+    context "with mono repo" do
+      it "creates a changeset in the specified package" do
+        prepare_project :elixir_mono
+
+        output =
+          capture_stdout do
+            in_project do
+              run_changeset_add [
+                "-m", "Add feature", "--type", "add", "--bump", "minor",
+                "-p", "package_one"
+              ]
+            end
+          end
+
+        changeset_path = "packages/package_one/.changesets/add-feature.md"
+        expect(output).to include("Changeset file created at #{changeset_path}")
+        expect(output).not_to include("Select package")
+        expect(output).not_to include("Do you want to open this file")
+        in_project do
+          contents = File.read(changeset_path)
+          expect(contents).to eql(<<~CHANGESET)
+            ---
+            bump: minor
+            type: add
+            ---
+
+            Add feature.
+          CHANGESET
+        end
+        expect(performed_commands).to eql([])
+        expect(exit_status).to eql(0), output
+      end
+
+      it "exits with an error when --package is missing in a monorepo" do
+        prepare_project :elixir_mono
+
+        output =
+          capture_stdout do
+            in_project do
+              run_changeset_add ["-m", "Add feature", "--type", "add", "--bump", "minor"]
+            end
+          end
+
+        expect(output).to include(
+          "--package is required in non-interactive mode for monorepos.",
+          "Available packages: package_one, package_two"
+        ), output
+        expect(exit_status).to eql(1), output
+      end
+
+      it "exits with an error naming valid packages when an unknown --package is given" do
+        prepare_project :elixir_mono
+
+        output =
+          capture_stdout do
+            in_project do
+              run_changeset_add [
+                "-m", "Add feature", "--type", "add", "--bump", "minor",
+                "-p", "bogus"
+              ]
+            end
+          end
+
+        expect(output).to include(
+          "The package with the name `bogus` could not be found.",
+          "Available packages: package_one, package_two"
+        ), output
+        expect(exit_status).to eql(1), output
+      end
+
+      it "exits with an error when --package is used in a single-package project" do
+        prepare_project :elixir_single
+
+        output =
+          capture_stdout do
+            in_project do
+              run_changeset_add [
+                "-m", "Fix the thing", "--type", "fix", "--bump", "patch",
+                "-p", "mypackage"
+              ]
+            end
+          end
+
+        expect(output).to include(
+          "--package is not supported for single-package projects."
+        ), output
+        expect(exit_status).to eql(1), output
       end
     end
   end
