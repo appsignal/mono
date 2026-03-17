@@ -985,8 +985,217 @@ RSpec.describe Mono::Cli::Changeset do
     end
   end
 
+  context "validate changeset after editing" do
+    context "when the file is valid after editing" do
+      it "exits successfully without asking to re-edit" do
+        prepare_project :elixir_single
+
+        add_cli_input "My patch"
+        add_cli_input "1" # Type: Added
+        add_cli_input "3" # Bump: Patch
+        add_cli_input "y" # Open editor
+
+        output = capture_stdout { in_project { run_changeset_add } }
+
+        expect(output).to include("Opening")
+        expect(output).not_to include("Do you want to edit the file again?")
+        expect(exit_status).to eql(0), output
+      end
+    end
+
+    context "when the file is invalid after editing" do
+      it "shows errors and exits 1 when user declines to re-edit" do
+        prepare_project :elixir_single
+
+        add_cli_input "My patch"
+        add_cli_input "1" # Type: Added
+        add_cli_input "3" # Bump: Patch
+        add_cli_input "y" # Open editor
+        add_cli_input "n" # Decline to re-edit
+
+        allow_any_instance_of(Mono::Cli::Changeset::Validate)
+          .to receive(:validate_changeset_file)
+          .and_return(Mono::Changeset::ParseResult.new(
+            "./.changesets/my-patch.md", nil,
+            [Mono::Changeset::ValidationIssue::UnknownBump.new("bad"),
+             Mono::Changeset::ValidationIssue::UnknownType.new("bad")]
+          ))
+
+        output = capture_stdout { in_project { run_changeset_add } }
+
+        expect(output).to eq("#{<<~OUTPUT.chomp} "), output
+          Summarize the change (for changeset filename): What type of change is this?
+          1: Added
+          2: Changed
+          3: Deprecated
+          4: Removed
+          5: Fixed
+          6: Security
+          Select change type 1-6: What type of semver bump is this?
+          1: Major
+          2: Minor
+          3: Patch
+          Select bump 1-3: Changeset file created at ./.changesets/my-patch.md
+          Do you want to open this file to add more information? (y/N): Opening ./.changesets/my-patch.md with editor...
+          Invalid: ./.changesets/my-patch.md (2 errors)
+          - [Error] Unknown `bump` metadata: `bad`
+          - [Error] Unknown `type` metadata: `bad`
+
+          Do you want to edit the file again? (y/N):
+        OUTPUT
+        expect(exit_status).to eql(1), output
+      end
+
+      it "prompts to re-edit again when user says yes" do
+        prepare_project :elixir_single
+
+        add_cli_input "My patch"
+        add_cli_input "1" # Type: Added
+        add_cli_input "3" # Bump: Patch
+        add_cli_input "y" # Open editor
+        add_cli_input "y" # Re-edit
+        add_cli_input "n" # Decline after second edit
+
+        allow_any_instance_of(Mono::Cli::Changeset::Validate)
+          .to receive(:validate_changeset_file)
+          .and_return(Mono::Changeset::ParseResult.new(
+            "./.changesets/my-patch.md", nil,
+            [Mono::Changeset::ValidationIssue::UnknownBump.new("bad")]
+          ))
+
+        output = capture_stdout { in_project { run_changeset_add } }
+
+        expect(output).to eq("#{<<~OUTPUT.chomp} "), output
+          Summarize the change (for changeset filename): What type of change is this?
+          1: Added
+          2: Changed
+          3: Deprecated
+          4: Removed
+          5: Fixed
+          6: Security
+          Select change type 1-6: What type of semver bump is this?
+          1: Major
+          2: Minor
+          3: Patch
+          Select bump 1-3: Changeset file created at ./.changesets/my-patch.md
+          Do you want to open this file to add more information? (y/N): Opening ./.changesets/my-patch.md with editor...
+          Invalid: ./.changesets/my-patch.md (1 error)
+          - [Error] Unknown `bump` metadata: `bad`
+
+          Do you want to edit the file again? (y/N): Opening ./.changesets/my-patch.md with editor...
+          Invalid: ./.changesets/my-patch.md (1 error)
+          - [Error] Unknown `bump` metadata: `bad`
+
+          Do you want to edit the file again? (y/N):
+        OUTPUT
+        expect(exit_status).to eql(1), output
+      end
+    end
+
+    context "when the file has warnings after editing" do
+      it "shows warnings but exits 0 when user declines to re-edit" do
+        prepare_project :elixir_single
+
+        add_cli_input "My patch"
+        add_cli_input "1" # Type: Added
+        add_cli_input "3" # Bump: Patch
+        add_cli_input "y" # Open editor
+        add_cli_input "n" # Decline to re-edit
+
+        allow_any_instance_of(Mono::Cli::Changeset::Validate)
+          .to receive(:validate_changeset_file)
+          .and_return(Mono::Changeset::ParseResult.new(
+            "./.changesets/my-patch.md", double("changeset"),
+            [Mono::Changeset::ValidationIssue::UnexpectedIntegrations.new]
+          ))
+
+        output = capture_stdout { in_project { run_changeset_add } }
+
+        expect(output).to eq("#{<<~OUTPUT.chomp} "), output
+          Summarize the change (for changeset filename): What type of change is this?
+          1: Added
+          2: Changed
+          3: Deprecated
+          4: Removed
+          5: Fixed
+          6: Security
+          Select change type 1-6: What type of semver bump is this?
+          1: Major
+          2: Minor
+          3: Patch
+          Select bump 1-3: Changeset file created at ./.changesets/my-patch.md
+          Do you want to open this file to add more information? (y/N): Opening ./.changesets/my-patch.md with editor...
+          Valid: ./.changesets/my-patch.md (1 warning)
+          - [Warning] Has `integrations` metadata but project has no integrations configured
+
+          Do you want to edit the file again? (y/N):
+        OUTPUT
+        expect(exit_status).to eql(0), output
+      end
+    end
+  end
+
+  context "validate output of changeset add" do
+    context "with single repo" do
+      it "generates a changeset that passes validation" do
+        prepare_project :elixir_single
+
+        in_project do
+          run_changeset_add ["-m", "Fix the thing", "--type", "fix", "--bump", "patch"]
+        end
+
+        output = capture_stdout { in_project { run_changeset_validate } }
+
+        expect(output).to include("All changesets are valid.")
+        expect(exit_status).to eql(0), output
+      end
+    end
+
+    context "with integrations config" do
+      it "generates a changeset with integrations that passes validation" do
+        prepare_ruby_project("integrations" => ["ruby", "elixir"]) do
+          create_ruby_package_files :name => "mygem", :version => "1.2.3"
+        end
+
+        in_project do
+          run_changeset_add [
+            "-m", "My change", "--type", "add", "--bump", "minor",
+            "--integration", "ruby"
+          ]
+        end
+
+        output = capture_stdout { in_project { run_changeset_validate } }
+
+        expect(output).to include("All changesets are valid.")
+        expect(exit_status).to eql(0), output
+      end
+    end
+
+    context "with mono repo" do
+      it "generates a changeset in a package that passes validation" do
+        prepare_project :elixir_mono
+
+        in_project do
+          run_changeset_add [
+            "-m", "Add feature", "--type", "add", "--bump", "minor",
+            "-p", "package_one"
+          ]
+        end
+
+        output = capture_stdout { in_project { run_changeset_validate } }
+
+        expect(output).to include("All changesets are valid.")
+        expect(exit_status).to eql(0), output
+      end
+    end
+  end
+
   def run_changeset_add(args = [])
     prepare_cli_input
     Mono::Cli::Wrapper.new(["changeset", "add"] + args).execute
+  end
+
+  def run_changeset_validate(args = [])
+    Mono::Cli::Wrapper.new(["changeset", "validate"] + args).execute
   end
 end

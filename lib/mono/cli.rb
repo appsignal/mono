@@ -145,6 +145,9 @@ module Mono
           case subcommand
           when "add"
             Mono::Cli::Changeset::Add.new(changeset_add_options).execute
+          when "validate"
+            Mono::Cli::Changeset::Validate
+              .new(changeset_validate_options).execute
           when "status"
             puts "Not implemented in prototype. " \
               "But this would print the next determined version number."
@@ -351,6 +354,23 @@ module Mono
             'Integrations: "all", "none", or ' \
               'comma-separated list (e.g. "ruby,elixir")' do |value|
             params[:integration] = value
+          end
+        end.parse(@options)
+        params
+      end
+
+      def changeset_validate_options
+        params = {}
+        OptionParser.new do |opts|
+          opts.banner = "Usage: mono changeset validate [options]"
+
+          opts.on "-p", "--package package1,package2,package3", Array,
+            "Select packages to validate" do |value|
+            params[:packages] = value
+          end
+          opts.on "-w", "--warnings-as-errors",
+            "Treat warnings as errors" do
+            params[:warnings_as_errors] = true
           end
         end.parse(@options)
         params

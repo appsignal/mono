@@ -312,7 +312,7 @@ RSpec.describe Mono::Cli::Publish do
       project_dir = current_project_path
       next_version = "1.3.0"
       tag = "v#{next_version}"
-      tmp_changelog_file = tmp_changelog_file_for("-appsignal-my_package")
+      tmp_changelog_file = tmp_changelog_file_for("appsignal-my_package")
 
       in_project do
         expect(tag_changelog_contents(tag)).to eq(<<~CONTENTS.strip)

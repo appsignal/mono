@@ -31,6 +31,22 @@ jobs:
       - name: Run Git Lint
         uses: lintje/action@main
 
+  validate-changesets:
+    name: Validate changesets
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.4.4
+          bundler-cache: true
+
+      - name: Validate changesets
+        run: bin/mono-dev changeset validate
+
   ruby-lint:
     name: Ruby Linters (RuboCop)
     runs-on: ubuntu-22.04

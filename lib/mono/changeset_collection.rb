@@ -18,7 +18,7 @@ module Mono
     def changesets
       @changesets ||=
         Dir.glob(File.join(package.path, ".changesets/*")).map do |file|
-          Changeset.parse(file)
+          Changeset.parse(file).valid!
         end
     end
 
