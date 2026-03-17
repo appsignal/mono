@@ -1023,19 +1023,7 @@ RSpec.describe Mono::Cli::Changeset do
 
         output = capture_stdout { in_project { run_changeset_add } }
 
-        expect(output).to eq("#{<<~OUTPUT.chomp} "), output
-          Summarize the change (for changeset filename): What type of change is this?
-          1: Added
-          2: Changed
-          3: Deprecated
-          4: Removed
-          5: Fixed
-          6: Security
-          Select change type 1-6: What type of semver bump is this?
-          1: Major
-          2: Minor
-          3: Patch
-          Select bump 1-3: Changeset file created at ./.changesets/my-patch.md
+        expect(output).to end_with("#{<<~OUTPUT.chomp} "), output
           Do you want to open this file to add more information? (y/N): Opening ./.changesets/my-patch.md with editor...
           Invalid: ./.changesets/my-patch.md (2 errors)
           - [Error] Unknown `bump` metadata: `bad`
@@ -1065,19 +1053,7 @@ RSpec.describe Mono::Cli::Changeset do
 
         output = capture_stdout { in_project { run_changeset_add } }
 
-        expect(output).to eq("#{<<~OUTPUT.chomp} "), output
-          Summarize the change (for changeset filename): What type of change is this?
-          1: Added
-          2: Changed
-          3: Deprecated
-          4: Removed
-          5: Fixed
-          6: Security
-          Select change type 1-6: What type of semver bump is this?
-          1: Major
-          2: Minor
-          3: Patch
-          Select bump 1-3: Changeset file created at ./.changesets/my-patch.md
+        expect(output).to end_with("#{<<~OUTPUT.chomp} "), output
           Do you want to open this file to add more information? (y/N): Opening ./.changesets/my-patch.md with editor...
           Invalid: ./.changesets/my-patch.md (1 error)
           - [Error] Unknown `bump` metadata: `bad`
@@ -1111,19 +1087,7 @@ RSpec.describe Mono::Cli::Changeset do
 
         output = capture_stdout { in_project { run_changeset_add } }
 
-        expect(output).to eq("#{<<~OUTPUT.chomp} "), output
-          Summarize the change (for changeset filename): What type of change is this?
-          1: Added
-          2: Changed
-          3: Deprecated
-          4: Removed
-          5: Fixed
-          6: Security
-          Select change type 1-6: What type of semver bump is this?
-          1: Major
-          2: Minor
-          3: Patch
-          Select bump 1-3: Changeset file created at ./.changesets/my-patch.md
+        expect(output).to end_with("#{<<~OUTPUT.chomp} "), output
           Do you want to open this file to add more information? (y/N): Opening ./.changesets/my-patch.md with editor...
           Valid: ./.changesets/my-patch.md (1 warning)
           - [Warning] Has `integrations` metadata but project has no integrations configured

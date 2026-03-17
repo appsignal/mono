@@ -6,7 +6,10 @@ module Mono
       class MissingIntegration < ValidationIssue
         level :error
 
-        def initialize(allowed) = (@allowed = allowed) # rubocop:disable Lint/MissingSuper
+        def initialize(allowed)
+          super()
+          @allowed = allowed
+        end
 
         def message
           "Missing `integrations` metadata. " \
@@ -29,12 +32,11 @@ module Mono
       class UnknownIntegrations < ValidationIssue
         level :error
 
-        # rubocop:disable Lint/MissingSuper
         def initialize(unknowns, allowed)
+          super()
           @unknowns = unknowns
           @allowed = allowed
         end
-        # rubocop:enable Lint/MissingSuper
 
         def message
           "Unknown integration(s): #{@unknowns.map(&:inspect).join(", ")}. " \

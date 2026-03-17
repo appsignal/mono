@@ -251,7 +251,7 @@ RSpec.describe Mono::Cli::Changeset::Validate do
 
         expect(output).to eq(<<~OUTPUT)
           Invalid: ./.changesets/empty_message.md (1 error)
-          - [Error] No changeset message found for changeset: `./.changesets/empty_message.md`. Please add a description of the change.
+          - [Error] No changeset message found. Please add a description of the change.
 
           Found 1 changeset. 1 changeset is invalid.
         OUTPUT

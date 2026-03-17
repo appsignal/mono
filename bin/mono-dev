@@ -1,9 +1,3 @@
-#!/usr/bin/env ruby
-# frozen_string_literal: true
+#!/usr/bin/env sh
 
-$LOAD_PATH << File.expand_path(File.join(__dir__, "..", "lib"))
-
-require "mono"
-require "mono/cli"
-
-Mono::Cli::Wrapper.new(ARGV).execute
+MONO_DEV=true exec "$(dirname "$0")/mono" "$@"

@@ -37,18 +37,17 @@ module Mono
       class NoMetadata < ValidationIssue
         level :error
 
-        def initialize(file) = (@file = file) # rubocop:disable Lint/MissingSuper
-
-        def message
-          "No metadata found for changeset: `#{@file}`. " \
-            "Please specify either a major, minor or patch version bump."
-        end
+        def message = "No metadata found. Please add a YAML front matter block."
       end
 
       class UnknownMetadataKey < ValidationIssue
         level :warning
 
-        def initialize(key) = (@key = key) # rubocop:disable Lint/MissingSuper
+        def initialize(key)
+          super()
+          @key = key
+        end
+
         def message = "Unknown metadata key: `#{@key}`"
       end
 
@@ -61,7 +60,11 @@ module Mono
       class UnknownBump < ValidationIssue
         level :error
 
-        def initialize(bump) = (@bump = bump) # rubocop:disable Lint/MissingSuper
+        def initialize(bump)
+          super()
+          @bump = bump
+        end
+
         def message = "Unknown `bump` metadata: `#{@bump}`"
       end
 
@@ -74,18 +77,19 @@ module Mono
       class UnknownType < ValidationIssue
         level :error
 
-        def initialize(type) = (@type = type) # rubocop:disable Lint/MissingSuper
+        def initialize(type)
+          super()
+          @type = type
+        end
+
         def message = "Unknown `type` metadata: `#{@type}`"
       end
 
       class MissingMessage < ValidationIssue
         level :error
 
-        def initialize(file) = (@file = file) # rubocop:disable Lint/MissingSuper
-
         def message
-          "No changeset message found for changeset: `#{@file}`. " \
-            "Please add a description of the change."
+          "No changeset message found. Please add a description of the change."
         end
       end
     end
@@ -95,15 +99,20 @@ module Mono
       def warnings = issues.select(&:warning?)
 
       def valid?(warnings_as_errors: false)
-        (warnings_as_errors ? issues : errors).empty?
+        failures(warnings_as_errors).empty?
       end
 
       # Returns Changeset or raises InvalidChangeset.
       def valid!(warnings_as_errors: false)
-        failing = warnings_as_errors ? issues : errors
-        raise InvalidChangeset.new(file, failing) if failing.any?
+        return changeset if valid?(:warnings_as_errors => warnings_as_errors)
 
-        changeset
+        raise InvalidChangeset.new(file, failures(warnings_as_errors))
+      end
+
+      private
+
+      def failures(warnings_as_errors)
+        warnings_as_errors ? issues : errors
       end
     end
 
@@ -141,7 +150,7 @@ module Mono
       frontmatter_matches = YAML_FRONT_MATTER_REGEXP.match(contents)
       unless frontmatter_matches
         return ParseResult.new(file, nil,
-          [ValidationIssue::NoMetadata.new(file)])
+          [ValidationIssue::NoMetadata.new])
       end
 
       metadata = YAML.safe_load(frontmatter_matches[1])
@@ -167,7 +176,7 @@ module Mono
       end
 
       message = contents.sub(frontmatter_matches[0], "").strip
-      issues << ValidationIssue::MissingMessage.new(file) if message.empty?
+      issues << ValidationIssue::MissingMessage.new if message.empty?
 
       return ParseResult.new(file, nil, issues) if issues.any?(&:error?)
 
