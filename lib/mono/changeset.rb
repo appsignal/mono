@@ -22,28 +22,117 @@ module Mono
       "minor" => "Minor",
       "patch" => "Patch"
     }.freeze
+    KNOWN_METADATA_KEYS = %w[bump type integrations].freeze
     YAML_FRONT_MATTER_REGEXP =
       /\A(---\s*\n.*?\n?)^((---|\.\.\.)\s*$\n?)/m
 
-    class MetadataError < Mono::Error; end
+    class ValidationIssue
+      def self.level(lvl) = define_method(:level) { lvl }
 
-    class EmptyMessageError < Mono::Error; end
+      def level = raise(NotImplementedError)
+      def message = raise(NotImplementedError)
+      def error?   = level == :error
+      def warning? = level == :warning
+
+      class NoMetadata < ValidationIssue
+        level :error
+
+        def message = "No metadata found. Please add a YAML front matter block."
+      end
+
+      class UnknownMetadataKey < ValidationIssue
+        level :warning
+
+        def initialize(key)
+          super()
+          @key = key
+        end
+
+        def message = "Unknown metadata key: `#{@key}`"
+      end
+
+      class MissingBump < ValidationIssue
+        level :error
+
+        def message = "Missing `bump` metadata"
+      end
+
+      class UnknownBump < ValidationIssue
+        level :error
+
+        def initialize(bump)
+          super()
+          @bump = bump
+        end
+
+        def message = "Unknown `bump` metadata: `#{@bump}`"
+      end
+
+      class MissingType < ValidationIssue
+        level :error
+
+        def message = "Missing `type` metadata"
+      end
+
+      class UnknownType < ValidationIssue
+        level :error
+
+        def initialize(type)
+          super()
+          @type = type
+        end
+
+        def message = "Unknown `type` metadata: `#{@type}`"
+      end
+
+      class MissingMessage < ValidationIssue
+        level :error
+
+        def message
+          "No changeset message found. Please add a description of the change."
+        end
+      end
+    end
+
+    ParseResult = Struct.new(:file, :changeset, :issues) do
+      def errors   = issues.select(&:error?)
+      def warnings = issues.select(&:warning?)
+
+      def valid?(warnings_as_errors: false)
+        failures(warnings_as_errors).empty?
+      end
+
+      # Returns Changeset or raises InvalidChangeset.
+      def valid!(warnings_as_errors: false)
+        return changeset if valid?(:warnings_as_errors => warnings_as_errors)
+
+        raise InvalidChangeset.new(file, failures(warnings_as_errors))
+      end
+
+      private
+
+      def failures(warnings_as_errors)
+        warnings_as_errors ? issues : errors
+      end
+    end
 
     class UnknownBumpTypeError < Mono::Error; end
 
     class InvalidChangeset < Mono::Error
-      def initialize(file, violations)
+      attr_reader :issues
+
+      def initialize(file, issues)
         @file = file
-        @violations = violations
+        @issues = issues
         super()
       end
 
       def message
-        formatted_violations = @violations.map { |violation| "- #{violation}" }
+        formatted_issues = @issues.map { |issue| "- #{issue.message}" }
         <<~MESSAGE
           Invalid changeset detected: `#{@file}`
-          Violations:
-          #{formatted_violations.join("\n")}
+          Issues:
+          #{formatted_issues.join("\n")}
         MESSAGE
       end
     end
@@ -59,31 +148,39 @@ module Mono
     def self.parse(file)
       contents = File.read(file)
       frontmatter_matches = YAML_FRONT_MATTER_REGEXP.match(contents)
-      metadata =
-        if frontmatter_matches
-          YAML.safe_load(frontmatter_matches[1])
-        else
-          raise MetadataError, "No metadata found for changeset: `#{file}`. " \
-            "Please specify either a major, minor or patch version bump."
-        end
-      violations = []
+      unless frontmatter_matches
+        return ParseResult.new(file, nil,
+          [ValidationIssue::NoMetadata.new])
+      end
+
+      metadata = YAML.safe_load(frontmatter_matches[1])
+      issues = []
+
+      unknown = metadata.keys - KNOWN_METADATA_KEYS
+      unknown.each do |key|
+        issues << ValidationIssue::UnknownMetadataKey.new(key)
+      end
+
       bump = metadata["bump"]
-      unless supported_bump?(bump)
-        violations << "Unknown `bump` metadata: `#{bump}`"
+      if bump.to_s.empty?
+        issues << ValidationIssue::MissingBump.new
+      elsif !supported_bump?(bump)
+        issues << ValidationIssue::UnknownBump.new(bump)
       end
+
       type = metadata["type"]
-      unless supported_type?(type)
-        violations << "Unknown `type` metadata: `#{type}`"
+      if type.to_s.empty?
+        issues << ValidationIssue::MissingType.new
+      elsif !supported_type?(type)
+        issues << ValidationIssue::UnknownType.new(type)
       end
-      raise InvalidChangeset.new(file, violations) if violations.any?
 
       message = contents.sub(frontmatter_matches[0], "").strip
-      if message.strip.empty?
-        raise EmptyMessageError,
-          "No changeset message found for changeset: `#{file}`. " \
-            "Please add a description of the change."
-      end
-      new(file, metadata, message)
+      issues << ValidationIssue::MissingMessage.new if message.empty?
+
+      return ParseResult.new(file, nil, issues) if issues.any?(&:error?)
+
+      ParseResult.new(file, new(file, metadata, message), issues)
     end
 
     def initialize(path, metadata, message)
@@ -99,6 +196,10 @@ module Mono
           "Unknown bump type specified for changeset: `#{path}`. " \
             "Please specify either major, minor or patch."
       end
+    end
+
+    def integrations
+      @metadata["integrations"]
     end
 
     def type

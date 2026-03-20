@@ -34,7 +34,7 @@ RSpec.describe Mono::Changeset do
 
   describe ".parse" do
     context "with valid changeset file" do
-      it "returns a Changeset object" do
+      it "returns a ParseResult with a Changeset and no issues" do
         prepare_project :nodejs_npm_single
         in_project do
           message = "Multi-line changeset message\n" \
@@ -43,16 +43,17 @@ RSpec.describe Mono::Changeset do
             "- List item 3\n" \
             "- List item 4"
           path = add_changeset :patch, :message => message
-          changeset = described_class.parse(path)
-          expect(changeset.path).to eql(path)
-          expect(changeset.bump).to eql("patch")
-          expect(changeset.message).to eql(message)
+          result = described_class.parse(path)
+          expect(result.changeset.path).to eql(path)
+          expect(result.changeset.bump).to eql("patch")
+          expect(result.changeset.message).to eql(message)
+          expect(result.issues).to be_empty
         end
       end
     end
 
     context "without metadata" do
-      it "raises a MetadataError" do
+      it "returns a ParseResult with an error and no changeset" do
         prepare_project :nodejs_npm_single
         in_project do
           message = "Multi-line changeset message\n" \
@@ -61,93 +62,95 @@ RSpec.describe Mono::Changeset do
             "- List item 3\n" \
             "- List item 4"
           path = add_changeset :none, :message => message
-          expect do
-            described_class.parse(path)
-          end.to raise_error(described_class::MetadataError)
+          result = described_class.parse(path)
+          expect(result.changeset).to be_nil
+          expect(result.errors.map(&:message)).to include(
+            a_string_including("No metadata found")
+          )
         end
       end
     end
 
     context "without change type" do
-      it "raises an InvalidChangeset" do
+      it "returns a ParseResult with a missing type error and no changeset" do
         prepare_project :nodejs_npm_single
         in_project do
-          message = "Changeset message"
-          path = add_changeset :patch, :type => "", :message => message
-          message = <<~MESSAGE
-            Invalid changeset detected: `.changesets/1_patch.md`
-            Violations:
-            - Unknown `type` metadata: ``
-          MESSAGE
-          expect do
-            described_class.parse(path)
-          end.to raise_error(described_class::InvalidChangeset, message)
+          path = add_changeset :patch, :type => "", :message => "Changeset message"
+          result = described_class.parse(path)
+          expect(result.changeset).to be_nil
+          expect(result.errors.map(&:message)).to include("Missing `type` metadata")
         end
       end
     end
 
     context "with unknown change type" do
-      it "raises an InvalidChangeset" do
+      it "returns a ParseResult with an unknown type error and no changeset" do
         prepare_project :nodejs_npm_single
         in_project do
-          message = "Changeset message"
-          path = add_changeset :patch, :type => "unknown", :message => message
-          message = <<~MESSAGE
-            Invalid changeset detected: `.changesets/1_patch.md`
-            Violations:
-            - Unknown `type` metadata: `unknown`
-          MESSAGE
-          expect do
-            described_class.parse(path)
-          end.to raise_error(described_class::InvalidChangeset, message)
+          path = add_changeset :patch, :type => "unknown", :message => "Changeset message"
+          result = described_class.parse(path)
+          expect(result.changeset).to be_nil
+          expect(result.errors.map(&:message)).to include("Unknown `type` metadata: `unknown`")
         end
       end
     end
 
     context "without version bump" do
-      it "raises an InvalidChangeset" do
+      it "returns a ParseResult with a missing bump error and no changeset" do
         prepare_project :nodejs_npm_single
         in_project do
-          message = "Changeset message"
-          path = add_changeset "", :type => "add", :message => message
-          message = <<~MESSAGE
-            Invalid changeset detected: `.changesets/1_.md`
-            Violations:
-            - Unknown `bump` metadata: ``
-          MESSAGE
-          expect do
-            described_class.parse(path)
-          end.to raise_error(described_class::InvalidChangeset, message)
+          path = add_changeset "", :type => "add", :message => "Changeset message"
+          result = described_class.parse(path)
+          expect(result.changeset).to be_nil
+          expect(result.errors.map(&:message)).to include("Missing `bump` metadata")
         end
       end
     end
 
     context "with unknown version bump" do
-      it "raises an InvalidChangeset" do
+      it "returns a ParseResult with an unknown bump error and no changeset" do
         prepare_project :nodejs_npm_single
         in_project do
-          message = "Changeset message"
-          path = add_changeset :unknown, :type => "add", :message => message
-          message = <<~MESSAGE
-            Invalid changeset detected: `.changesets/1_unknown.md`
-            Violations:
-            - Unknown `bump` metadata: `unknown`
-          MESSAGE
-          expect do
-            described_class.parse(path)
-          end.to raise_error(described_class::InvalidChangeset, message)
+          path = add_changeset :unknown, :type => "add", :message => "Changeset message"
+          result = described_class.parse(path)
+          expect(result.changeset).to be_nil
+          expect(result.errors.map(&:message)).to include("Unknown `bump` metadata: `unknown`")
         end
       end
     end
 
     context "without message" do
-      it "raises an EmptyMessageError" do
+      it "returns a ParseResult with an empty message error and no changeset" do
         prepare_project :nodejs_npm_single
         in_project do
           path = add_changeset :patch, :message => ""
-          expect do
-            described_class.parse(path)
-          end.to raise_error(described_class::EmptyMessageError)
+          result = described_class.parse(path)
+          expect(result.changeset).to be_nil
+          expect(result.errors.map(&:message)).to include(
+            a_string_including("No changeset message found")
+          )
+        end
+      end
+    end
+
+    context "with unknown metadata key" do
+      it "returns a ParseResult with a warning and a Changeset" do
+        prepare_project :nodejs_npm_single
+        in_project do
+          FileUtils.mkdir_p(".changesets")
+          path = ".changesets/unknown_key.md"
+          File.write(path, <<~CHANGESET)
+            ---
+            bump: patch
+            type: add
+            foo: bar
+            ---
+
+            A change.
+          CHANGESET
+          result = described_class.parse(path)
+          expect(result.changeset).to be_a(described_class)
+          expect(result.warnings.map(&:message)).to include("Unknown metadata key: `foo`")
         end
       end
     end
@@ -282,7 +285,7 @@ RSpec.describe Mono::Changeset do
       in_project do
         path = add_changeset :patch
 
-        changeset = described_class.parse(path)
+        changeset = described_class.parse(path).valid!
         commits = changeset.commits
         expect(commits.length).to eq(1)
         commit = commits.first
@@ -302,7 +305,7 @@ RSpec.describe Mono::Changeset do
       in_project do
         path = add_changeset :patch, :filename => "Patch, & \"messagé'"
 
-        changeset = described_class.parse(path)
+        changeset = described_class.parse(path).valid!
         commits = changeset.commits
         expect(commits.length).to eq(1)
         commit = commits.first
@@ -327,7 +330,7 @@ RSpec.describe Mono::Changeset do
           commit_changeset
           second_commit = commit_sha
 
-          changeset = described_class.parse(path)
+          changeset = described_class.parse(path).valid!
           commits = changeset.commits
           expect(commits.length).to eq(2)
 
@@ -352,7 +355,7 @@ RSpec.describe Mono::Changeset do
           commit_long = commit_sha
           commit_changes("Improve changeset text\n\n[skip mono]")
 
-          changeset = described_class.parse(path)
+          changeset = described_class.parse(path).valid!
           commits = changeset.commits
           expect(commits.length).to eq(1)
           commit = commits.first
@@ -374,7 +377,7 @@ RSpec.describe Mono::Changeset do
       prepare_ruby_project do
         path = add_changeset :patch
 
-        changeset = described_class.parse(path)
+        changeset = described_class.parse(path).valid!
         expect(changeset.date).to be_kind_of(Time)
       end
     end
@@ -384,7 +387,7 @@ RSpec.describe Mono::Changeset do
         path = add_changeset :patch, :commit => false
         commit_changeset("[skip mono]")
 
-        changeset = described_class.parse(path)
+        changeset = described_class.parse(path).valid!
         expect(changeset.date).to eq(Time.at(0))
       end
     end

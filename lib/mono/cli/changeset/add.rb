@@ -93,9 +93,26 @@ module Mono
             "Do you want to open this file to add more information? (y/N): ",
             :default => "N"
           )
-          if open_editor
+          return unless open_editor
+
+          loop do
             puts "Opening #{filepath} with editor..."
             run_command "$EDITOR #{filepath}"
+
+            validator = Validate.new(options)
+            result = validator.validate_changeset_file(filepath)
+            break if result.issues.empty?
+
+            validator.print_file_validation(result)
+
+            edit_again = yes_or_no(
+              "Do you want to edit the file again? (y/N): ",
+              :default => "N"
+            )
+            unless edit_again
+              exit 1 if result.errors.any?
+              break
+            end
           end
         end
 
