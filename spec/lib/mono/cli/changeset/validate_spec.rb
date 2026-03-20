@@ -12,7 +12,7 @@ RSpec.describe Mono::Cli::Changeset::Validate do
           end
 
         expect(output).to eq(<<~OUTPUT)
-          All changesets are valid.
+          Found 0 changesets. All changesets are valid.
         OUTPUT
         expect(exit_status).to eql(0), output
       end

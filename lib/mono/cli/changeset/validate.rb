@@ -99,11 +99,10 @@ module Mono
             puts parts.join(" ")
             exit 1
           else
-            parts = []
-            if total_count.positive?
-              parts << "Found #{total_count} #{total_noun}."
-            end
-            parts << "All changesets are valid."
+            parts = [
+              "Found #{total_count} #{total_noun}.",
+              "All changesets are valid."
+            ]
             parts << warned_note(warned) if warned.any?
             puts parts.join(" ")
           end
