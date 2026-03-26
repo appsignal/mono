@@ -51,6 +51,7 @@ RSpec.describe Mono::Cli::Publish do
 
       expect(performed_commands).to be_empty
       expect(output).to include("Error: There are local changes before building.")
+      expect(output).to include("- uncommited_file")
       expect(exit_status).to eql(1), output
     end
   end

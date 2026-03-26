@@ -97,10 +97,14 @@ module Mono
         `git rev-parse --abbrev-ref HEAD`.chomp
       end
 
-      def local_changes?
+      def local_changes
         `git status -s -u`.split("\n").each do |change|
           change.gsub!(/^.. /, "")
-        end.any?
+        end
+      end
+
+      def local_changes?
+        local_changes.any?
       end
 
       def exit_cli(message)
