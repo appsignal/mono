@@ -39,7 +39,8 @@ module Mono
 
         if local_changes?
           exit_cli "Error: There are local changes before building. " \
-            "Commit or discard them and try again. Exiting."
+            "Commit or discard them and try again. Exiting.\n" \
+            "#{local_changes.map { |c| "- #{c}" }.join("\n")}"
         end
 
         if git?
