@@ -198,11 +198,13 @@ module Mono
     end
 
     def build_tag(version)
-      if config.monorepo?
-        "#{name}@#{version}"
-      else # Single repo
-        "v#{version}"
-      end
+      # A monorepo tags each package on its own, unless a version lock is in
+      # effect. A locked release is one logical release shared by every package,
+      # so every package uses the same `v<version>` tag, like a single-package
+      # repository does.
+      return "#{name}@#{version}" if config.monorepo? && !config.version_lock?
+
+      "v#{version}"
     end
   end
 end

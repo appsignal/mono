@@ -23,6 +23,12 @@ module Mono
             "tag a release. Exiting."
         end
 
+        if config.version_lock? && options[:packages]
+          exit_cli "Error: The `version_lock` option releases every package " \
+            "in the repository together, so a `--package` selection cannot " \
+            "be used with it. Remove the selection and try again. Exiting."
+        end
+
         exit_cli "No packages found in this directory!" unless packages.any?
 
         packages.each do |package|
@@ -221,19 +227,7 @@ module Mono
         run_hooks("git-commit", "pre")
         puts "# Committing changes to Git"
         puts "## Creating release commit"
-        standard_message =
-          "Update version number and CHANGELOG.md."
-        commit_subject, commit_message =
-          if packages.length > 1
-            message =
-              packages.map do |package|
-                "- #{package.next_tag}"
-              end.join("\n")
-            ["Publish packages", "#{standard_message}\n\n#{message}"]
-          else
-            only_package = packages.first
-            ["Publish package #{only_package.next_tag}", standard_message]
-          end
+        commit_subject, commit_message = release_commit_message(packages)
         run_command "git add -A"
         rollback << [
           "## Removing release commit",
@@ -245,26 +239,60 @@ module Mono
           "git reset --soft HEAD^"
         ]
 
-        packages.each do |package|
-          puts "## Tag package #{package.next_tag}"
-
-          prepare_tmp_dir
-          normalized_package_name = Utils.normalize_filename(package.name.to_s)
-          tmp_file = File.join(
-            TMP_DIR,
-            "#{normalized_package_name}_changesets.txt"
-          )
-          File.write(tmp_file, changesets[package.name].join)
-
-          run_command "git tag #{package.next_tag} " \
-            "--annotate --cleanup=verbatim --file #{tmp_file}"
-          FileUtils.rm(tmp_file)
-          rollback << [
-            "## Untag package #{package.next_tag}",
-            "git tag -d #{package.next_tag}"
-          ]
-        end
+        tag_release(packages, changesets, rollback)
         run_hooks("git-commit", "post")
+      end
+
+      def release_commit_message(packages)
+        standard_message = "Update version number and CHANGELOG.md."
+        if config.version_lock?
+          # A locked release is one logical release, so it has one subject with
+          # the shared version and lists the released package names in the body.
+          names = packages.map(&:name).uniq
+          body = names.map { |name| "- #{name}" }.join("\n")
+          version = packages.first.next_version
+          ["Publish version v#{version}", "#{standard_message}\n\n#{body}"]
+        elsif packages.length > 1
+          body = packages.map { |package| "- #{package.next_tag}" }.join("\n")
+          ["Publish packages", "#{standard_message}\n\n#{body}"]
+        else
+          ["Publish package #{packages.first.next_tag}", standard_message]
+        end
+      end
+
+      def tag_release(packages, changesets, rollback)
+        if config.version_lock?
+          # Every package shares one tag, so create it once and annotate it with
+          # the changesets of all the released packages.
+          tag = packages.first.next_tag
+          annotation =
+            packages.map { |package| changesets[package.name].join }.join
+          create_tag(tag, tag, annotation, rollback)
+        else
+          packages.each do |package|
+            create_tag(
+              package.next_tag, package.name,
+              changesets[package.name].join, rollback
+            )
+          end
+        end
+      end
+
+      def create_tag(tag, filename, annotation, rollback)
+        puts "## Tag package #{tag}"
+
+        prepare_tmp_dir
+        normalized_name = Utils.normalize_filename(filename.to_s)
+        tmp_file = File.join(TMP_DIR, "#{normalized_name}_changesets.txt")
+        File.write(tmp_file, annotation)
+
+        run_command "git tag #{tag} " \
+          "--annotate --cleanup=verbatim --file #{tmp_file}"
+        FileUtils.rm(tmp_file)
+        rollback << [
+          "## Untag package #{tag}",
+          "git tag -d #{tag}"
+        ]
       end
 
       def prepare_tmp_dir
@@ -276,7 +304,8 @@ module Mono
         puts "# Publishing to Git"
         puts "## Pushing to Git remote origin"
         run_command "git push origin #{current_branch}"
-        packages.map(&:next_tag).each do |package_version|
+        # A version lock gives every package the same tag, so push it only once.
+        packages.map(&:next_tag).uniq.each do |package_version|
           run_command "git push origin #{package_version}"
         end
         run_hooks("git-publish", "post")
@@ -285,11 +314,15 @@ module Mono
       # Helper class to update dependencies between packages in a mono project
       def package_promoter
         @package_promoter ||=
-          PackagePromoter.new(dependency_tree, :prerelease => prerelease)
+          PackagePromoter.new(
+            dependency_tree,
+            :prerelease => prerelease,
+            :version_lock => config.version_lock?
+          )
       end
 
       def existing_tags(changed_packages)
-        next_tags = changed_packages.map(&:next_tag).join(" ")
+        next_tags = changed_packages.map(&:next_tag).uniq.join(" ")
         run_command(
           "git tag --list #{next_tags}",
           :capture => true,

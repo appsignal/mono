@@ -92,6 +92,14 @@ test:
     - Mutually exclusive with `packages_dir`.
     - For Node.js, a package name in the map must match the `name` in its
       `package.json`.
+- `version_lock`
+    - Release every package in the repository together at one shared version.
+      When any package has a change, every package is released with the same
+      new version number, as a single `v<version>` release commit and tag.
+    - All packages must be at the same version before the release. If they have
+      drifted apart, mono raises an error instead of forcing them into step.
+    - Only applies to a mono repo, so `packages` or `packages_dir` must also be
+      configured.
 - `npm_client`
     - Node.js only.
     - Supported values:

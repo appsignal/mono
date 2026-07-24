@@ -26,6 +26,10 @@ module Mono
       @config.key?("packages_dir") || @config.key?("packages")
     end
 
+    def version_lock?
+      @config.fetch("version_lock", false)
+    end
+
     # Checks the config for problems that mono cannot recover from and raises a
     # clear error for each. Called once when the CLI starts, before any packages
     # are discovered, so a misconfigured repo fails fast.
@@ -37,6 +41,7 @@ module Mono
       end
 
       validate_packages! if @config.key?("packages")
+      validate_version_lock!
     end
 
     def command?(cmd)
@@ -100,6 +105,17 @@ module Mono
       raise Mono::Error,
         "The `packages` option in mono.yml must not have a blank package " \
           "name or path."
+    end
+
+    def validate_version_lock!
+      return unless version_lock?
+      return if monorepo?
+
+      raise Mono::Error,
+        "The `version_lock` option in mono.yml only applies to a repository " \
+          "that is configured for multiple packages with `packages` or " \
+          "`packages_dir`. Please configure one of those, or remove " \
+          "`version_lock`."
     end
   end
 end

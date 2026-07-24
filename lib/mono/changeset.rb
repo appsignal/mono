@@ -296,4 +296,17 @@ module Mono
       super({ "bump" => "patch", "type" => "change" }, message)
     end
   end
+
+  # Injected into a package that a version lock is releasing only to keep its
+  # version in step with the rest of the repository. The bump is the coupled
+  # bump shared by every package in the release, and the message names the
+  # packages whose own changes triggered it.
+  class VersionLockMemoryChangeset < MemoryChangeset
+    def initialize(bump, triggers, version)
+      names = triggers.map(&:name).join(", ")
+      message =
+        "Released to keep the version in step with #{names} #{version}."
+      super({ "bump" => bump, "type" => "change" }, message)
+    end
+  end
 end
