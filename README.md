@@ -82,6 +82,16 @@ test:
       the mono project packages can be found. If this config option is
       specified mono will consider this repository a mono repo.
     - Wildcards are not supported.
+- `packages`
+    - A map of package names to their paths, used instead of `packages_dir` to
+      list the packages explicitly. If this config option is specified mono
+      will consider this repository a mono repo.
+    - One of the paths may be `.` to place a package at the root of the
+      repository. This lets a repository publish a second package from a
+      subdirectory without moving its primary package.
+    - Mutually exclusive with `packages_dir`.
+    - For Node.js, a package name in the map must match the `name` in its
+      `package.json`.
 - `npm_client`
     - Node.js only.
     - Supported values:

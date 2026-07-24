@@ -373,6 +373,113 @@ RSpec.describe Mono::Cli::Build do
         end
       end
     end
+
+    context "with an explicit packages map" do
+      context "with npm" do
+        it "builds a nested package through its workspace" do
+          prepare_nodejs_project(
+            "packages" => { "package_one" => "packages/package_one" }
+          ) do
+            create_package "package_one" do
+              create_package_json :name => "package_one", :version => "1.2.3"
+            end
+          end
+          output =
+            capture_stdout do
+              in_project { run_build }
+            end
+
+          project_path = current_project_path
+          expect(output).to include(
+            "Building package: package_one (packages/package_one)"
+          )
+          expect(performed_commands).to eql([
+            [project_path, "npm run build --workspace=package_one"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
+
+        it "builds a root package without a workspace selector" do
+          prepare_nodejs_project("packages" => { "root_pkg" => "." }) do
+            create_package_json :name => "root_pkg", :version => "1.2.3"
+          end
+          output =
+            capture_stdout do
+              in_project { run_build }
+            end
+
+          project_path = current_project_path
+          expect(output).to include("Building package: root_pkg (.)")
+          expect(performed_commands).to eql([
+            [project_path, "npm run build"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
+
+        it "treats a root path written as \"./\" as the repository root" do
+          prepare_nodejs_project("packages" => { "root_pkg" => "./" }) do
+            create_package_json :name => "root_pkg", :version => "1.2.3"
+          end
+          output =
+            capture_stdout do
+              in_project { run_build }
+            end
+
+          project_path = current_project_path
+          expect(output).to include("Building package: root_pkg (.)")
+          expect(performed_commands).to eql([
+            [project_path, "npm run build"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
+      end
+
+      context "with yarn" do
+        it "builds a nested package through its workspace" do
+          prepare_nodejs_project(
+            "npm_client" => "yarn",
+            "packages" => { "package_one" => "packages/package_one" }
+          ) do
+            create_package "package_one" do
+              create_package_json :name => "package_one", :version => "1.2.3"
+            end
+          end
+          output =
+            capture_stdout do
+              in_project { run_build }
+            end
+
+          project_path = current_project_path
+          expect(output).to include(
+            "Building package: package_one (packages/package_one)"
+          )
+          expect(performed_commands).to eql([
+            [project_path, "yarn workspace package_one run build"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
+
+        it "builds a root package without a workspace selector" do
+          prepare_nodejs_project(
+            "npm_client" => "yarn",
+            "packages" => { "root_pkg" => "." }
+          ) do
+            create_package_json :name => "root_pkg", :version => "1.2.3"
+          end
+          output =
+            capture_stdout do
+              in_project { run_build }
+            end
+
+          project_path = current_project_path
+          expect(output).to include("Building package: root_pkg (.)")
+          expect(performed_commands).to eql([
+            [project_path, "yarn run build"]
+          ])
+          expect(exit_status).to eql(0), output
+        end
+      end
+    end
   end
 
   context "with unknown language project" do

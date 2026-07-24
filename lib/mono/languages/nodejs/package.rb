@@ -115,12 +115,17 @@ module Mono
         end
 
         def run_client_command_for_package(command)
+          # The npm and yarn workspace selectors name a workspace member. A
+          # package rooted at the repository root ("." path) is not a workspace
+          # member, so it omits the selector and runs its own script at the
+          # repository root, which is the single-package command shape.
+          in_workspace = config.monorepo? && path != "."
           case npm_client
           when "npm"
-            options = " --workspace=#{name}" if config.monorepo?
+            options = " --workspace=#{name}" if in_workspace
             run_client_command "#{command}#{options}"
           when "yarn"
-            if config.monorepo?
+            if in_workspace
               run_client_command "workspace #{name} #{command}"
             else
               run_client_command command

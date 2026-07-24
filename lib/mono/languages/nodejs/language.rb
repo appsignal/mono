@@ -47,7 +47,7 @@ module Mono
 
         def unbootstrap(_options = {})
           run_command "rm -rf node_modules"
-          if config.monorepo?
+          if config.packages_dir
             run_command "rm -rf #{config.packages_dir}/node_modules"
           end
         end

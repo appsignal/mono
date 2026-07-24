@@ -78,6 +78,19 @@ RSpec.describe Mono::Cli do
     end
   end
 
+  context "with an empty Mono config file" do
+    it "raises the missing language error, not a NoMethodError" do
+      prepare_new_project do
+        File.write("mono.yml", "")
+      end
+
+      expect do
+        capture_stdout { in_project { run(["run", "false"]) } }
+      end.to raise_error(RuntimeError, "No language configured.")
+      expect(performed_commands).to eql([])
+    end
+  end
+
   def run(args = [])
     Mono::Cli::Wrapper.new(args).execute
   end
