@@ -36,10 +36,17 @@ module Mono
           return unless spec_path
 
           contents = read_spec
-          @updated_dependencies.each do |_dep, version|
-            contents =
-              contents.sub(/.add_dependency (["'].*["']), (["'])(.*)["']/,
-                ".add_dependency \\1, \\2#{version}\\2")
+          @updated_dependencies.each do |dep, version|
+            # Match the `add_dependency` line for this specific dependency by
+            # name, so a gemspec with several literal dependency lines rewrites
+            # the right one. Only the version literal is replaced, and its
+            # original quote style is kept. The closing quote backreferences the
+            # opening one, so a line with mismatched quotes is left untouched.
+            name = Regexp.escape(dep)
+            contents = contents.sub(
+              /(\.add_dependency\s+["']#{name}["'],\s*)(["'])[^"']*\2/,
+              "\\1\\2#{version}\\2"
+            )
           end
           File.write(spec_path, contents)
         end
