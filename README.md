@@ -33,10 +33,6 @@ guide](doc/quick-start-guide.md).
 
 ### Dry run
 
-Note: Dry run is not fully implemented yet. While it won't publish your
-packages to a package manager, it will update version files in packages, delete
-changeset files and update their changelogs.
-
 Don't want to run the command for real, but want to see what commands it will
 perform? Use the dry run feature. Set the `DRY_RUN=true` environment variable
 to use dry run mode.
@@ -44,6 +40,17 @@ to use dry run mode.
 ```
 DRY_RUN=true mono publish
 ```
+
+In dry run mode, mono still reads from your project so the output is accurate.
+Read-only commands, such as reading the existing Git tags, are run as normal.
+Every command that changes something or talks to a remote is printed with a
+`[dry-run]` marker and is not run. This includes the Git commit, the Git tag,
+the Git push and the push to the package manager.
+
+Note that dry run mode still updates files on disk. It updates the version files
+in packages, deletes the changeset files and updates the changelogs. Because the
+release commit is not created, those changes are left uncommitted. Use
+`git restore` to undo them.
 
 ## Configuration
 

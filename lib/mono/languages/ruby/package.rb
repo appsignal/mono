@@ -61,6 +61,15 @@ module Mono
             gem_files.each do |gem_file|
               run_command "gem push #{gem_file}", :retry => true
             end
+          elsif dry_run?
+            # In dry-run mode the `gem build` command was not executed, so
+            # there are no gem files to find or push. Show what would happen
+            # instead of raising about the missing files. The gem file name is
+            # not known without building, so name it after the package. That
+            # matches how `gem build` names its output and tells the packages
+            # of a locked release apart.
+            puts "[dry-run] gem push #{name}-#{next_version}.gem " \
+              "(skipped; no gem was built in dry-run mode)"
           else
             raise "No gemfiles found in `#{gem_files_dir || "."}`"
           end

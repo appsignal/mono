@@ -326,6 +326,7 @@ module Mono
         run_command(
           "git tag --list #{next_tags}",
           :capture => true,
+          :read_only => true,
           :print_command => false
         ).strip.split("\n")
       end

@@ -10,6 +10,7 @@ module Mono
               version = run_command_in_package(
                 config.config("read_version"),
                 :capture => true,
+                :read_only => true,
                 :print_command => false
               ).strip
               config.version_scheme.parse(version)
