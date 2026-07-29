@@ -35,6 +35,22 @@ module PublishHelper
     expect_changelog_to_include_message(changelog, "patch", message)
   end
 
+  # Run the block with dry-run mode turned on. Mono reads the `DRY_RUN`
+  # environment variable to decide whether to run for real, so set it for the
+  # duration of the block. Save whatever value the variable had before and put
+  # it back afterwards, so a value set outside the block is not lost.
+  def with_dry_run
+    previous = ENV.fetch("DRY_RUN", nil)
+    ENV["DRY_RUN"] = "true"
+    yield
+  ensure
+    if previous.nil?
+      ENV.delete("DRY_RUN")
+    else
+      ENV["DRY_RUN"] = previous
+    end
+  end
+
   def do_not_publish_package
     add_cli_input "n"
   end
