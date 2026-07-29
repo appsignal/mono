@@ -237,8 +237,91 @@ RSpec.describe Mono::PackagePromoter do
     end
   end
 
+  describe "#changed_packages with version_lock" do
+    let(:config) { mono_config }
+
+    it "forces a package without changes onto the coupled version" do
+      prepare_new_project do
+        create_package "package_a" do
+          create_ruby_package_files :name => "package_a", :version => "1.2.3"
+          add_changeset :minor
+        end
+        create_package "package_b" do
+          create_ruby_package_files :name => "package_b", :version => "1.2.3"
+        end
+      end
+      package_a = ruby_package("package_a")
+      package_b = ruby_package("package_b")
+      promoter = build_locked_promoter([package_a, package_b])
+
+      expect(promoter.changed_packages).to contain_exactly(package_a, package_b)
+      expect(package_a.next_version.to_s).to eql("1.3.0")
+      expect(package_b.next_version.to_s).to eql("1.3.0")
+
+      injected = version_lock_changeset(package_b)
+      expect(injected).to_not be_nil
+      expect(injected.bump).to eql("minor")
+      expect(injected.message).to include("package_a")
+    end
+
+    it "raises a lower bump up to the coupled bump" do
+      prepare_new_project do
+        create_package "package_a" do
+          create_ruby_package_files :name => "package_a", :version => "1.2.3"
+          add_changeset :minor
+        end
+        create_package "package_b" do
+          create_ruby_package_files :name => "package_b", :version => "1.2.3"
+          add_changeset :patch
+        end
+      end
+      package_a = ruby_package("package_a")
+      package_b = ruby_package("package_b")
+      promoter = build_locked_promoter([package_a, package_b])
+
+      expect(promoter.changed_packages).to contain_exactly(package_a, package_b)
+      expect(package_a.next_version.to_s).to eql("1.3.0")
+      expect(package_b.next_version.to_s).to eql("1.3.0")
+      expect(version_lock_changeset(package_b)).to_not be_nil
+    end
+
+    it "raises an error when the packages have drifted apart" do
+      prepare_new_project do
+        create_package "package_a" do
+          create_ruby_package_files :name => "package_a", :version => "1.2.3"
+          add_changeset :minor
+        end
+        create_package "package_b" do
+          create_ruby_package_files :name => "package_b", :version => "2.0.0"
+        end
+      end
+      package_a = ruby_package("package_a")
+      package_b = ruby_package("package_b")
+      promoter = build_locked_promoter([package_a, package_b])
+
+      expect { promoter.changed_packages }.to raise_error(
+        Mono::Error, /not at the same version/
+      )
+    end
+  end
+
   def nodejs_package(path)
     Mono::Languages::Nodejs::Package.new(nil, package_path(path), config)
+  end
+
+  def ruby_package(name)
+    Mono::Languages::Ruby::Package.new(name, package_path(name), config)
+  end
+
+  def build_locked_promoter(packages)
+    tree = Mono::DependencyTree.new(packages)
+    described_class.new(tree, :version_lock => true)
+  end
+
+  def version_lock_changeset(package)
+    package.changesets.changesets.find do |changeset|
+      changeset.is_a?(Mono::VersionLockMemoryChangeset)
+    end
   end
 
   def build_promoter(packages)

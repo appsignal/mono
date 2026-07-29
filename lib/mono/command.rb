@@ -10,7 +10,25 @@ module Mono
     end
 
     def execute
-      execute_command command unless dry_run?
+      return execute_command(command) unless dry_run?
+
+      # In dry-run mode, only commands explicitly marked as read-only are run.
+      # They have no side effects, so running them keeps the control flow
+      # accurate. For example, mono reads the existing Git tags to check whether
+      # a release was already published.
+      return execute_command(command) if options[:read_only]
+
+      # Anything not marked read-only is assumed to change something or talk to
+      # a remote, so it is not executed. Print it with a marker instead, so the
+      # dry run shows what it would have done. Skipping is the default on
+      # purpose. A command that is never marked read-only is skipped, so a
+      # forgotten flag can only leave a command unrun, never run a side effect.
+      puts "[dry-run] #{command}" if options.fetch(:print_command, true)
+      nil
+    end
+
+    def self.dry_run?
+      ENV["DRY_RUN"] == "true"
     end
 
     private
@@ -58,7 +76,7 @@ module Mono
     end
 
     def dry_run?
-      ENV["DRY_RUN"] == "true"
+      Command.dry_run?
     end
 
     def retry?
@@ -73,6 +91,10 @@ module Mono
     module Helper
       def run_command(command, options = {})
         Command.new(command, options).execute
+      end
+
+      def dry_run?
+        Command.dry_run?
       end
     end
   end

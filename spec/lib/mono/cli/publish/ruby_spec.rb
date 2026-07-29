@@ -162,6 +162,152 @@ RSpec.describe Mono::Cli::Publish do
     end
   end
 
+  context "with Ruby packages configured with an explicit packages map" do
+    it "discovers and publishes the root and the nested package" do
+      prepare_ruby_project(
+        "packages" => { "root_gem" => ".", "sub_gem" => "packages/sub_gem" }
+      ) do
+        create_ruby_package_files :name => "root_gem", :version => "1.2.3"
+        create_changelog
+        add_changeset :patch
+        create_package :sub_gem do
+          create_ruby_package_files :name => "sub_gem", :version => "4.5.6"
+          add_changeset :patch
+        end
+      end
+      confirm_publish_package
+      output = run_publish(:lang => :ruby)
+
+      project_dir = current_project_path
+      sub_gem_dir = "#{project_dir}/packages/sub_gem"
+      next_version_root = "1.2.4"
+      next_version_sub = "4.5.7"
+      tag_root = "root_gem@#{next_version_root}"
+      tag_sub = "sub_gem@#{next_version_sub}"
+
+      expect(output).to has_publish_and_update_summary(
+        :root_gem => {
+          :old => "root_gem@1.2.3", :new => "root_gem@1.2.4", :bump => :patch
+        },
+        :sub_gem => {
+          :old => "sub_gem@4.5.6", :new => "sub_gem@4.5.7", :bump => :patch
+        }
+      )
+
+      in_project do
+        # The root package reads and writes its files at the repository root.
+        expect(read_ruby_gem_version_file)
+          .to have_ruby_version(next_version_root)
+        changelog = read_changelog_file
+        expect_changelog_to_include_version_header(changelog, next_version_root)
+        expect_changelog_to_include_release_notes(changelog, :patch)
+
+        in_package :sub_gem do
+          expect(read_ruby_gem_version_file)
+            .to have_ruby_version(next_version_sub)
+          changelog = read_changelog_file
+          expect_changelog_to_include_version_header(changelog, next_version_sub)
+          expect_changelog_to_include_release_notes(changelog, :patch)
+        end
+
+        expect(local_changes?).to be_falsy, local_changes.inspect
+        expect(commited_files).to eql([
+          ".changesets/1_patch.md",
+          "CHANGELOG.md",
+          "lib/example/version.rb",
+          "packages/sub_gem/.changesets/2_patch.md",
+          "packages/sub_gem/CHANGELOG.md",
+          "packages/sub_gem/lib/example/version.rb"
+        ])
+      end
+
+      expect(performed_commands).to eql([
+        [project_dir, "git tag --list #{tag_root} #{tag_sub}"],
+        [project_dir, "gem build"],
+        [sub_gem_dir, "gem build"],
+        [project_dir, "git add -A"],
+        [
+          project_dir,
+          "git commit -m 'Publish packages' " \
+            "-m 'Update version number and CHANGELOG.md.\n\n" \
+            "- #{tag_root}\n- #{tag_sub}'"
+        ],
+        [project_dir, version_tag_command(tag_root, tmp_changelog_file_for("root_gem"))],
+        [project_dir, version_tag_command(tag_sub, tmp_changelog_file_for("sub_gem"))],
+        [project_dir, "gem push ./root_gem-#{next_version_root}.gem"],
+        [project_dir, "gem push packages/sub_gem/sub_gem-#{next_version_sub}.gem"],
+        [project_dir, "git push origin main"],
+        [project_dir, "git push origin #{tag_root}"],
+        [project_dir, "git push origin #{tag_sub}"]
+      ])
+      expect(exit_status).to eql(0), output
+    end
+
+    it "exits with an error when combined with packages_dir" do
+      prepare_ruby_project(
+        "packages_dir" => "packages/",
+        "packages" => { "root_gem" => "." }
+      ) do
+        create_ruby_package_files :name => "root_gem", :version => "1.2.3"
+        add_changeset :patch
+      end
+      output = run_publish(:lang => :ruby)
+
+      expect(output).to include(
+        "Both `packages_dir` and `packages` are configured in mono.yml."
+      )
+      expect(performed_commands).to be_empty
+      expect(exit_status).to eql(1), output
+    end
+
+    it "exits with an error when a package path is blank" do
+      prepare_ruby_project("packages" => { "root_gem" => "" }) do
+        create_ruby_package_files :name => "root_gem", :version => "1.2.3"
+        add_changeset :patch
+      end
+      output = run_publish(:lang => :ruby)
+
+      expect(output).to include(
+        "The `packages` option in mono.yml must not have a blank package " \
+          "name or path."
+      )
+      expect(performed_commands).to be_empty
+      expect(exit_status).to eql(1), output
+    end
+
+    it "exits with an error when a package name is blank" do
+      prepare_ruby_project("packages" => { "" => "." }) do
+        create_ruby_package_files :name => "root_gem", :version => "1.2.3"
+        add_changeset :patch
+      end
+      output = run_publish(:lang => :ruby)
+
+      expect(output).to include(
+        "The `packages` option in mono.yml must not have a blank package " \
+          "name or path."
+      )
+      expect(performed_commands).to be_empty
+      expect(exit_status).to eql(1), output
+    end
+
+    it "exits with an error when two packages resolve to the same path" do
+      prepare_ruby_project(
+        "packages" => { "root_gem" => ".", "also_root" => "./" }
+      ) do
+        create_ruby_package_files :name => "root_gem", :version => "1.2.3"
+        add_changeset :patch
+      end
+      output = run_publish(:lang => :ruby)
+
+      expect(output).to include(
+        "The `packages` option in mono.yml maps both `root_gem` and " \
+          "`also_root` to the same path `.`."
+      )
+      expect(performed_commands).to be_empty
+      expect(exit_status).to eql(1), output
+    end
+  end
+
   context "with mono Ruby package" do
     it "publishes the updated package" do
       prepare_ruby_project "packages_dir" => "packages/" do

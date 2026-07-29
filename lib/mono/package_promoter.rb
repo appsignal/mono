@@ -4,9 +4,10 @@ require "set"
 
 module Mono
   class PackagePromoter
-    def initialize(dependency_tree, prerelease: nil)
+    def initialize(dependency_tree, prerelease: nil, version_lock: false)
       @dependency_tree = dependency_tree
       @prerelease = prerelease
+      @version_lock = version_lock
       @updated_packages = Set.new
     end
 
@@ -47,15 +48,73 @@ module Mono
             update_package_and_dependents(updated_package)
           end
 
+          force_version_lock(packages) if version_lock?
+
           updated_packages
         end
     end
 
     private
 
-    attr_reader :dependency_tree, :updated_packages, :prerelease
+    attr_reader :dependency_tree, :updated_packages, :prerelease, :version_lock
 
     alias prerelease? prerelease
+    alias version_lock? version_lock
+
+    # With a version lock, every package in the repository releases together at
+    # one shared version. Each package that would not otherwise reach the shared
+    # bump gets a synthetic changeset at that bump, so its next version lands on
+    # the same number as the rest.
+    def force_version_lock(packages)
+      return if updated_packages.empty?
+
+      assert_no_version_drift!(packages)
+
+      bump = coupled_bump(packages)
+      return unless bump
+
+      triggers = packages.select do |package|
+        package.next_bump && bump_index(package.next_bump) <= bump_index(bump)
+      end
+      version = triggers.first.next_version
+
+      packages.each do |package|
+        current_bump = package.next_bump
+        next if current_bump && bump_index(current_bump) <= bump_index(bump)
+
+        package.changesets.changesets <<
+          VersionLockMemoryChangeset.new(bump, triggers, version)
+        updated_packages << package
+      end
+    end
+
+    # A version lock only forces packages that already sit at the same version
+    # onto a shared next version. If they have drifted apart, forcing them would
+    # hide a mistake, so raise instead.
+    def assert_no_version_drift!(packages)
+      reference = packages.first.current_version
+      in_step = packages.all? do |package|
+        reference.eql?(package.current_version)
+      end
+      return if in_step
+
+      versions = packages.map do |package|
+        "#{package.name} #{package.current_version}"
+      end
+      raise Mono::Error,
+        "Cannot release with `version_lock` because the packages are not at " \
+          "the same version. Please bring them back in step and try again.\n" \
+          "Current versions: #{versions.join(", ")}"
+    end
+
+    def coupled_bump(packages)
+      bumps = packages.map(&:next_bump).compact
+      bumps.min_by { |bump| bump_index(bump) }
+    end
+
+    def bump_index(bump)
+      Changeset::SUPPORTED_BUMPS.keys.index(bump)
+    end
 
     def update_package_and_dependents(package)
       dependency_tree[package.name][:dependents].each do |dependent|

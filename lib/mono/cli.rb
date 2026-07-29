@@ -17,7 +17,11 @@ module Mono
           exit_cli "No Mono `#{config_file}` config file found in this " \
             "directory!"
         end
-        @config = Config.new(YAML.safe_load(File.read(config_file)))
+        # An empty or whitespace-only mono.yml parses to nil, so fall back to an
+        # empty config. Validation and config access then raise their own clear
+        # errors, such as "No language configured.", instead of a NoMethodError.
+        @config = Config.new(YAML.safe_load(File.read(config_file)) || {})
+        @config.validate!
         @language = Language.for(config.language).new(config)
         find_packages
         validate(options)
@@ -37,34 +41,84 @@ module Mono
 
       def find_packages
         package_class = PackageBase.for(config.language)
-        if config.monorepo?
-          packages_dir = config.packages_dir
-          directories = Dir.glob("*", :base => packages_dir)
-            .sort
-            .select { |pkg| File.directory?(File.join(packages_dir, pkg)) }
-          if language.respond_to? :select_packages
-            directories = language.select_packages(directories)
-          end
-
-          selected_packages = options[:packages]
-          @packages = []
-          @all_package_names = []
-          directories.each do |package|
-            path = File.join(packages_dir, package)
-            package = package_class.new(package, path, config)
-            @all_package_names << package.name
-            if selected_packages && !selected_packages.include?(package.name)
-              next
-            end
-
-            @packages << package
-          end
+        if config.packages_dir
+          find_packages_in_dir(package_class)
+        elsif config.packages
+          find_packages_in_map(package_class)
         else
           # Single package repo
           pathname = Pathname.new(Dir.pwd)
           package = pathname.basename
           @packages = [package_class.new(package, ".", config)]
         end
+      end
+
+      def find_packages_in_dir(package_class)
+        packages_dir = config.packages_dir
+        directories = Dir.glob("*", :base => packages_dir)
+          .sort
+          .select { |pkg| File.directory?(File.join(packages_dir, pkg)) }
+        if language.respond_to? :select_packages
+          directories = language.select_packages(directories)
+        end
+
+        selected_packages = options[:packages]
+        @packages = []
+        @all_package_names = []
+        directories.each do |package|
+          path = File.join(packages_dir, package)
+          package = package_class.new(package, path, config)
+          @all_package_names << package.name
+          next if selected_packages && !selected_packages.include?(package.name)
+
+          @packages << package
+        end
+      end
+
+      # Builds the packages from an explicit `name => path` map. One of the
+      # paths may be `.`, which roots a package at the repository root. Unlike
+      # the `packages_dir` glob, the paths are listed by hand, so mono does not
+      # filter them by whether the directory exists or by language-specific
+      # workspace rules.
+      def find_packages_in_map(package_class)
+        selected_packages = options[:packages]
+        @packages = []
+        @all_package_names = []
+        names_by_path = {}
+        config.packages.each do |name, path|
+          path = normalize_package_path(path)
+          reject_duplicate_package_path(names_by_path, name, path)
+          names_by_path[path] = name
+
+          package = package_class.new(name, path, config)
+          @all_package_names << package.name
+          next if selected_packages && !selected_packages.include?(package.name)
+
+          @packages << package
+        end
+      end
+
+      # Two package names must not resolve to the same directory. They would
+      # each read and write that directory's version and changelog files, so
+      # one release would overwrite the other. Paths are normalized first, so
+      # this also catches spellings such as "." and "./" that point at the same
+      # place.
+      def reject_duplicate_package_path(names_by_path, name, path)
+        existing = names_by_path[path]
+        return unless existing
+
+        exit_cli "The `packages` option in mono.yml maps both " \
+          "`#{existing}` and `#{name}` to the same path `#{path}`. " \
+          "Each package must have its own path."
+      end
+
+      # A configured path is used both to run commands and to read package
+      # files, and the root package must be exactly "." for those to work. A
+      # user could write the root as "./" or add a trailing slash, so normalize
+      # every path to its canonical form. That collapses the root variants to
+      # "." and drops trailing slashes from nested paths.
+      def normalize_package_path(path)
+        Pathname.new(path.to_s).cleanpath.to_s
       end
 
       def validate(options)

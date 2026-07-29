@@ -33,10 +33,6 @@ guide](doc/quick-start-guide.md).
 
 ### Dry run
 
-Note: Dry run is not fully implemented yet. While it won't publish your
-packages to a package manager, it will update version files in packages, delete
-changeset files and update their changelogs.
-
 Don't want to run the command for real, but want to see what commands it will
 perform? Use the dry run feature. Set the `DRY_RUN=true` environment variable
 to use dry run mode.
@@ -44,6 +40,17 @@ to use dry run mode.
 ```
 DRY_RUN=true mono publish
 ```
+
+In dry run mode, mono still reads from your project so the output is accurate.
+Read-only commands, such as reading the existing Git tags, are run as normal.
+Every command that changes something or talks to a remote is printed with a
+`[dry-run]` marker and is not run. This includes the Git commit, the Git tag,
+the Git push and the push to the package manager.
+
+Note that dry run mode still updates files on disk. It updates the version files
+in packages, deletes the changeset files and updates the changelogs. Because the
+release commit is not created, those changes are left uncommitted. Use
+`git restore` to undo them.
 
 ## Configuration
 
@@ -82,6 +89,24 @@ test:
       the mono project packages can be found. If this config option is
       specified mono will consider this repository a mono repo.
     - Wildcards are not supported.
+- `packages`
+    - A map of package names to their paths, used instead of `packages_dir` to
+      list the packages explicitly. If this config option is specified mono
+      will consider this repository a mono repo.
+    - One of the paths may be `.` to place a package at the root of the
+      repository. This lets a repository publish a second package from a
+      subdirectory without moving its primary package.
+    - Mutually exclusive with `packages_dir`.
+    - For Node.js, a package name in the map must match the `name` in its
+      `package.json`.
+- `version_lock`
+    - Release every package in the repository together at one shared version.
+      When any package has a change, every package is released with the same
+      new version number, as a single `v<version>` release commit and tag.
+    - All packages must be at the same version before the release. If they have
+      drifted apart, mono raises an error instead of forcing them into step.
+    - Only applies to a mono repo, so `packages` or `packages_dir` must also be
+      configured.
 - `npm_client`
     - Node.js only.
     - Supported values:
