@@ -147,8 +147,14 @@ module Mono
         options[:parallel]
       end
 
+      # Empty when HEAD is detached, because `symbolic-ref` exits non-zero
+      # when there is no branch to name.
       def current_branch
-        `git rev-parse --abbrev-ref HEAD`.chomp
+        `git symbolic-ref --quiet --short HEAD`.chomp
+      end
+
+      def on_branch?
+        !current_branch.empty?
       end
 
       def local_changes

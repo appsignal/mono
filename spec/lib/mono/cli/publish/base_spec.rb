@@ -56,6 +56,26 @@ RSpec.describe Mono::Cli::Publish do
     end
   end
 
+  context "with a detached HEAD" do
+    it "exits with an error" do
+      prepare_ruby_project do
+        create_ruby_package_files :name => "mygem", :version => "1.2.3"
+        add_changeset(:patch)
+      end
+      in_project { run_command "git checkout --detach HEAD" }
+      output = run_publish(:lang => :ruby)
+
+      expect(performed_commands).to be_empty
+      expect(output).to include("Error: Not on a branch.")
+      expect(exit_status).to eql(1), output
+      in_project do
+        version = File.read("lib/example/version.rb")
+        expect(version).to include('VERSION = "1.2.3"')
+        expect(Dir.glob(".changesets/*.md")).to_not be_empty
+      end
+    end
+  end
+
   context "when the version tag already exists" do
     it "exits with an error" do
       prepare_ruby_project do

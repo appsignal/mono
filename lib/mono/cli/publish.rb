@@ -50,6 +50,13 @@ module Mono
         end
 
         if git?
+          unless on_branch?
+            exit_cli "Error: Not on a branch. Publishing pushes the current " \
+              "branch to the Git remote, and a detached HEAD has no branch " \
+              "to push. Check out the branch to release from and try again. " \
+              "Exiting."
+          end
+
           existing_tags = existing_tags(changed_packages)
           unless existing_tags.empty?
             message = "Error: The Git tags for packages to be published " \
