@@ -30,11 +30,13 @@ module Mono
       collection
     end
 
-    def formatted_changesets(format: :changelog)
+    def formatted_changesets(format: :changelog, exclude: [])
       changesets_by_type = changesets_by_types_sorted_by_bump
       content = []
       Changeset::SUPPORTED_TYPES.each do |key, label|
-        messages_for_type = changesets_by_type[key]
+        messages_for_type = changesets_by_type[key].reject do |changeset|
+          exclude.any? { |klass| changeset.is_a?(klass) }
+        end
         next if messages_for_type.empty?
 
         heading_level = format == :changelog ? 3 : 2

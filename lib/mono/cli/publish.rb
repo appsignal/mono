@@ -79,7 +79,10 @@ module Mono
             packages.to_h do |package|
               [
                 package.name,
-                package.changesets.formatted_changesets(:format => :short)
+                package.changesets.formatted_changesets(
+                  :format => :short,
+                  :exclude => tag_excluded_changesets
+                )
               ]
             end
 
@@ -265,6 +268,12 @@ module Mono
         else
           ["Publish package #{packages.first.next_tag}", standard_message]
         end
+      end
+
+      def tag_excluded_changesets
+        return [] unless config.version_lock?
+
+        [DependencyBumpMemoryChangeset, VersionLockMemoryChangeset]
       end
 
       def tag_release(packages, changesets, rollback)

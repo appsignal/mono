@@ -53,6 +53,11 @@ RSpec.describe Mono::Cli::Publish do
           )
         end
 
+        expect(tag_changelog_contents(tag)).to eq(<<~CONTENTS.strip)
+          ## Added
+
+          - This is a minor changeset bump.
+        CONTENTS
         expect(local_changes?).to be_falsy, local_changes.inspect
         expect(commited_files).to eql([
           ".changesets/1_minor.md",
@@ -80,6 +85,43 @@ RSpec.describe Mono::Cli::Publish do
         [project_dir, "git push origin main"],
         [project_dir, "git push origin #{tag}"]
       ])
+      expect(exit_status).to eql(0), output
+    end
+
+    it "leaves dependency updates out of the tag annotation" do
+      prepare_ruby_project(
+        "packages" => { "root_gem" => ".", "sub_gem" => "packages/sub_gem" },
+        "version_lock" => true
+      ) do
+        create_ruby_package_files :name => "root_gem", :version => "1.2.3"
+        create_changelog
+        add_changeset :patch
+        create_package :sub_gem do
+          create_ruby_package_files :name => "sub_gem",
+            :version => "1.2.3",
+            :dependencies => { "root_gem" => "1.2.3" }
+          create_changelog
+        end
+      end
+      confirm_publish_package
+      output = run_publish(:lang => :ruby)
+
+      next_version = "1.2.4"
+      tag = "v#{next_version}"
+
+      in_project do
+        in_package :sub_gem do
+          expect_changelog_to_include_package_bump(
+            read_changelog_file, "root_gem", next_version
+          )
+        end
+
+        expect(tag_changelog_contents(tag)).to eq(<<~CONTENTS.strip)
+          ## Added
+
+          - This is a patch changeset bump.
+        CONTENTS
+      end
       expect(exit_status).to eql(0), output
     end
 
